@@ -29,23 +29,23 @@ O ecossistema divide-se em 3 pilares principais:
 
 ```mermaid
 graph TD;
-    subgraph Local Development
-    G[gerador_dashboard.py] -->|Compila estaticamente estáticos| D[dashboard.html / admin.html]
+    subgraph LocalDev["Local Development"]
+    G[gerador_dashboard.py] -->|Compila estaticamente| D[dashboard.html / admin.html]
     G -->|Lê dados| JSON[(data/*.json)]
     end
-    
-    subgraph Frontend Ecosystem
+
+    subgraph FrontendEco["Frontend Ecosystem"]
     D -->|Deploy via Firebase CLI| H[Firebase Hosting]
     H -->|Autenticação JWT| FA[Firebase Auth]
     H -->|Dados de Utilizador| FS[Firestore]
     H -->|Uploads de Turma| ST[Firebase Storage]
     end
 
-    subgraph Backend API GCP
-    H -->|Bearer Tokens (API requests)| CR[Cloud Run REST API]
-    CR -->|Queries Seguras| CSQL[(Cloud SQL - PostgreSQL)]
+    subgraph BackendGCP["Backend API — GCP"]
+    H -->|Bearer Tokens| CR[Cloud Run REST API]
+    CR -->|Queries Seguras| CSQL[(Cloud SQL — PostgreSQL)]
     end
-    
+
     classDef comp fill:#2d3436,stroke:#74b9ff,stroke-width:2px,color:#fff;
     class G,D,JSON,H,FA,FS,ST,CR,CSQL comp;
 ```
