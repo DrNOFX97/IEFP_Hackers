@@ -4375,38 +4375,11 @@ async def _pg_exec_async(files, ns, tab_id):
                 }}
                 // Write user presence to Firestore for Turma panel
                 userPresenceWrite(user);
-                // Check role → block if blocked; show admin link if admin/formador
-                db.collection('users').doc(user.uid).get().then(doc => {{
-                    const role = doc.exists ? (doc.data().role || 'aluno') : 'aluno';
-                    if (role === 'blocked') {{
-                        // Mostrar ecrã de acesso negado e fazer signOut
-                        document.getElementById('auth-gate').style.display = 'none';
-                        let denied = document.getElementById('access-denied-screen');
-                        if (!denied) {{
-                            denied = document.createElement('div');
-                            denied.id = 'access-denied-screen';
-                            denied.style.cssText = 'position:fixed;inset:0;background:var(--bg-color,#0d1117);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;z-index:200;text-align:center;padding:2rem;';
-                            denied.innerHTML = `
-                                <div style="font-size:3.5rem">🚫</div>
-                                <h2 style="color:#f85149;font-size:1.3rem;">Acesso Negado</h2>
-                                <p style="color:#8b949e;max-width:360px;line-height:1.6;">
-                                    A tua conta foi desativada.<br>
-                                    Contacta o administrador para mais informações.
-                                </p>
-                                <button onclick="auth.signOut()" style="margin-top:0.5rem;padding:0.6rem 1.4rem;background:transparent;border:1px solid #30363d;border-radius:6px;color:#e6edf3;cursor:pointer;font-size:0.9rem;">
-                                    Sair
-                                </button>`;
-                            document.body.appendChild(denied);
-                        }}
-                        denied.style.display = 'flex';
-                        // Não inicializa o dashboard
-                        return;
-                    }}
-                    const adminLink = document.getElementById('nav-admin-link');
-                    if (adminLink && (role === 'admin' || role === 'formador')) {{
-                        adminLink.style.display = '';
-                    }}
-                }}).catch(() => {{}});
+                // Mostrar link de admin/formador (role já verificado em onAuthStateChanged)
+                const adminLink = document.getElementById('nav-admin-link');
+                if (adminLink && (window._userRole === 'admin' || window._userRole === 'formador')) {{
+                    adminLink.style.display = '';
+                }}
                 // Audit: login
                 auditLogWrite('login', '');
                 // Start background chat subscription (badge on all views)
@@ -4441,8 +4414,28 @@ async def _pg_exec_async(files, ns, tab_id):
                     if (msg) {{ msg.textContent = 'Erro de autenticação (' + e.code + '): ' + e.message; msg.style.display = 'block'; }}
                 }}
             }});
-            auth.onAuthStateChanged(user => {{
+            auth.onAuthStateChanged(async user => {{
                 if (user) {{
+                    // Verificar role ANTES de mostrar o dashboard
+                    try {{
+                        const doc = await db.collection('users').doc(user.uid).get();
+                        const role = doc.exists ? (doc.data().role || 'aluno') : 'aluno';
+                        if (role === 'blocked') {{
+                            await auth.signOut(); // termina sessão Firebase Auth
+                            showAuthGate();
+                            const msg = document.getElementById('auth-err');
+                            if (msg) {{
+                                msg.textContent = '🚫 A tua conta foi desativada. Contacta o administrador.';
+                                msg.style.display = 'block';
+                            }}
+                            return;
+                        }}
+                        // Guardar role para uso no init()
+                        window._userRole = role;
+                    }} catch(e) {{
+                        // Se Firestore falha, continua com role padrão
+                        window._userRole = 'aluno';
+                    }}
                     hideAuthGate();
                     if (!window._dashboardInited) {{
                         window._dashboardInited = true;
@@ -4450,6 +4443,7 @@ async def _pg_exec_async(files, ns, tab_id):
                     }}
                 }} else {{
                     window._dashboardInited = false;
+                    window._userRole = null;
                     showAuthGate();
                 }}
             }});
