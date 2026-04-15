@@ -51,8 +51,7 @@ service cloud.firestore {
       allow create: if isModerador()
                     && request.resource.data.createdBy == request.auth.uid
                     && request.resource.data.active    == true
-                    && request.resource.data.uses      == 0
-                    && request.resource.data.keys().hasAll(['createdBy','active','uses','maxUses','createdAt']);
+                    && request.resource.data.uses      == 0;
       // Só permite revogar (alterar apenas campo 'active')
       allow update: if isModerador()
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active']);
