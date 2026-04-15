@@ -803,10 +803,15 @@ async function loadOverview() {
 // ── USERS ───────────────────────────────────────────────────────────
 async function loadUsers() {
   const tbody = document.getElementById('users-tbody');
-  tbody.innerHTML = '<tr><td colspan="4"><div class="loader"><div class="spinner"></div> A carregar…</div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5"><div class="loader"><div class="spinner"></div> A carregar…</div></td></tr>';
   try {
-    const snap = await db.collection('users').orderBy('lastSeen', 'desc').get();
-    allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sem orderBy — evita excluir docs sem campo lastSeen; ordenação em JS
+    const snap = await db.collection('users').get();
+    allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
+      const ta = a.lastSeen?.toDate?.()?.getTime() || 0;
+      const tb = b.lastSeen?.toDate?.()?.getTime() || 0;
+      return tb - ta;
+    });
     renderUsers(allUsers);
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="5" style="color:var(--red);padding:1rem;">${e.message}</td></tr>`;
