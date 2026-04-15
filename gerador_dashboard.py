@@ -4743,14 +4743,18 @@ async def _pg_exec_async(files, ns, tab_id):
                 const uid  = auth.currentUser?.uid;
                 const snap = await db.collection('invites')
                     .where('createdBy', '==', uid)
-                    .orderBy('createdAt', 'desc')
                     .get();
                 if (snap.empty) {{
                     list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Nenhum convite criado ainda.</span>';
                     return;
                 }}
                 list.innerHTML = '';
-                snap.forEach(doc => {{
+                const docs = snap.docs.sort((a, b) => {{
+                    const ta = a.data().createdAt?.toMillis?.() || 0;
+                    const tb = b.data().createdAt?.toMillis?.() || 0;
+                    return tb - ta;
+                }});
+                docs.forEach(doc => {{
                     const inv  = doc.data();
                     const card = renderInviteCard(doc.id, inv);
                     list.appendChild(card);
