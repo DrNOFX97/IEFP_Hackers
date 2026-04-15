@@ -21,5 +21,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Ficheiros de teste temporários
+test_*.html
+test_*.js
+
 # macOS
 .DS_Store

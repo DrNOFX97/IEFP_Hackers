@@ -4110,15 +4110,15 @@ async def _pg_exec_async(files, ns, tab_id):
                 pgSetRunReady(tabId);
             }} catch(e) {{
                 pgSetOutput(tabId, `<span class="pg-err">Erro: ${{e.message}}</span>`);
-                if (btn) btn.disabled = false;
             }} finally {{
+                if (btn) {{ btn.disabled = false; btn.classList.remove('loading'); }}
                 pg.pyodideLoading = false;
             }}
         }}
 
         function pgSetRunReady(tabId) {{
             const btn = document.getElementById(tabId + '-run');
-            if (btn) btn.disabled = false;
+            if (btn) {{ btn.disabled = false; btn.classList.remove('loading'); }}
             pgSetOutput(tabId, '<span class="pg-info"># Python pronto — escreve código e clica Correr</span>');
         }}
 
@@ -4218,12 +4218,15 @@ async def _pg_exec_async(files, ns, tab_id):
             }}
             if (!pg.SQL) {{
                 pg.sqlLoading = true;
-                pgSQLAppend(tabId, 'info', 'A carregar sql.js (~1.5 MB, apenas na primeira vez)…');
+                pgSQLAppend(tabId, 'info', 'A carregar sql.js (apenas na primeira vez)…');
                 try {{
-                    await pgLoadScript('https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js');
-                    pg.SQL = await initSqlJs({{
-                        locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${{f}}`
-                    }});
+                    await pgLoadScript('https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-asm.js');
+                    if (typeof window.initSqlJs !== 'function') throw new Error("initSqlJs is not defined");
+                    const p = window.initSqlJs();
+                    pg.SQL = await Promise.race([
+                        p,
+                        new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout a inicializar sql.js (demasiado lento)')), 15000))
+                    ]);
                 }} catch(e) {{
                     pgSQLAppend(tabId, 'err', 'Erro ao carregar sql.js: ' + e.message);
                     pg.sqlLoading = false;

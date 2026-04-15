@@ -1,338 +1,141 @@
-# Dashboard CET Cibersegurança — IEFP Faro
+# 🛡️ CET Cibersegurança Dashboard — IEFP Faro
 
-Dashboard interactivo para o Curso de Especialização Tecnológica (CET) em Cibersegurança do IEFP de Faro. Agrega horários, programa, materiais didácticos, apontamentos pessoais e um playground de código directamente no browser.
+<div align="center">
+  <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
+  <img src="https://img.shields.io/badge/Firebase-Hosting%20|%20Auth%20|%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" />
+  <img src="https://img.shields.io/badge/FastAPI-Cloud%20Run-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
+  <br>
+  <em>Um portal centralizado de acompanhamento, estudo e produtividade desenvolvido especificamente para o CET em Cibersegurança.</em>
+</div>
 
-**URL de produção:** https://iefp-hackers.web.app
+<br>
 
----
-
-## Visão geral da arquitectura
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  gerador_dashboard.py   (Python, corre localmente)      │
-│  Lê data/*.json  →  gera dashboard.html (self-contained) │
-└─────────────────────────┬───────────────────────────────┘
-                          │ firebase deploy
-                          ▼
-┌─────────────────────────────────────────────────────────┐
-│  Firebase Hosting  (iefp-hackers.web.app)               │
-│  Serve dashboard.html  +  CSP headers                   │
-└────────┬────────────────────────────────────────────────┘
-         │ autenticação JWT (Firebase Auth)
-         ▼
-┌─────────────────────────────────────────────────────────┐
-│  Firebase Auth  (Google OAuth)                          │
-│  Firestore  (apontamentos por utilizador)               │
-│  Firebase Storage  (ficheiros de apoio ≤ 4 MB)         │
-└────────┬────────────────────────────────────────────────┘
-         │ Bearer token
-         ▼
-┌─────────────────────────────────────────────────────────┐
-│  API REST  (Cloud Run, europe-west1)                    │
-│  FastAPI + asyncpg  →  Cloud SQL (PostgreSQL)           │
-│  Rate limiting · RLS · queries parametrizadas           │
-└─────────────────────────────────────────────────────────┘
-```
-
-O `dashboard.html` é completamente **auto-contido**: todos os dados (UCs, horários, cronograma) são embutidos como constantes JavaScript no momento da geração. Não há chamadas de rede para dados estáticos — a página funciona offline após o primeiro carregamento.
+**URL de Produção:** [https://iefp-hackers.web.app](https://iefp-hackers.web.app)
 
 ---
 
-## Estrutura do projecto
+## 📖 Visão Geral
 
-```
-CyberSec/
-├── gerador_dashboard.py      # Gerador principal (único script a correr localmente)
-├── dashboard.html            # Output gerado — NÃO editar à mão
-├── firebase.json             # Configuração de Hosting (CSP, rewrites, headers)
-├── firestore.rules           # Regras de segurança do Firestore
-├── storage.rules             # Regras de segurança do Storage
-├── .firebaserc               # Projecto Firebase (ligafaro-8000)
-│
-├── data/                     # Ficheiros de dados (fonte de verdade)
-│   ├── ucs_ciberseguranca.json          # Catálogo de UCs (26 UCs)
-│   ├── horario_abril_2026.json          # Horário mensal
-│   └── cronograma_cet_ciberseguranca_2.json  # Cronograma geral do curso
-│
-├── docs/                     # Documentos de referência (PDFs, imagens)
-│   ├── IEFP - TECibersegurança.pdf
-│   ├── Cronograma.jpeg
-│   └── ...
-│
-└── api/                      # Backend REST (deploy em Cloud Run)
-    ├── main.py               # FastAPI app — todos os endpoints
-    ├── auth.py               # Verificação de JWT Firebase
-    ├── requirements.txt
-    └── Dockerfile
+Este projeto oferece um dashboard interativo para o Curso de Especialização Tecnológica (CET) em Cibersegurança do IEFP de Faro. O objetivo principal é agregar todos os horários mensais, programa didático das UCs, conteúdos partilhados pela turma, notas e apontamentos pessoais, juntamente com laboratórios de código executados diretamente no browser.
+
+O core do frontend reside no script `gerador_dashboard.py` que lê os manifestos e dados estáticos num formato agnóstico e gera estaticamente os artefactos finais HTML (zero chamadas de rede externas no arranque do dashboard para carregar as UCs ou horários, funcionando quase instantaneamente!).
+
+---
+
+## 🏛️ Visão Geral da Arquitetura
+
+O ecossistema divide-se em 3 pilares principais:
+
+```mermaid
+graph TD;
+    subgraph Local Development
+    G[gerador_dashboard.py] -->|Compila estaticamente estáticos| D[dashboard.html / admin.html]
+    G -->|Lê dados| JSON[(data/*.json)]
+    end
+    
+    subgraph Frontend Ecosystem
+    D -->|Deploy via Firebase CLI| H[Firebase Hosting]
+    H -->|Autenticação JWT| FA[Firebase Auth]
+    H -->|Dados de Utilizador| FS[Firestore]
+    H -->|Uploads de Turma| ST[Firebase Storage]
+    end
+
+    subgraph Backend API (GCP)
+    H -->|Bearer Tokens (API requests)| CR[Cloud Run REST API]
+    CR -->|Queries Seguras| CSQL[(Cloud SQL - PostgreSQL)]
+    end
+    
+    classDef comp fill:#2d3436,stroke:#74b9ff,stroke-width:2px,color:#fff;
+    class G,D,JSON,H,FA,FS,ST,CR,CSQL comp;
 ```
 
 ---
 
-## Como gerar e publicar
+## 🚀 Funcionalidades
 
-### Pré-requisitos
+### 📅 Gestão de Horários e Disciplinas
+- **Horário:** Vista mensal e semanal, cartões dinâmicos fundidos (slots de 1h unidos automaticamente), e badges explícitos para FPCT/UCs remotas. Exportação direta para listagem e vista semanal em formato `.pdf` utilizando `jsPDF`.
+- **Disciplinas (26 UCs):** Catálogo integral das UCs, organizados numa grelha pesquisável que revela formadores e carga horária.
+- **Área da UC:** Agrega materiais partilhados em aulas (documentos PDFs, links de YouTube/Video, ZIPs), comentários de turma e apontamentos pessoais confidenciais (com *auto-save* integrado da *session* e sincronização para Firestore).
+
+### 💻 Playground Integrado (Locais Seguros no Browser)
+Ambientes "sandbox" criados dinamicamente com suporte `tabbed` usando CodeMirror 5 (tema Dracula):
+- **Python (Pyodide):** Interpretador CPython portado em WASM, com `micropip` ativado e formatação por norma nativa (*autopep8*). Inputs do tipo de linha integrada com suporte múltiplo de ficheiros (ex: `main.py` + `utils.py`). Inclui dezenas de exemplos embutidos para estudo de algoritmia.
+- **SQL (SQLite):** Construído sobre `sql-asm.js` da JS Delivr, garantindo funcionamento ininterrupto independentemente de *flags* do Safari em *desktop*. Dispõe da versão funcional da linguagem para exercitação contínua, com pré-população de *DML/DDLs*.
+
+### 🔒 Painel de Administração e Auditoria
+- Acesso à aba restrita `/admin.html` mediante *Claims* customizadas na conta, provisionadas e geridas pelo script `seed_admin.py`.
+- Permite validações de atividade da plataforma em tempo curado. Log de auditoria integral.
+
+---
+
+## 🛠Estrutura e Scripts Locais
 
 ```bash
-# Python 3.9+
-pip install firebase-tools  # ou npm install -g firebase-tools
+CyberSec/
+├── gerador_dashboard.py      # Core de CI estática (script Python que compila as SPAs HTML)
+├── seed_admin.py             # CLI de setup/bootstrap de utilizadores para roles (ex: formador)
+├── dashboard.html            # ⚠️ Output Auto-gerado - NÃO EDITAR MANUALMENTE
+├── admin.html                # ⚠️ Output Auto-gerado do Backoffice
+├── firebase.json             # Regras rígidas de CSP, cache headers e infraestrutura CDN
+├── firestore.rules           # Scopes lógicos de db access
+├── storage.rules             # Limites de upload por utilizador
+│
+├── data/                     # Source of Truth base estruturado
+│   ├── ucs_ciberseguranca.json 
+│   ├── horario_abril_2026.json 
+│   └── cronograma_cet_ciberseguranca_2.json 
+│
+└── api/                      # Backend FastAPI + AsyncPG
+```
+
+---
+
+## 🔧 Como Gerar, Testar e Fazer Deploy
+
+### Pré-Requisitos e Setup Local
+1. Recomenda-se instalação do **Python 3.9+** no seu ambiente.
+2. É obrigatória a submissão de componentes através do Firebase Tools CLI.
+```bash
+npm install -g firebase-tools
 firebase login
 ```
 
-### Gerar o dashboard
-
+### Flow Operacional (Build + Deploy)
+Sempre que o `horário` novo for expedido, ou quando alterar os *JSON* base, execute o comando raiz:
 ```bash
+# Compilar views de forma rigorosa
 python3 gerador_dashboard.py
+
+# Efetuar validação com um runtime leve ou upload para firebase
+firebase deploy --only hosting --project ligafaro-8000
 ```
-
-Abre `dashboard.html` no browser para pré-visualizar localmente.
-
-### Publicar
-
+Para conceder permissão de Administrador no painel `/admin.html` via Cloud Auth de Firestore a alguém da moderação:
 ```bash
-python3 gerador_dashboard.py && firebase deploy --only hosting --project ligafaro-8000
-```
-
-### Adicionar um novo mês de horário
-
-1. Criar `data/horario_<mes>_<ano>.json` seguindo o schema abaixo
-2. Correr `python3 gerador_dashboard.py`
-3. O novo mês aparece automaticamente no dropdown
-
----
-
-## Schema dos ficheiros de dados
-
-### `data/ucs_*.json`
-
-```json
-{
-  "unidades_formacao_curta_duracao": [
-    {
-      "codigo": "UC01483",
-      "descricao": "Descrição completa da UC",
-      "formador": "Nome do Formador",
-      "carga_horaria": 50
-    }
-  ]
-}
-```
-
-| Campo | Tipo | Descrição |
-|---|---|---|
-| `codigo` | string | Código SIGO (ex: `UC01483`) ou `FPCT` |
-| `descricao` | string | Nome completo mostrado no dashboard |
-| `formador` | string | Nome do formador (vazio se não atribuído) |
-| `carga_horaria` | int | Total de horas da UC |
-
-### `data/horario_*.json`
-
-```json
-{
-  "horario": {
-    "mes_ano": "abril 2026",
-    "dias": [
-      {
-        "data": "2026-04-09",
-        "dia_semana": "quinta",
-        "aulas": [
-          { "hora": "09:00-10:00", "uc": "UC01483" },
-          { "hora": "10:00-11:00", "uc": "UC01483" }
-        ],
-        "nota": "Feriado (opcional)"
-      }
-    ]
-  }
-}
-```
-
-- Slots consecutivos da mesma UC são fundidos automaticamente num card único
-- `UC00602` recebe automaticamente o badge "Remoto"
-- Campo `nota` é opcional — usado para feriados ou avisos
-
-### `data/cronograma_*.json`
-
-```json
-{
-  "cronograma": {
-    "local": "Areal Gordo - Faro",
-    "sala": "6.18",
-    "data_inicio": "2026-04-09",
-    "data_fim": "2027-04-06",
-    "carga_horaria": {
-      "base": 600,
-      "tecnologica": 700,
-      "fct": 210,
-      "total": 1526
-    },
-    "resumo_mensal": [
-      { "mes": "abril 2026", "dias": 17, "horas": 136 }
-    ]
-  }
-}
+python3 seed_admin.py --email nuno.exemplo@gmail.com --role formador
 ```
 
 ---
 
-## Funcionalidades do dashboard
+## 🔐 Segurança
 
-### Horário
-- Visualização mensal com cards por dia
-- Slots de 1h fundidos automaticamente quando a mesma UC ocupa horas consecutivas
-- Badge "Remoto" para UC00602
-- Exportação PDF (jsPDF) e vista semanal
+Esta ferramenta obedece a regras restritas de CSP e proteção de injeção concebidas a rigor:
 
-### Disciplinas
-- Grelha de todas as 26 UCs com formador e carga horária
-- Página de detalhe por UC com:
-  - Materiais didácticos (links, PDFs, vídeos — via API)
-  - Apontamentos pessoais (guardados no Firestore por utilizador)
-  - Upload de ficheiros para Firebase Storage (≤ 4 MB)
-
-### Playground
-- **Python** — Pyodide v0.26.4 (CPython compilado para WASM)
-  - Editor CodeMirror 5 com syntax highlighting (tema Dracula)
-  - `input()` inline no output (sem `prompt()` do browser)
-  - Multi-ficheiro por sessão (main.py + utils.py + ...)
-  - Exemplos comentados linha-a-linha (Olá Mundo, Calculadora, Fibonacci, Caesar, Classes, etc.)
-  - Auto-formatação com `autopep8` ao correr
-  - Ctrl+Enter para correr
-- **SQL** — sql.js (SQLite compilado para WASM)
-  - Editor CodeMirror 5 com SQL syntax highlighting
-  - BD em memória por sessão
-  - Exemplo pré-carregado (CREATE TABLE, INSERT, SELECT, UPDATE, DELETE)
-  - Resultados em tabela formatada
-  - Ctrl+Enter para correr
-
-### Cronograma
-- Sidebar com metadata do curso (local, sala, datas, carga horária)
-- Resumo mensal (dias e horas por mês)
+1. **Autenticação Firebase via Google OAuth** e acesso condicionado sem fallback de POP-UP.
+2. **CSP (Content-Security-Policy):** O ambiente tem restrições estritas a execução arbitrária (`style-src`, `connect-src` e origens exclusivas como WebAssembly para o `Pyodide`). A execução da infraestrutura só extraí scripts permitidos do `unpkg`, `cdnjs` e `jsdelivr`. Sem execuções iframed (*Frame Ancestors DENY*).
+3. **Database RLS + Storage Types:** Firestore previne fugas de apontamentos através dum sistema de _Resource Rules_ enjaulado apenas ao UID real da query atual gerada. Firebase Storage restringe os uploads a limites de quota (4 MB) e MIME types conhecidos (`pdf`, `png`, `jpg`, `doc`, `zip`).
+4. **Backend FastAPI Security Rate Limiter:** Cloud Run utiliza tokens JWT na assinatura dos cabeçalhos. Os parâmetros contra o PostgreSQL são formatados via `asyncpg`, impossibilitando injeção. 
 
 ---
 
-## API REST (Cloud Run)
+## 📝 Notas de Desenvolvimento Adicionais
 
-**Base URL:** `https://ciberseg-api-315653817267.europe-west1.run.app`
-
-Todos os endpoints requerem `Authorization: Bearer <firebase_id_token>`.
-
-| Método | Endpoint | Descrição |
-|---|---|---|
-| `GET` | `/health` | Health check (público) |
-| `GET` | `/notes/{uc_code}` | Ler apontamento do utilizador para uma UC |
-| `POST` | `/notes/{uc_code}` | Guardar apontamento (upsert; DELETE se vazio) |
-| `GET` | `/materials/{uc_code}` | Listar materiais de uma UC |
-| `POST` | `/materials/{uc_code}` | Adicionar material |
-| `DELETE` | `/materials/{uc_code}/{material_id}` | Apagar material (autor ou formador/admin) |
-| `GET` | `/admin/audit` | Log de auditoria (formador/admin) |
-
-### Boas práticas de segurança implementadas
-- **JWT verificado** em cada pedido via Firebase Admin SDK (`check_revoked=True`)
-- **Queries parametrizadas** com `asyncpg` — zero interpolação de strings com input do utilizador
-- **RLS no PostgreSQL** via `SET LOCAL app.current_user_id` antes de cada query
-- **Validação de input** com Pydantic (tipos, tamanhos, URLs, enumerações)
-- **Rate limiting** por IP com `slowapi` (60/min leitura, 30/min escrita, 10/min admin)
-- **CORS** restrito a `https://iefp-hackers.web.app` e `http://localhost:8000`
-- **Docs desactivados** em produção (`ENV=production`)
+- **Nunca edite os ficheiros `dashboard.html` ou `admin.html` manualmente**. Em todos os desdobramentos, deve ser atualizado o esqueleto embutido no contexto formatado dentro do script Python originador (`gerador_dashboard.py`).
+- Devido à interpolação de varíaveis globais da framework `.format()` no contexto Python em cima dos esqueletos de JavaScript nativo, qualquer uso de chaves ` { ` exclusivas ao CSS / ECMAScript no script master precisaram de ser unidas duas vezes em string escape: ` {{  }} `.
+- O módulo Playground migrável das sessões de **SQL** não tem requisição extra, operando via `sql-asm.js` pelo *jsdelivr*. O script pesa aproximadamente 1 MB, no entanto, é gerida uma resposta *promise* integral até 15s antes de erro. Outros bundles usam *CodeMirror v5.65*.
+- A configuração da API remota requer a documentação referida no `Dockerfile` com chaves de Base de Dados encriptadas enviadas via `gcloud secrets`.
 
 ---
-
-## Segurança do frontend
-
-### Content Security Policy
-
-O `firebase.json` define headers CSP restritivos para todas as respostas:
-
-```
-default-src 'self'
-script-src  'self' 'unsafe-inline' 'wasm-unsafe-eval'
-            https://cdnjs.cloudflare.com https://cdn.jsdelivr.net
-            https://www.gstatic.com https://apis.google.com
-style-src   'self' 'unsafe-inline' https://fonts.googleapis.com
-            https://fonts.gstatic.com https://cdnjs.cloudflare.com
-connect-src 'self' https://*.googleapis.com https://*.firebaseio.com
-            wss://*.firebaseio.com https://cdn.jsdelivr.net
-            https://pypi.org https://files.pythonhosted.org
-            [+ Cloud Run API URL]
-frame-src   https://ligafaro-8000.firebaseapp.com blob:
-worker-src  blob: 'self'
-frame-ancestors 'none'
-```
-
-- `'wasm-unsafe-eval'` — necessário para Pyodide (WebAssembly)
-- `https://pypi.org` + `https://files.pythonhosted.org` — necessário para `micropip` instalar `autopep8`
-- `X-Frame-Options: DENY` em todas as respostas
-- `Strict-Transport-Security` com preload (2 anos)
-
-### Firestore Rules
-- Apontamentos: cada utilizador só lê/escreve documentos com o seu próprio `uid`
-- Materiais: qualquer utilizador autenticado pode ler e escrever
-
-### Storage Rules
-- Leitura: qualquer utilizador autenticado
-- Escrita: autenticado, ficheiro ≤ 4 MB, tipos permitidos: PDF, Word, texto, imagem, ZIP
-
----
-
-## Autenticação
-
-Login via **Google OAuth** (Firebase Auth). O fluxo usa `signInWithRedirect` com fallback automático para o caso de popup bloqueado pelo browser. Após login, o token Firebase é:
-- Guardado automaticamente pelo SDK (persistência `LOCAL`)
-- Enviado como `Bearer token` em cada chamada à API REST
-- Verificado e validado no servidor com `firebase-admin`
-
-Domínio autorizado: `iefp-hackers.web.app` (configurar em Firebase Console → Authentication → Authorized Domains).
-
----
-
-## Deploy da API
-
-```bash
-# A partir do directório api/
-gcloud run deploy ciberseg-api \
-  --source . \
-  --region europe-west1 \
-  --project ligafaro-8000 \
-  --set-env-vars DB_HOST=...,DB_NAME=ciberseg,DB_USER=app_api,DB_PASS=...
-```
-
-Variáveis de ambiente necessárias:
-
-| Variável | Descrição |
-|---|---|
-| `DB_HOST` | Host do Cloud SQL (via Cloud SQL Proxy ou IP) |
-| `DB_PORT` | Porta PostgreSQL (default: `5432`) |
-| `DB_NAME` | Nome da base de dados (default: `ciberseg`) |
-| `DB_USER` | Utilizador PostgreSQL |
-| `DB_PASS` | Password PostgreSQL |
-| `ALLOWED_ORIGINS` | Lista de origens separada por vírgulas |
-| `ENV` | `production` para desactivar `/docs` |
-
----
-
-## Curso
-
-**Técnico/a Especialista em Cibersegurança**
-- **Modalidade:** Curso de Especialização Tecnológica (CET)
-- **Instituição:** Centro de Emprego e Formação Profissional de Faro
-- **Local:** Areal Gordo — Faro, Sala 6.18
-- **Horário:** 09h às 17h
-- **Início:** 9 de abril de 2026
-- **Fim:** 6 de abril de 2027
-- **Responsável de Ação:** Célia Palma
-- **Técnica de Serviço Social:** Cristina Soares
-- **Carga horária total:** 1526 horas
-  - Base: 175h · Tecnológica: 850h · FCT: 504h
-- **UCs:** 26 unidades (incluindo FPCT — Formação em Contexto de Trabalho)
-- **Financiamento:** Algarve 2030 · Portugal 2030 · União Europeia
-
----
-
-## Notas de desenvolvimento
-
-- **Nunca editar `dashboard.html` directamente** — é gerado pelo script e sobrescrito a cada deploy
-- **Escaped em f-strings Python:** `{{` → `{`, `}}` → `}` no JS; `\\n` → `\n` (literal `\n` geraria newline no output quebrando strings JS)
-- **Pyodide** carrega ~10 MB na primeira visita (cached pelo browser depois)
-- **sql.js** carrega ~1.5 MB na primeira sessão SQL
-- **CodeMirror 5** carrega ~150 KB da cdnjs na primeira sessão de código
-- O gerador adiciona `node --check` implicitamente — verificar sempre se o JS gerado é válido antes do deploy
+*Financiamento e Acreditação Institucional: Algarve 2030 · Portugal 2030 · União Europeia*
+*Projeto integrado com licença restritiva da turma de Formação em contexto modular de Faro.*
