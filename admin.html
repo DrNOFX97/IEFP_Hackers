@@ -118,7 +118,8 @@
     .signout-btn:hover { background: var(--red-dim); }
 
     /* ── MAIN ───────────────────────────────────────────────────── */
-    .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+    .main { flex: 1; min-width: 0; overflow-y: auto; display: flex; flex-direction: column; }
+    .tab-panel.active { display: flex; flex-direction: column; flex: 1; min-width: 0; }
     .page-header {
       padding: 1.25rem 1.5rem 1rem; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
@@ -127,10 +128,9 @@
     .page-sub { font-size: 0.78rem; color: var(--text2); margin-top: 0.15rem; }
     .page-actions { display: flex; gap: 8px; }
 
-    .content { padding: 1.5rem; flex: 1; }
+    .content { padding: 1.5rem; flex: 1; width: 100%; box-sizing: border-box; }
 
     .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
 
     /* ── STAT CARDS ─────────────────────────────────────────────── */
     .stats-grid {
