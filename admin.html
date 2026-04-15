@@ -732,17 +732,12 @@ async function loadOverview() {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
-    // Queries paralelas — sem estimativas, todos os dados reais do Firestore
-    const [usersSnap, recentSnap, loginsSnap, actionsSnap] = await Promise.all([
+    // Queries paralelas — sem índices compostos: filtragem por timestamp feita em memória
+    const todayTs = firebase.firestore.Timestamp.fromDate(todayStart);
+    const [usersSnap, recentSnap, todayLogsSnap] = await Promise.all([
       db.collection('users').get(),
       db.collection('audit_log').orderBy('timestamp', 'desc').limit(20).get(),
-      db.collection('audit_log')
-        .where('action', '==', 'login')
-        .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(todayStart))
-        .get(),
-      db.collection('audit_log')
-        .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(todayStart))
-        .get(),
+      db.collection('audit_log').where('timestamp', '>=', todayTs).get(),
     ]);
 
     // Contagem de utilizadores por role
@@ -756,13 +751,20 @@ async function loadOverview() {
       else                       alunos++;
     });
 
+    // Contagem de ações de hoje em memória (sem índice composto)
+    let loginsToday = 0, actionsToday = 0;
+    todayLogsSnap.docs.forEach(d => {
+      actionsToday++;
+      if (d.data().action === 'login') loginsToday++;
+    });
+
     document.getElementById('stat-total').textContent      = total;
     document.getElementById('stat-alunos').textContent     = alunos;
     document.getElementById('stat-formadores').textContent = formadores;
     document.getElementById('stat-admins').textContent     = admins;
     document.getElementById('stat-blocked').textContent    = blocked;
-    document.getElementById('stat-logins').textContent     = loginsSnap.size;
-    document.getElementById('stat-actions').textContent    = actionsSnap.size;
+    document.getElementById('stat-logins').textContent     = loginsToday;
+    document.getElementById('stat-actions').textContent    = actionsToday;
 
     // Atividade recente
     const actionIcons = {
