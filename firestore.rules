@@ -2,63 +2,105 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Notes: each user can only read/write their own documents
-    // Document ID format: {uid}_{ucCode}
-    match /notes/{docId} {
-      allow read, write: if request.auth != null
-                         && docId.matches(request.auth.uid + '_.*');
+    // ── Helpers ──────────────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
     }
 
-    // Materials: any authenticated user can read and write (shared per UC)
-    match /materials/{ucCode} {
-      allow read:  if request.auth != null;
-      allow write: if request.auth != null;
+    // Lê o role do user do seu próprio documento.
+    // Se o doc não existir ainda (primeiro login), devolve 'aluno' (mínimo privilégio).
+    function getRole() {
+      let uid = request.auth.uid;
+      return isAuth() && exists(/databases/$(database)/documents/users/$(uid))
+        ? get(/databases/$(database)/documents/users/$(uid)).data.get('role', 'aluno')
+        : 'aluno';
     }
 
-    // Global chat: any authenticated user can read/create
-    // Only the author (or a formador listed in /config/formadores) can soft-delete
-    match /chat_global/{msgId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid
-                    && request.resource.data.text is string
-                    && request.resource.data.text.size() <= 2000
-                    && request.resource.data.deleted == false;
-      allow update: if request.auth != null
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted'])
-                    && (resource.data.uid == request.auth.uid || isFormador());
-      allow delete: if false;
-    }
+    function isAdmin()    { return isAuth() && getRole() == 'admin'; }
+    function isFormador() { return isAuth() && getRole() in ['formador', 'admin']; }
+    function isAluno()    { return isAuth() && getRole() in ['aluno', 'formador', 'admin']; }
 
-    // UC chat: same rules, per-UC subcollection
-    match /uc_chats/{ucCode}/messages/{msgId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid
-                    && request.resource.data.text is string
-                    && request.resource.data.text.size() <= 2000
-                    && request.resource.data.deleted == false;
-      allow update: if request.auth != null
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted'])
-                    && (resource.data.uid == request.auth.uid || isFormador());
-      allow delete: if false;
-    }
-
-    // User presence: any auth user can read; only the owner can write their own doc
+    // ── users ─────────────────────────────────────────────────────────
+    // Qualquer utilizador autenticado pode ler (colega de turma).
+    // O dono pode escrever o seu próprio doc MAS NÃO pode alterar o campo 'role'.
+    // Admin tem controlo total — incluindo alterar roles.
     match /users/{uid} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == uid;
+      allow read: if isAuth();
+
+      // Criação: dono só pode criar sem campo 'role'
+      allow create: if isAuth() && request.auth.uid == uid
+                    && !('role' in request.resource.data);
+
+      // Atualização: dono pode atualizar tudo exceto 'role'; admin pode tudo
+      allow update: if (isAuth() && request.auth.uid == uid
+                       && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+                    || isAdmin();
+
+      allow delete: if isAdmin();
     }
 
-    // Formadores config: readable by all authenticated users
-    match /config/formadores {
-      allow read: if request.auth != null;
-      allow write: if false;  // managed manually in Firebase Console
+    // ── notes ─────────────────────────────────────────────────────────
+    // Formato doc ID: {uid}_{ucCode}
+    // Aluno vê e edita as suas; formador/admin vê todas.
+    match /notes/{docId} {
+      allow read: if isAuth() && (
+        docId.matches(request.auth.uid + '_.*') || isFormador()
+      );
+      allow write: if isAuth() && docId.matches(request.auth.uid + '_.*');
+      allow delete: if isAdmin();
     }
 
-    function isFormador() {
-      return exists(/databases/$(database)/documents/config/formadores)
-          && request.auth.uid in get(/databases/$(database)/documents/config/formadores).data.uids;
+    // ── materials ─────────────────────────────────────────────────────
+    match /materials/{ucCode} {
+      allow read:   if isAluno();
+      allow write:  if isAluno();    // partilhado por toda a turma
+    }
+
+    // ── chat global ───────────────────────────────────────────────────
+    match /chat_global/{msgId} {
+      allow read: if isAluno();
+      allow create: if isAluno()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() <= 2000
+                    && request.resource.data.deleted == false;
+      allow update: if isAuth()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted'])
+                    && (resource.data.uid == request.auth.uid || isFormador());
+      allow delete: if isAdmin();
+    }
+
+    // ── uc chats ──────────────────────────────────────────────────────
+    match /uc_chats/{ucCode}/messages/{msgId} {
+      allow read: if isAluno();
+      allow create: if isAluno()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() <= 2000
+                    && request.resource.data.deleted == false;
+      allow update: if isAuth()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted'])
+                    && (resource.data.uid == request.auth.uid || isFormador());
+      allow delete: if isAdmin();
+    }
+
+    // ── audit_log ─────────────────────────────────────────────────────
+    // Apenas admin pode ler.
+    // Qualquer utilizador autenticado pode criar (uid deve coincidir).
+    // Imutável: sem update nem delete.
+    match /audit_log/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuth()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasAll(['uid', 'action', 'timestamp']);
+      allow update, delete: if false;
+    }
+
+    // ── config ────────────────────────────────────────────────────────
+    // Todos os autenticados podem ler; só admin pode escrever.
+    match /config/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
     }
   }
 }

@@ -5,12 +5,14 @@
     "ignore": [
       "firebase.json", "firestore.rules", "storage.rules", ".firebaserc",
       "*.py", "*.toml", "*.md", "robots.txt",
-      "data/**", "docs/**", "netlify/**",
+      "data/**", "docs/**", "_netlify/**",
       "node_modules/**", "package.json", "package-lock.json",
-      "*.pdf"
+      "*.pdf", "*.sql", "db/**", "api/**",
+      ".git/**", ".claude/**", ".firebase/**"
     ],
     "rewrites": [
-      { "source": "/", "destination": "/dashboard.html" }
+      { "source": "/admin", "destination": "/admin.html" },
+      { "source": "/",      "destination": "/dashboard.html" }
     ],
     "headers": [
       {

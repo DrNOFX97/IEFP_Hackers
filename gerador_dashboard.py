@@ -2409,6 +2409,9 @@ def main():
                     <span class="nav-item-badge" id="nav-chat-badge"></span>
                 </button>
                 <div class="nav-divider"></div>
+                <a class="nav-item" id="nav-admin-link" href="/admin.html" style="display:none;text-decoration:none;color:inherit;" title="Painel de Administração">
+                    <span class="nav-item-icon">🔐</span><span class="nav-item-label"> Admin</span>
+                </a>
                 <button class="nav-item" data-view="definicoes" onclick="switchView('definicoes')">
                     <span class="nav-item-icon">⚙️</span><span class="nav-item-label"> Definições</span>
                 </button>
@@ -4342,6 +4345,16 @@ async def _pg_exec_async(files, ns, tab_id):
                 }}
                 // Write user presence to Firestore for Turma panel
                 userPresenceWrite(user);
+                // Check role → show admin link if admin
+                db.collection('users').doc(user.uid).get().then(doc => {{
+                    const role = doc.exists ? (doc.data().role || 'aluno') : 'aluno';
+                    const adminLink = document.getElementById('nav-admin-link');
+                    if (adminLink && (role === 'admin' || role === 'formador')) {{
+                        adminLink.style.display = '';
+                    }}
+                }}).catch(() => {{}});
+                // Audit: login
+                auditLogWrite('login', '');
                 // Start background chat subscription (badge on all views)
                 chatStartBackground();
             }}
@@ -4408,11 +4421,27 @@ async def _pg_exec_async(files, ns, tab_id):
             try {{
                 await db.collection('users').doc(user.uid).set({{
                     uid:         user.uid,
+                    email:       user.email || '',
                     displayName: user.displayName || user.email || 'Anónimo',
                     photoURL:    user.photoURL || '',
                     lastSeen:    firebase.firestore.FieldValue.serverTimestamp()
                 }}, {{ merge: true }});
             }} catch(e) {{ console.warn('Presence write failed:', e); }}
+        }}
+
+        async function auditLogWrite(action, details) {{
+            const user = auth.currentUser;
+            if (!user) return;
+            try {{
+                await db.collection('audit_log').add({{
+                    uid:         user.uid,
+                    email:       user.email || '',
+                    displayName: user.displayName || user.email || 'Anónimo',
+                    action:      action,
+                    details:     details || '',
+                    timestamp:   firebase.firestore.FieldValue.serverTimestamp()
+                }});
+            }} catch(e) {{ /* audit errors never break the app */ }}
         }}
 
         async function renderTurma() {{

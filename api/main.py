@@ -2,12 +2,13 @@
 CET Cibersegurança — API Backend
 FastAPI + PostgreSQL (Cloud SQL)
 
-Demonstra boas práticas de segurança:
+Boas práticas de segurança:
   - Autenticação via Firebase JWT em todos os endpoints
   - Queries parametrizadas (nunca f-strings com input do utilizador)
   - RLS no PostgreSQL (SET LOCAL app.current_user_id)
   - Validação de input com Pydantic
   - Rate limiting por IP
+  - Separação de roles: aluno / formador / admin
 """
 
 import os
@@ -64,9 +65,9 @@ async def lifespan(app: FastAPI):
 # ── App ───────────────────────────────────────────────────────────
 app = FastAPI(
     title="CET Cibersegurança API",
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan,
-    # Desativa docs em produção — não expor schema da API publicamente
+    # Desativa docs em produção
     docs_url=None if os.environ.get("ENV") == "production" else "/docs",
     redoc_url=None,
 )
@@ -77,7 +78,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_methods=["GET", "POST", "DELETE"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
@@ -112,6 +113,34 @@ async def get_or_create_user(firebase_uid: str, email: str, display_name: str) -
             firebase_uid, email, display_name or email
         )
         return str(row["id"])
+
+
+async def get_user_role(user_id: str) -> str:
+    """Devolve o role do utilizador ('aluno', 'formador', 'admin')."""
+    async with pool.acquire() as conn:
+        role = await conn.fetchval(
+            "SELECT role FROM cet.users WHERE id = $1", user_id
+        )
+    return role or "aluno"
+
+
+async def require_role(user, min_role: str) -> str:
+    """
+    Verifica se o utilizador tem pelo menos o role indicado.
+    Ordem: aluno < formador < admin
+    Devolve o user_id interno.
+    """
+    ROLE_RANK = {"aluno": 0, "formador": 1, "admin": 2}
+    user_id = await get_or_create_user(
+        user["uid"], user.get("email", ""), user.get("name", "")
+    )
+    role = await get_user_role(user_id)
+    if ROLE_RANK.get(role, 0) < ROLE_RANK.get(min_role, 0):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Acesso restrito a utilizadores com role '{min_role}' ou superior."
+        )
+    return user_id
 
 
 # ── Models ────────────────────────────────────────────────────────
@@ -152,6 +181,17 @@ class MaterialIn(BaseModel):
     def safe_url(cls, v):
         if v and not re.match(r'^https?://', v):
             raise ValueError("URL deve começar com http:// ou https://")
+        return v
+
+
+class RoleIn(BaseModel):
+    role: str
+
+    @field_validator("role")
+    @classmethod
+    def valid_role(cls, v):
+        if v not in {"aluno", "formador", "admin"}:
+            raise ValueError("Role inválido. Use: aluno, formador, admin.")
         return v
 
 
@@ -210,7 +250,6 @@ async def save_note(
                 "SELECT set_config('app.current_user_id', $1, true)", user_id
             )
             if body.content.strip():
-                # UPSERT — INSERT ou UPDATE se já existir
                 await conn.execute(
                     """INSERT INTO cet.notes (user_id, uc_code, content)
                        VALUES ($1, $2, $3)
@@ -219,7 +258,6 @@ async def save_note(
                     user_id, uc_code, body.content
                 )
             else:
-                # Apagar nota vazia
                 await conn.execute(
                     "DELETE FROM cet.notes WHERE user_id=$1 AND uc_code=$2",
                     user_id, uc_code
@@ -294,7 +332,6 @@ async def delete_material(
             await conn.execute(
                 "SELECT set_config('app.current_user_id', $1, true)", user_id
             )
-            # Só o autor ou admin pode apagar
             result = await conn.execute(
                 """DELETE FROM cet.materials
                    WHERE id=$1 AND uc_code=$2
@@ -309,6 +346,61 @@ async def delete_material(
     return {"ok": True}
 
 
+# ── ADMIN — Utilizadores ───────────────────────────────────────────
+
+@app.get("/admin/users")
+@limiter.limit("20/minute")
+async def list_users(
+    request: Request,
+    user=Depends(get_current_user),
+):
+    """Lista todos os utilizadores. Requer role formador ou admin."""
+    admin_id = await require_role(user, "formador")
+
+    rows = await pool.fetch(
+        """SELECT id, firebase_uid, email, display_name, role, created_at, last_login
+           FROM cet.users
+           ORDER BY last_login DESC NULLS LAST"""
+    )
+    return [dict(r) for r in rows]
+
+
+@app.patch("/admin/users/{target_user_id}/role", status_code=200)
+@limiter.limit("10/minute")
+async def change_user_role(
+    request: Request,
+    target_user_id: str,
+    body: RoleIn,
+    user=Depends(get_current_user),
+):
+    """Altera o role de um utilizador. Requer role admin."""
+    admin_id = await require_role(user, "admin")
+
+    # Admin não pode revogar o seu próprio role
+    if target_user_id == admin_id:
+        raise HTTPException(status_code=400, detail="Não podes alterar o teu próprio role.")
+
+    async with pool.acquire() as conn:
+        result = await conn.execute(
+            "UPDATE cet.users SET role = $1 WHERE id = $2",
+            body.role, target_user_id
+        )
+
+    if result == "UPDATE 0":
+        raise HTTPException(status_code=404, detail="Utilizador não encontrado.")
+
+    # Audit log
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """INSERT INTO cet.audit_log (user_id, action, table_name, record_id, new_data)
+               VALUES ($1, 'ROLE_CHANGE', 'users', $2, $3::jsonb)""",
+            admin_id, target_user_id,
+            f'{{"new_role": "{body.role}"}}'
+        )
+
+    return {"ok": True, "role": body.role}
+
+
 # ── ADMIN — Audit log ──────────────────────────────────────────────
 
 @app.get("/admin/audit")
@@ -316,28 +408,98 @@ async def delete_material(
 async def get_audit_log(
     request: Request,
     uc_code: Optional[str] = None,
+    action: Optional[str]  = None,
     limit: int = 100,
+    offset: int = 0,
     user=Depends(get_current_user),
 ):
-    user_id = await get_or_create_user(
-        user["uid"], user.get("email", ""), user.get("name", "")
-    )
+    """Acesso ao log de auditoria. Requer role formador ou admin."""
+    admin_id = await require_role(user, "formador")
 
-    async with pool.acquire() as conn:
-        role = await conn.fetchval(
-            "SELECT role FROM cet.users WHERE id=$1", user_id
-        )
+    params  = [min(limit, 500), offset]
+    filters = []
 
-    if role not in ("formador", "admin"):
-        raise HTTPException(status_code=403, detail="Acesso restrito a formadores e admins.")
+    if uc_code:
+        validate_uc(uc_code)
+        params.append(uc_code)
+        filters.append(f"(a.new_data->>'uc_code' = ${len(params)} OR a.old_data->>'uc_code' = ${len(params)})")
 
-    query = """
+    if action:
+        params.append(action.upper())
+        filters.append(f"a.action = ${len(params)}")
+
+    where = "WHERE " + " AND ".join(filters) if filters else ""
+
+    query = f"""
         SELECT a.id, u.email, u.display_name, a.action,
-               a.table_name, a.record_id, a.old_data, a.new_data, a.created_at
+               a.table_name, a.record_id, a.old_data, a.new_data,
+               a.ip_address, a.created_at
         FROM cet.audit_log a
         LEFT JOIN cet.users u ON u.id = a.user_id
+        {where}
         ORDER BY a.created_at DESC
-        LIMIT $1
+        LIMIT $1 OFFSET $2
     """
-    rows = await pool.fetch(query, min(limit, 500))
+    rows = await pool.fetch(query, *params)
     return [dict(r) for r in rows]
+
+
+# ── ADMIN — Estatísticas ───────────────────────────────────────────
+
+@app.get("/admin/stats")
+@limiter.limit("10/minute")
+async def get_stats(
+    request: Request,
+    user=Depends(get_current_user),
+):
+    """Estatísticas do sistema. Requer role formador ou admin."""
+    await require_role(user, "formador")
+
+    async with pool.acquire() as conn:
+        stats = await conn.fetchrow("""
+            SELECT
+                COUNT(*)                                         AS total_users,
+                COUNT(*) FILTER (WHERE role = 'aluno')          AS alunos,
+                COUNT(*) FILTER (WHERE role = 'formador')       AS formadores,
+                COUNT(*) FILTER (WHERE role = 'admin')          AS admins,
+                COUNT(*) FILTER (WHERE last_login >= NOW() - INTERVAL '24h') AS active_24h
+            FROM cet.users
+        """)
+        note_stats = await conn.fetchrow("""
+            SELECT
+                COUNT(*)                    AS total_notes,
+                COUNT(DISTINCT user_id)     AS users_with_notes,
+                COUNT(DISTINCT uc_code)     AS ucs_with_notes
+            FROM cet.notes
+        """)
+        audit_today = await conn.fetchval("""
+            SELECT COUNT(*) FROM cet.audit_log
+            WHERE created_at >= CURRENT_DATE
+        """)
+
+    return {
+        "users":    dict(stats),
+        "notes":    dict(note_stats),
+        "audit_today": audit_today,
+    }
+
+
+# ── ADMIN — Vista de atividade ─────────────────────────────────────
+
+@app.get("/admin/activity")
+@limiter.limit("10/minute")
+async def get_activity(
+    request: Request,
+    user=Depends(get_current_user),
+):
+    """Atividade por UC e por utilizador. Requer role formador ou admin."""
+    await require_role(user, "formador")
+
+    async with pool.acquire() as conn:
+        uc_rows   = await conn.fetch("SELECT * FROM cet.uc_activity ORDER BY ultima_nota DESC NULLS LAST")
+        user_rows = await conn.fetch("SELECT * FROM cet.user_activity ORDER BY last_login DESC NULLS LAST")
+
+    return {
+        "uc_activity":   [dict(r) for r in uc_rows],
+        "user_activity": [dict(r) for r in user_rows],
+    }
