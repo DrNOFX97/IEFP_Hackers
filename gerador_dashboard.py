@@ -4525,7 +4525,12 @@ async def _pg_exec_async(files, ns, tab_id):
                     return;
                 }}
                 const uid = auth.currentUser?.uid;
-                grid.innerHTML = snap.docs.map(doc => {{
+                const activeDocs = snap.docs.filter(doc => (doc.data().role || 'aluno') !== 'blocked');
+                if (!activeDocs.length) {{
+                    grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Nenhum colega ainda.</span>';
+                    return;
+                }}
+                grid.innerHTML = activeDocs.map(doc => {{
                     const m = doc.data();
                     const initials = (m.displayName || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
                     const isMe = m.uid === uid;
@@ -4554,7 +4559,12 @@ async def _pg_exec_async(files, ns, tab_id):
                     return;
                 }}
                 const myUid = auth.currentUser?.uid;
-                list.innerHTML = snap.docs.map(doc => {{
+                const activeDocs = snap.docs.filter(doc => (doc.data().role || 'aluno') !== 'blocked');
+                if (!activeDocs.length) {{
+                    list.innerHTML = '<p style="color:var(--text-secondary);">Nenhum participante registado ainda.</p>';
+                    return;
+                }}
+                list.innerHTML = activeDocs.map(doc => {{
                     const m   = doc.data();
                     const ini = (m.displayName || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
                     const isMe = m.uid === myUid;
