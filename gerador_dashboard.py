@@ -1536,11 +1536,29 @@ def main():
         .user-chip:hover {{ border-color: var(--accent-color); color: var(--text-primary); }}
         .user-chip-avatar {{ width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--accent-color); color: #000; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }}
         /* ── PLAYGROUND ── */
-        #view-playground {{ display: none; height: 100%; }}
+        #view-playground {{ display: none; height: 100%; flex-direction: column; }}
+        .pg-ascii-title {{
+            flex-shrink: 0;
+            text-align: center;
+            padding: 1.1rem 0.5rem 0.6rem;
+            overflow-x: auto;
+        }}
+        .pg-ascii-title pre {{
+            display: inline-block;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: clamp(0.28rem, 0.9vw, 0.62rem);
+            line-height: 1.15;
+            color: #39d353;
+            text-shadow: 0 0 12px rgba(57,211,83,0.45);
+            margin: 0;
+            white-space: pre;
+            letter-spacing: 0;
+        }}
         .pg-wrap {{
             display: flex;
             flex-direction: column;
-            height: 100%;
+            flex: 1;
+            min-height: 0;
             background: #0d1117;
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -2483,6 +2501,15 @@ def main():
 
             <!-- VIEW: PLAYGROUND -->
             <div id="view-playground">
+                <div class="pg-ascii-title">
+<pre>
+██████╗ ██╗      █████╗ ██╗   ██╗ ██████╗ ██████╗  ██████╗ ██╗   ██╗███╗   ██╗██████╗
+██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝ ██╔══██╗██╔═══██╗██║   ██║████╗  ██║██╔══██╗
+██████╔╝██║     ███████║ ╚████╔╝ ██║  ███╗██████╔╝██║   ██║██║   ██║██╔██╗ ██║██║  ██║
+██╔═══╝ ██║     ██╔══██║  ╚██╔╝  ██║   ██║██╔══██╗██║   ██║██║   ██║██║╚██╗██║██║  ██║
+██║     ███████╗██║  ██║   ██║   ╚██████╔╝██║  ██║╚██████╔╝╚██████╔╝██║ ╚████║██████╔╝
+╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═════╝</pre>
+                </div>
                 <div class="pg-wrap">
                     <div class="pg-tabbar-outer">
                         <div class="pg-add-wrap">
@@ -2717,7 +2744,7 @@ def main():
                 document.getElementById('view-uc-detail').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
             }} else if (view === 'playground') {{
-                document.getElementById('view-playground').style.display = 'block';
+                document.getElementById('view-playground').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
                 const active = document.querySelector('.pg-repl-input');
                 if (active) setTimeout(() => active.focus(), 50);
