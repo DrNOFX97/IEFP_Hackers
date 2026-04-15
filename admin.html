@@ -860,11 +860,27 @@ function renderUsers(users) {
                  onclick="toggleBlock('${u.id}','${escHtml(name)}','${role}')">
                  ${isBlocked ? '✓ Desbloquear' : '🚫 Bloquear'}
                </button>
+               ${isBlocked ? `<button class="btn" style="padding:0.2rem 0.6rem;font-size:0.78rem;border-color:#8b0000;color:#c0392b;background:rgba(139,0,0,0.12);"
+                 onclick="deleteUser('${u.id}','${escHtml(name)}')">🗑️ Eliminar</button>` : ''}
              </div>`
         }
       </td>
     </tr>`;
   }).join('');
+}
+
+async function deleteUser(uid, name) {
+  if (!confirm(`Eliminar permanentemente "${name}" da base de dados?\n\nEsta ação não pode ser desfeita.`)) return;
+  try {
+    await db.collection('users').doc(uid).delete();
+    allUsers = allUsers.filter(u => u.id !== uid);
+    await auditWrite('user_delete', `Utilizador eliminado: ${name} (${uid})`);
+    toast(`"${name}" eliminado da base de dados`);
+    renderUsers(allUsers);
+    loadStats();
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+  }
 }
 
 async function toggleBlock(uid, name, currentRole) {
