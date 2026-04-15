@@ -2461,6 +2461,8 @@ def main():
                 </div>
                 <div class="dash-section-label">Hoje</div>
                 <div id="hoje-content"><p class="hoje-empty">A carregar...</p></div>
+                <div class="dash-section-label" style="margin-top:2rem;" id="amanha-label">Amanhã</div>
+                <div id="amanha-content"><p class="hoje-empty">A carregar...</p></div>
                 <div class="dash-section-label" style="margin-top:2rem;">Turma</div>
                 <div class="turma-grid" id="turma-grid">
                     <span style="color:var(--text-secondary);font-size:0.82rem;">A carregar…</span>
@@ -5057,44 +5059,75 @@ async def _pg_exec_async(files, ns, tab_id):
             renderHorario(currentMonthIndex);
         }}
 
-        // ── HOJE ────────────────────────────────────────────────────────
-        function buildTodayPanel() {{
-            const hoje = document.getElementById('hoje-content');
-            if (!hoje) return;
+        // ── HOJE / AMANHÃ ────────────────────────────────────────────────
+        function buildDayPanel(dateStr, containerId) {{
+            const el = document.getElementById(containerId);
+            if (!el) return;
 
-            const now = new Date();
-            const pad = n => String(n).padStart(2, '0');
-            const todayStr = `${{now.getFullYear()}}-${{pad(now.getMonth()+1)}}-${{pad(now.getDate())}}`;
-
-            let aulas = [];
+            let found = null;
             HORARIOS.forEach(horario => {{
                 horario.dias.forEach(dia => {{
-                    if (dia.data === todayStr) {{
-                        const merged = mergeTimeSlots(dia.aulas);
-                        if (merged.length > 0) {{
-                            merged.forEach(a => aulas.push({{ ...a, nota: false }}));
-                        }} else if (dia.nota) {{
-                            aulas.push({{ hora: null, descricao: dia.nota, uc: null, nota: true }});
-                        }}
-                    }}
+                    if (dia.data === dateStr) found = dia;
                 }});
             }});
 
-            if (aulas.length === 0) {{
-                hoje.innerHTML = '<p class="hoje-empty">Sem aulas hoje.</p>';
+            if (!found) {{
+                el.innerHTML = '<p class="hoje-empty">Sem aulas programadas.</p>';
                 return;
             }}
 
-            hoje.innerHTML = '<ul class="hoje-list">' + aulas.map(a => {{
-                const state = a.nota ? 'holiday' : getAulaState(todayStr, a.hora);
-                return `<li class="hoje-item ${{state}}">
-                    ${{a.hora ? `<span class="hoje-time">${{a.hora}}</span>` : ''}}
-                    <div class="hoje-info">
-                        <span class="hoje-desc">${{a.descricao}}</span>
-                        ${{a.uc ? `<span class="hoje-uc">${{a.uc}}</span>` : ''}}
+            const merged = mergeTimeSlots(found.aulas);
+
+            if (merged.length === 0 && !found.nota) {{
+                el.innerHTML = '<p class="hoje-empty">Sem aulas programadas.</p>';
+                return;
+            }}
+
+            if (merged.length === 0 && found.nota) {{
+                el.innerHTML = `<div class="aula-card empty-card holiday"><div class="aula-info"><div class="aula-desc">${{found.nota}}</div></div></div>`;
+                return;
+            }}
+
+            el.innerHTML = merged.map(aula => {{
+                const state       = getAulaState(dateStr, aula.hora);
+                const isClickable = UC_MAP[aula.uc] ? 'clickable' : '';
+                const isRemote    = (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
+                const remoteClass  = isRemote ? 'remote' : '';
+                const remoteBadge  = isRemote
+                    ? `<div class="aula-uc badge remote" style="margin-top:0;">🌐 Remoto</div>` : '';
+                const formadorBadge = aula.formador
+                    ? `<div class="aula-uc badge" style="margin-top:0;background:rgba(255,255,255,0.1);color:#fff;">👤 ${{shortName(aula.formador)}}</div>` : '';
+                const clickAttr = UC_MAP[aula.uc]
+                    ? `onclick="openUCFromSchedule('${{aula.uc}}')"` : '';
+                return `
+                <div class="aula-card ${{state}} ${{isClickable}} ${{remoteClass}}" ${{clickAttr}}>
+                    <div class="aula-time">${{aula.hora}}</div>
+                    <div class="aula-info">
+                        <div class="aula-desc">${{aula.descricao}}</div>
+                        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:5px;align-items:center;">
+                            <div class="aula-uc badge" style="margin-top:0;">${{aula.uc}}</div>
+                            ${{remoteBadge}}${{formadorBadge}}
+                        </div>
                     </div>
-                </li>`;
-            }}).join('') + '</ul>';
+                    ${{UC_MAP[aula.uc] ? `<button class="open-uc-btn" title="Abrir disciplina">↗</button>` : ''}}
+                </div>`;
+            }}).join('');
+        }}
+
+        function buildTodayPanel() {{
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const todayStr     = `${{now.getFullYear()}}-${{pad(now.getMonth()+1)}}-${{pad(now.getDate())}}`;
+            const tomorrowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            const tomorrowStr  = `${{tomorrowDate.getFullYear()}}-${{pad(tomorrowDate.getMonth()+1)}}-${{pad(tomorrowDate.getDate())}}`;
+
+            buildDayPanel(todayStr,    'hoje-content');
+            buildDayPanel(tomorrowStr, 'amanha-content');
+
+            // Update "Amanhã" label with day-of-week
+            const diasSemana = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+            const label = document.getElementById('amanha-label');
+            if (label) label.textContent = `Amanhã — ${{diasSemana[tomorrowDate.getDay()]}}`;
         }}
 
         // ── GLOBAL PROGRESS & UC HOURS ──────────────────────────────────
