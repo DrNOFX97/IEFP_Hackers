@@ -7,32 +7,34 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Lê o role do user do seu próprio documento.
-    // Se o doc não existir ainda (primeiro login), devolve 'aluno' (mínimo privilégio).
+    // Default: 'blocked' — utilizador sem doc ou sem role não tem acesso.
+    // O role só é atribuído pelo servidor (Cloud Function redeemInvite) ou por admin.
     function getRole() {
       let uid = request.auth.uid;
       return isAuth() && exists(/databases/$(database)/documents/users/$(uid))
-        ? get(/databases/$(database)/documents/users/$(uid)).data.get('role', 'aluno')
-        : 'aluno';
+        ? get(/databases/$(database)/documents/users/$(uid)).data.get('role', 'blocked')
+        : 'blocked';
     }
 
-    function isBlocked()  { return isAuth() && getRole() == 'blocked'; }
-    function isAdmin()    { return isAuth() && !isBlocked() && getRole() == 'admin'; }
-    function isModerador() { return isAuth() && !isBlocked() && getRole() in ['moderador', 'admin']; }
-    function isAluno()    { return isAuth() && !isBlocked() && getRole() in ['aluno', 'moderador', 'admin']; }
+    function isBlocked()    { return !isAuth() || getRole() == 'blocked'; }
+    function isAdmin()      { return isAuth() && getRole() == 'admin'; }
+    function isModerador()  { return isAuth() && getRole() in ['moderador', 'admin']; }
+    function isAluno()      { return isAuth() && getRole() in ['aluno', 'moderador', 'admin']; }
 
     // ── users ─────────────────────────────────────────────────────────
-    // Qualquer utilizador autenticado pode ler (colega de turma).
-    // O dono pode escrever o seu próprio doc MAS NÃO pode alterar o campo 'role'.
-    // Admin tem controlo total — incluindo alterar roles.
     match /users/{uid} {
       allow read: if isAuth();
 
-      // Criação: dono só pode criar sem campo 'role'; utilizadores bloqueados não podem criar
-      allow create: if isAuth() && !isBlocked() && request.auth.uid == uid
-                    && !('role' in request.resource.data);
+      // Criação: qualquer autenticado pode criar o seu doc,
+      // mas NÃO pode definir role (o role é always 'blocked' por omissão;
+      // só a Cloud Function Admin SDK pode definir role: 'aluno').
+      allow create: if isAuth()
+                    && request.auth.uid == uid
+                    && (!('role' in request.resource.data)
+                        || request.resource.data.role == 'blocked');
 
-      // Atualização: dono pode atualizar tudo exceto 'role'; utilizadores bloqueados não podem; admin pode tudo
+      // Atualização: dono pode atualizar campos de perfil mas NÃO pode alterar role.
+      // Admin pode alterar tudo.
       allow update: if (isAuth() && !isBlocked() && request.auth.uid == uid
                        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
                     || isAdmin();
@@ -40,21 +42,36 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ── invites ───────────────────────────────────────────────────────
+    // Leitura: qualquer autenticado (para validar token após login).
+    // Escrita: só admin/mod pode criar/gerir convites.
+    // O Cloud Function (Admin SDK) faz updates atómicos sem passar pelas rules.
+    match /invites/{token} {
+      allow read:   if isAuth();
+      allow create: if isModerador()
+                    && request.resource.data.createdBy == request.auth.uid
+                    && request.resource.data.active    == true
+                    && request.resource.data.uses      == 0
+                    && request.resource.data.keys().hasAll(['createdBy','active','uses','maxUses','createdAt']);
+      // Só permite revogar (alterar apenas campo 'active')
+      allow update: if isModerador()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active']);
+      allow delete: if isAdmin();
+    }
+
     // ── notes ─────────────────────────────────────────────────────────
-    // Formato doc ID: {uid}_{ucCode}
-    // Aluno vê e edita as suas; formador/admin vê todas.
     match /notes/{docId} {
       allow read: if isAuth() && (
         docId.matches(request.auth.uid + '_.*') || isModerador()
       );
-      allow write: if isAuth() && docId.matches(request.auth.uid + '_.*');
+      allow write: if isAuth() && !isBlocked() && docId.matches(request.auth.uid + '_.*');
       allow delete: if isAdmin();
     }
 
     // ── materials ─────────────────────────────────────────────────────
     match /materials/{ucCode} {
-      allow read:   if isAluno();
-      allow write:  if isAluno();    // partilhado por toda a turma
+      allow read:  if isAluno();
+      allow write: if isAluno();
     }
 
     // ── chat global ───────────────────────────────────────────────────
@@ -86,9 +103,6 @@ service cloud.firestore {
     }
 
     // ── audit_log ─────────────────────────────────────────────────────
-    // Apenas admin pode ler.
-    // Qualquer utilizador autenticado pode criar (uid deve coincidir).
-    // Imutável: sem update nem delete.
     match /audit_log/{logId} {
       allow read: if isAdmin();
       allow create: if isAuth()
@@ -98,9 +112,8 @@ service cloud.firestore {
     }
 
     // ── config ────────────────────────────────────────────────────────
-    // Todos os autenticados podem ler; só admin pode escrever.
     match /config/{docId} {
-      allow read: if isAuth();
+      allow read:  if isAuth();
       allow write: if isAdmin();
     }
   }

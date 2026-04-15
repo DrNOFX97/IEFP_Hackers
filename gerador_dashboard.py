@@ -252,6 +252,8 @@ def main():
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {{
             --bg-color: #050505;
@@ -2131,6 +2133,49 @@ def main():
         .settings-row-label {{ font-size: 0.85rem; color: var(--text-primary); }}
         .settings-row-sub {{ font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.1rem; }}
 
+        /* ── Convites ── */
+        #invite-section {{ display: none; }}
+        .invite-btn-row {{ display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }}
+        .invite-btn {{
+            padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; border: 1px solid var(--accent-color); color: var(--accent-color);
+            background: rgba(0,255,65,0.07); transition: background 0.15s;
+        }}
+        .invite-btn:hover {{ background: rgba(0,255,65,0.15); }}
+        .invite-card {{
+            background: var(--bg-color); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 0.9rem 1rem; margin-bottom: 0.7rem;
+        }}
+        .invite-card.revoked {{ opacity: 0.45; }}
+        .invite-card-header {{ display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }}
+        .invite-type-badge {{
+            font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.55rem;
+            border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em;
+        }}
+        .invite-type-badge.individual {{ background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid rgba(52,152,219,0.3); }}
+        .invite-type-badge.turma     {{ background: rgba(0,255,65,0.1);    color: var(--accent-color); border: 1px solid rgba(0,255,65,0.25); }}
+        .invite-status-badge {{
+            font-size: 0.68rem; padding: 0.2rem 0.55rem; border-radius: 20px;
+        }}
+        .invite-status-badge.active  {{ background: rgba(0,255,65,0.1); color: var(--accent-color); }}
+        .invite-status-badge.revoked {{ background: rgba(100,100,100,0.2); color: #666; }}
+        .invite-status-badge.used    {{ background: rgba(240,192,64,0.12); color: #f0c040; }}
+        .invite-meta {{ font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.7rem; }}
+        .invite-actions {{ display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }}
+        .invite-action-btn {{
+            padding: 0.25rem 0.65rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600;
+            cursor: pointer; border: 1px solid var(--border-color); color: var(--text-secondary);
+            background: transparent; transition: all 0.15s;
+        }}
+        .invite-action-btn:hover {{ border-color: var(--accent-color); color: var(--accent-color); }}
+        .invite-action-btn.danger {{ border-color: var(--red); color: var(--red); }}
+        .invite-action-btn.danger:hover {{ background: rgba(248,81,73,0.1); }}
+        .invite-qr-wrap {{
+            margin-top: 0.7rem; display: none;
+            background: #fff; padding: 8px; border-radius: 8px;
+            display: inline-block;
+        }}
+
         /* Month selector in toolbar */
         .month-selector {{
             display: flex; align-items: center; gap: 0.5rem;
@@ -2381,7 +2426,10 @@ def main():
         <div class="auth-card">
             <div class="auth-logo">🛡️</div>
             <div class="auth-title">CET Cibersegurança — IEFP Faro</div>
-            <div class="auth-sub">Acesso reservado a participantes do curso.<br>Inicia sessão com a tua conta.</div>
+            <div class="auth-sub" id="auth-sub-text">Acesso reservado a participantes do curso.<br>Inicia sessão com a tua conta.</div>
+            <div id="auth-invite-badge" style="display:none;margin:0.75rem 0 0.25rem;padding:0.45rem 0.85rem;background:rgba(0,255,65,0.1);border:1px solid rgba(0,255,65,0.3);border-radius:8px;font-size:0.78rem;color:#00ff41;text-align:center;">
+                ✅ Convite válido detectado — inicia sessão para entrar
+            </div>
             <button class="auth-btn" onclick="signInWithGoogle()">
                 <svg width="18" height="18" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:8px"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
                 Entrar com Google
@@ -2672,6 +2720,14 @@ def main():
                         <button class="nav-item signout" style="width:auto;padding:0.4rem 0.8rem;" onclick="auth.signOut()">Sair</button>
                     </div>
                 </div>
+                <div class="settings-section" id="invite-section">
+                    <div class="settings-section-title">Convites de Acesso</div>
+                    <div class="invite-btn-row">
+                        <button class="invite-btn" onclick="createInvite('individual')">＋ Convite individual</button>
+                        <button class="invite-btn" onclick="createInvite('turma')">＋ Link de turma</button>
+                    </div>
+                    <div id="invite-list"><span style="color:var(--text-secondary);font-size:0.8rem;">A carregar…</span></div>
+                </div>
             </div>
 
         </main>
@@ -2683,6 +2739,22 @@ def main():
         const UC_LIST    = {js_uc_list};
         const HORARIOS   = {js_horarios};
         const CRONOGRAMA = {js_cronograma};
+
+        // ── CAPTURAR TOKEN DE CONVITE NO URL ────────────────────────────
+        (function captureInviteToken() {{
+            try {{
+                const params = new URLSearchParams(window.location.search);
+                const token  = params.get('invite');
+                if (token && /^[a-f0-9]{{32,64}}$/.test(token)) {{
+                    sessionStorage.setItem('pending_invite', token);
+                    // Limpar URL sem recarregar
+                    history.replaceState({{}}, '', window.location.pathname);
+                    // Mostrar badge no auth gate
+                    const badge = document.getElementById('auth-invite-badge');
+                    if (badge) badge.style.display = 'block';
+                }}
+            }} catch(e) {{ /* silencioso */ }}
+        }})();
 
         // ── FIREBASE ────────────────────────────────────────────────────
         firebase.initializeApp({{
@@ -2763,6 +2835,10 @@ def main():
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
                 settingsUpdateUser();
+                if (window._isModerador) {{
+                    document.getElementById('invite-section').style.display = 'block';
+                    loadInvites();
+                }}
             }}
 
             currentView = view;
@@ -4436,26 +4512,40 @@ async def _pg_exec_async(files, ns, tab_id):
             }});
             auth.onAuthStateChanged(async user => {{
                 if (user) {{
-                    // Verificar role ANTES de mostrar o dashboard
+                    // 1. Verificar se há convite pendente e resgatar via Cloud Function
+                    const pendingInvite = sessionStorage.getItem('pending_invite');
+                    if (pendingInvite) {{
+                        sessionStorage.removeItem('pending_invite');
+                        try {{
+                            const redeemInvite = firebase.functions().httpsCallable('redeemInvite');
+                            await redeemInvite({{ token: pendingInvite }});
+                        }} catch(e) {{
+                            console.warn('Invite redeem failed:', e.message);
+                            // Continua — se falhou, o role fica blocked e é barrado abaixo
+                        }}
+                    }}
+
+                    // 2. Verificar role APÓS possível resgate de convite
                     try {{
                         const doc = await db.collection('users').doc(user.uid).get();
-                        const role = doc.exists ? (doc.data().role || 'aluno') : 'aluno';
+                        const role = doc.exists ? (doc.data().role || 'blocked') : 'blocked';
                         if (role === 'blocked') {{
-                            await auth.signOut(); // termina sessão Firebase Auth
+                            await auth.signOut();
                             showAuthGate();
                             const msg = document.getElementById('auth-err');
                             if (msg) {{
-                                msg.textContent = '🚫 A tua conta foi desativada. Contacta o administrador.';
+                                msg.textContent = '🚫 Acesso não autorizado. Necessitas de um convite válido para entrar.';
                                 msg.style.display = 'block';
                             }}
                             return;
                         }}
-                        // Guardar role para uso no init()
                         window._userRole = role;
                         window._isModerador = (role === 'moderador' || role === 'admin');
                     }} catch(e) {{
-                        // Se Firestore falha, continua com role padrão
-                        window._userRole = 'aluno';
+                        window._userRole = 'blocked';
+                        window._isModerador = false;
+                        showAuthGate();
+                        return;
                     }}
                     hideAuthGate();
                     if (!window._dashboardInited) {{
@@ -4598,6 +4688,122 @@ async def _pg_exec_async(files, ns, tab_id):
             const emailEl = document.getElementById('settings-user-email');
             if (nameEl)  nameEl.textContent  = user.displayName || '–';
             if (emailEl) emailEl.textContent = user.email || '–';
+        }}
+
+        // ── CONVITES ─────────────────────────────────────────────────────
+        function genToken() {{
+            const arr = new Uint8Array(32);
+            crypto.getRandomValues(arr);
+            return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+        }}
+
+        async function createInvite(type) {{
+            const token = genToken();
+            const isIndividual = type === 'individual';
+            const uid  = auth.currentUser?.uid;
+            const name = auth.currentUser?.displayName || auth.currentUser?.email || '–';
+            try {{
+                await db.collection('invites').doc(token).set({{
+                    token,
+                    type,
+                    createdBy:      uid,
+                    createdByName:  name,
+                    createdAt:      firebase.firestore.FieldValue.serverTimestamp(),
+                    expiresAt:      isIndividual
+                        ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)  // 7 dias
+                        : null,
+                    maxUses:        isIndividual ? 1 : null,
+                    uses:           0,
+                    usedBy:         [],
+                    active:         true,
+                }});
+                toast(isIndividual ? 'Convite individual criado (7 dias)' : 'Link de turma criado');
+                loadInvites();
+            }} catch(e) {{
+                toast('Erro ao criar convite: ' + e.message, 'error');
+            }}
+        }}
+
+        async function revokeInvite(token) {{
+            if (!confirm('Revogar este convite? Links existentes deixarão de funcionar.')) return;
+            try {{
+                await db.collection('invites').doc(token).update({{ active: false }});
+                toast('Convite revogado');
+                loadInvites();
+            }} catch(e) {{
+                toast('Erro: ' + e.message, 'error');
+            }}
+        }}
+
+        async function loadInvites() {{
+            const list = document.getElementById('invite-list');
+            if (!list) return;
+            list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">A carregar…</span>';
+            try {{
+                const uid  = auth.currentUser?.uid;
+                const snap = await db.collection('invites')
+                    .where('createdBy', '==', uid)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                if (snap.empty) {{
+                    list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Nenhum convite criado ainda.</span>';
+                    return;
+                }}
+                list.innerHTML = '';
+                snap.forEach(doc => {{
+                    const inv  = doc.data();
+                    const card = renderInviteCard(doc.id, inv);
+                    list.appendChild(card);
+                }});
+            }} catch(e) {{
+                list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Erro ao carregar convites.</span>';
+            }}
+        }}
+
+        function renderInviteCard(token, inv) {{
+            const link    = `${{window.location.origin}}${{window.location.pathname}}?invite=${{token}}`;
+            const isUsed  = inv.maxUses !== null && inv.uses >= inv.maxUses;
+            const status  = !inv.active ? 'revoked' : isUsed ? 'used' : 'active';
+            const statusLabel = {{ active: '● ativo', revoked: '● revogado', used: '✓ usado' }}[status];
+            const expiry  = inv.expiresAt
+                ? inv.expiresAt.toDate?.().toLocaleDateString('pt-PT', {{day:'2-digit',month:'short',year:'numeric'}}) || '–'
+                : 'sem expiração';
+
+            const div = document.createElement('div');
+            div.className = `invite-card${{status === 'revoked' ? ' revoked' : ''}}`;
+            div.innerHTML = `
+                <div class="invite-card-header">
+                    <div style="display:flex;gap:0.4rem;align-items:center;">
+                        <span class="invite-type-badge ${{inv.type}}">${{inv.type === 'individual' ? '👤 Individual' : '👥 Turma'}}</span>
+                        <span class="invite-status-badge ${{status}}">${{statusLabel}}</span>
+                    </div>
+                    <span style="font-size:0.68rem;color:var(--text-secondary);">${{inv.uses || 0}} uso${{inv.uses !== 1 ? 's' : ''}}</span>
+                </div>
+                <div class="invite-meta">
+                    Expira: ${{expiry}}
+                    ${{inv.createdAt?.toDate ? ' · criado ' + inv.createdAt.toDate().toLocaleDateString('pt-PT') : ''}}
+                </div>
+                <div class="invite-actions">
+                    <button class="invite-action-btn" onclick="navigator.clipboard.writeText('${{link}}').then(()=>toast('Link copiado!'))">📋 Copiar link</button>
+                    <button class="invite-action-btn" onclick="toggleQR(this,'${{token}}','${{link}}')">📷 QR Code</button>
+                    ${{inv.active ? `<button class="invite-action-btn danger" onclick="revokeInvite('${{token}}')">🚫 Revogar</button>` : ''}}
+                </div>
+                <div class="invite-qr-wrap" id="qr-${{token}}" style="display:none;margin-top:0.8rem;"></div>`;
+            return div;
+        }}
+
+        function toggleQR(btn, token, link) {{
+            const wrap = document.getElementById('qr-' + token);
+            if (!wrap) return;
+            if (wrap.style.display !== 'none') {{
+                wrap.style.display = 'none';
+                return;
+            }}
+            wrap.style.display = 'inline-block';
+            if (!wrap.dataset.rendered) {{
+                wrap.dataset.rendered = '1';
+                new QRCode(wrap, {{ text: link, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.H }});
+            }}
         }}
 
         // ── CHAT (full-page view) ────────────────────────────────────────
