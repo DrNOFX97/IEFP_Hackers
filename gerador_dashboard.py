@@ -2092,7 +2092,7 @@ def main():
         /* Chat full-page view */
         #view-chat {{
             display: none; flex-direction: column;
-            height: 100%; max-width: 720px;
+            height: 100%; width: 100%; max-width: 100%;
         }}
         #view-chat h2 {{ margin-bottom: 1.25rem; }}
         .chat-view-body {{
