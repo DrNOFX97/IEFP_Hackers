@@ -130,11 +130,13 @@ async def require_role(user, min_role: str) -> str:
     Ordem: aluno < formador < admin
     Devolve o user_id interno.
     """
-    ROLE_RANK = {"aluno": 0, "formador": 1, "admin": 2}
+    ROLE_RANK = {"blocked": -1, "aluno": 0, "formador": 1, "admin": 2}
     user_id = await get_or_create_user(
         user["uid"], user.get("email", ""), user.get("name", "")
     )
     role = await get_user_role(user_id)
+    if role == "blocked":
+        raise HTTPException(status_code=403, detail="Conta desativada. Contacta o administrador.")
     if ROLE_RANK.get(role, 0) < ROLE_RANK.get(min_role, 0):
         raise HTTPException(
             status_code=403,
@@ -190,8 +192,8 @@ class RoleIn(BaseModel):
     @field_validator("role")
     @classmethod
     def valid_role(cls, v):
-        if v not in {"aluno", "formador", "admin"}:
-            raise ValueError("Role inválido. Use: aluno, formador, admin.")
+        if v not in {"aluno", "formador", "admin", "blocked"}:
+            raise ValueError("Role inválido. Use: aluno, formador, admin, blocked.")
         return v
 
 

@@ -26,7 +26,7 @@ except ImportError:
 PROJECT_ID     = "ligafaro-8000"
 DEFAULT_EMAIL  = "f.nuno.ss@gmail.com"
 DEFAULT_ROLE   = "admin"
-VALID_ROLES    = ("aluno", "formador", "admin")
+VALID_ROLES    = ("aluno", "formador", "admin", "blocked")
 
 
 def init_firebase():

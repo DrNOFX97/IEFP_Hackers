@@ -215,12 +215,16 @@
     .role-admin    { background: var(--red-dim);    color: var(--red); }
     .role-formador { background: var(--yellow-dim); color: var(--yellow); }
     .role-aluno    { background: var(--accent-dim); color: var(--accent); }
+    .role-blocked  { background: rgba(100,100,100,.2); color: #666; text-decoration: line-through; }
 
     .role-select {
       padding: 0.25rem 0.5rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer;
       border: 1px solid var(--border); background: var(--surface2); color: var(--text);
     }
     .role-select:focus { outline: none; border-color: var(--accent); }
+
+    tr.row-blocked td { opacity: 0.5; }
+    tr.row-blocked .td-name::after { content: " 🚫"; font-size: 0.75rem; }
 
     /* ── LOG TABLE ──────────────────────────────────────────────── */
     .log-action {
@@ -576,7 +580,7 @@
 <script>
 // ── Firebase config ────────────────────────────────────────────────
 firebase.initializeApp({
-  apiKey:            "AIzaSyC0NmYzEd-E87t0IHXzIJk5xkmEMCO8YJY",
+  apiKey:            "AIzaSyCa5bu1aM6N1kiV6m1gLo8zf2sKcvcr4o0",
   authDomain:        "ligafaro-8000.firebaseapp.com",
   projectId:         "ligafaro-8000",
   storageBucket:     "ligafaro-8000.firebasestorage.app",
@@ -819,11 +823,12 @@ function renderUsers(users) {
     const role    = u.role || 'aluno';
     const photo   = u.photoURL ? `<img src="${escHtml(u.photoURL)}" alt="">` : initials(u.displayName || u.email);
     const isSelf  = u.id === currentAdminUid;
-    const roleOpts = ['aluno', 'formador', 'admin'].map(r =>
+    const roleOpts = ['aluno', 'formador', 'admin', 'blocked'].map(r =>
       `<option value="${r}" ${r === role ? 'selected' : ''}>${r}</option>`
     ).join('');
 
-    return `<tr>
+    const isBlocked = role === 'blocked';
+    return `<tr class="${isBlocked ? 'row-blocked' : ''}">
       <td>
         <div class="td-user">
           <div class="td-avatar">${photo}</div>
@@ -838,11 +843,34 @@ function renderUsers(users) {
       <td>
         ${isSelf
           ? `<span style="color:var(--text3);font-size:0.8rem;">–</span>`
-          : `<select class="role-select" onchange="changeRole('${u.id}','${escHtml(name)}',this.value,this)">${roleOpts}</select>`
+          : `<div style="display:flex;gap:6px;align-items:center;">
+               <select class="role-select" onchange="changeRole('${u.id}','${escHtml(name)}',this.value,this)">${roleOpts}</select>
+               <button class="btn" style="padding:0.2rem 0.6rem;font-size:0.78rem;${isBlocked ? 'border-color:var(--accent);color:var(--accent)' : 'border-color:var(--red);color:var(--red)'}"
+                 onclick="toggleBlock('${u.id}','${escHtml(name)}','${role}')">
+                 ${isBlocked ? '✓ Desbloquear' : '🚫 Bloquear'}
+               </button>
+             </div>`
         }
       </td>
     </tr>`;
   }).join('');
+}
+
+async function toggleBlock(uid, name, currentRole) {
+  const isBlocked = currentRole === 'blocked';
+  const action    = isBlocked ? 'desbloquear' : 'bloquear';
+  const newRole   = isBlocked ? 'aluno' : 'blocked';
+  if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} "${name}"?`)) return;
+  try {
+    await db.collection('users').doc(uid).update({ role: newRole });
+    const u = allUsers.find(u => u.id === uid);
+    if (u) u.role = newRole;
+    await auditWrite('role_change', `${name}: ${currentRole} → ${newRole}`);
+    toast(`"${name}" ${isBlocked ? 'desbloqueado' : 'bloqueado'}`);
+    renderUsers(allUsers);
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+  }
 }
 
 function filterUsers() {

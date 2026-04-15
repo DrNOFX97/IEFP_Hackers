@@ -16,9 +16,10 @@ service cloud.firestore {
         : 'aluno';
     }
 
-    function isAdmin()    { return isAuth() && getRole() == 'admin'; }
-    function isFormador() { return isAuth() && getRole() in ['formador', 'admin']; }
-    function isAluno()    { return isAuth() && getRole() in ['aluno', 'formador', 'admin']; }
+    function isBlocked()  { return isAuth() && getRole() == 'blocked'; }
+    function isAdmin()    { return isAuth() && !isBlocked() && getRole() == 'admin'; }
+    function isFormador() { return isAuth() && !isBlocked() && getRole() in ['formador', 'admin']; }
+    function isAluno()    { return isAuth() && !isBlocked() && getRole() in ['aluno', 'formador', 'admin']; }
 
     // ── users ─────────────────────────────────────────────────────────
     // Qualquer utilizador autenticado pode ler (colega de turma).
@@ -27,12 +28,12 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if isAuth();
 
-      // Criação: dono só pode criar sem campo 'role'
-      allow create: if isAuth() && request.auth.uid == uid
+      // Criação: dono só pode criar sem campo 'role'; utilizadores bloqueados não podem criar
+      allow create: if isAuth() && !isBlocked() && request.auth.uid == uid
                     && !('role' in request.resource.data);
 
-      // Atualização: dono pode atualizar tudo exceto 'role'; admin pode tudo
-      allow update: if (isAuth() && request.auth.uid == uid
+      // Atualização: dono pode atualizar tudo exceto 'role'; utilizadores bloqueados não podem; admin pode tudo
+      allow update: if (isAuth() && !isBlocked() && request.auth.uid == uid
                        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
                     || isAdmin();
 

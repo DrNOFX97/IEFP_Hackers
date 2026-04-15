@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS users (
     display_name TEXT,
     -- role define o que o utilizador pode fazer na aplicação
     role         TEXT        NOT NULL DEFAULT 'aluno'
-                             CHECK (role IN ('aluno', 'formador', 'admin')),
+                             CHECK (role IN ('aluno', 'formador', 'admin', 'blocked')),
     -- is_active permite desativar um utilizador sem o apagar
     is_active    BOOLEAN     NOT NULL DEFAULT TRUE,
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
