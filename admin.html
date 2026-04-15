@@ -390,6 +390,7 @@
             <div class="stat-card green"><div class="stat-label">Alunos</div><div class="stat-value" id="stat-alunos">–</div></div>
             <div class="stat-card yellow"><div class="stat-label">Formadores</div><div class="stat-value" id="stat-formadores">–</div></div>
             <div class="stat-card red"><div class="stat-label">Admins</div><div class="stat-value" id="stat-admins">–</div></div>
+            <div class="stat-card red"><div class="stat-label">Bloqueados</div><div class="stat-value" id="stat-blocked">–</div></div>
             <div class="stat-card blue"><div class="stat-label">Logins Hoje</div><div class="stat-value" id="stat-logins">–</div></div>
             <div class="stat-card green"><div class="stat-label">Ações Hoje</div><div class="stat-value" id="stat-actions">–</div></div>
           </div>
@@ -728,50 +729,52 @@ async function loadOverview() {
   document.getElementById('overview-updated').textContent = 'A carregar…';
 
   try {
-    const [usersSnap, logsSnap] = await Promise.all([
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    // Queries paralelas — sem estimativas, todos os dados reais do Firestore
+    const [usersSnap, recentSnap, loginsSnap, actionsSnap] = await Promise.all([
       db.collection('users').get(),
-      db.collection('audit_log').orderBy('timestamp', 'desc').limit(20).get()
+      db.collection('audit_log').orderBy('timestamp', 'desc').limit(20).get(),
+      db.collection('audit_log')
+        .where('action', '==', 'login')
+        .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(todayStart))
+        .get(),
+      db.collection('audit_log')
+        .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(todayStart))
+        .get(),
     ]);
 
-    // Stats
-    let total = 0, admins = 0, formadores = 0, alunos = 0;
+    // Contagem de utilizadores por role
+    let total = 0, admins = 0, formadores = 0, alunos = 0, blocked = 0;
     usersSnap.docs.forEach(d => {
       total++;
       const r = d.data().role || 'aluno';
-      if (r === 'admin') admins++;
+      if      (r === 'admin')    admins++;
       else if (r === 'formador') formadores++;
-      else alunos++;
+      else if (r === 'blocked')  blocked++;
+      else                       alunos++;
     });
 
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    let loginsToday = 0, actionsToday = 0;
-    logsSnap.docs.forEach(d => {
-      const ts = d.data().timestamp?.toDate?.();
-      if (ts && ts >= today) {
-        actionsToday++;
-        if (d.data().action === 'login') loginsToday++;
-      }
-    });
-
-    document.getElementById('stat-total').textContent     = total;
-    document.getElementById('stat-alunos').textContent    = alunos;
+    document.getElementById('stat-total').textContent      = total;
+    document.getElementById('stat-alunos').textContent     = alunos;
     document.getElementById('stat-formadores').textContent = formadores;
-    document.getElementById('stat-admins').textContent    = admins;
-    document.getElementById('stat-logins').textContent    = loginsToday;
-    document.getElementById('stat-actions').textContent   = actionsToday;
+    document.getElementById('stat-admins').textContent     = admins;
+    document.getElementById('stat-blocked').textContent    = blocked;
+    document.getElementById('stat-logins').textContent     = loginsSnap.size;
+    document.getElementById('stat-actions').textContent    = actionsSnap.size;
 
-    // Recent activity
+    // Atividade recente
     const actionIcons = {
       login: '🔑', role_change: '🔄', note_write: '📝',
       material_add: '📎', material_delete: '🗑️', chat_message: '💬',
-      admin_login: '🛡️'
+      admin_login: '🛡️', blocked: '🚫'
     };
     const list = document.getElementById('recent-list');
-    if (logsSnap.empty) {
+    if (recentSnap.empty) {
       list.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>Sem atividade registada.</div>';
     } else {
-      list.innerHTML = logsSnap.docs.map(d => {
+      list.innerHTML = recentSnap.docs.map(d => {
         const data = d.data();
         const icon = actionIcons[data.action] || '•';
         return `<div class="activity-item">
@@ -790,7 +793,7 @@ async function loadOverview() {
     document.getElementById('overview-updated').textContent = 'Atualizado: ' + new Date().toLocaleTimeString('pt-PT');
   } catch(e) {
     console.error(e);
-    document.getElementById('overview-updated').textContent = 'Erro ao carregar dados';
+    document.getElementById('overview-updated').textContent = 'Erro: ' + e.message;
   }
 }
 
