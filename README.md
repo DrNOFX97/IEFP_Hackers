@@ -41,7 +41,7 @@ graph TD;
     H -->|Uploads de Turma| ST[Firebase Storage]
     end
 
-    subgraph Backend API (GCP)
+    subgraph Backend API GCP
     H -->|Bearer Tokens (API requests)| CR[Cloud Run REST API]
     CR -->|Queries Seguras| CSQL[(Cloud SQL - PostgreSQL)]
     end
