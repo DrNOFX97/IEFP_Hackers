@@ -8,7 +8,7 @@ Boas práticas de segurança:
   - RLS no PostgreSQL (SET LOCAL app.current_user_id)
   - Validação de input com Pydantic
   - Rate limiting por IP
-  - Separação de roles: aluno / formador / admin
+  - Separação de roles: aluno / moderador / admin
 """
 
 import os
@@ -116,7 +116,7 @@ async def get_or_create_user(firebase_uid: str, email: str, display_name: str) -
 
 
 async def get_user_role(user_id: str) -> str:
-    """Devolve o role do utilizador ('aluno', 'formador', 'admin')."""
+    """Devolve o role do utilizador ('aluno', 'moderador', 'admin')."""
     async with pool.acquire() as conn:
         role = await conn.fetchval(
             "SELECT role FROM cet.users WHERE id = $1", user_id
@@ -127,10 +127,10 @@ async def get_user_role(user_id: str) -> str:
 async def require_role(user, min_role: str) -> str:
     """
     Verifica se o utilizador tem pelo menos o role indicado.
-    Ordem: aluno < formador < admin
+    Ordem: aluno < moderador < admin
     Devolve o user_id interno.
     """
-    ROLE_RANK = {"blocked": -1, "aluno": 0, "formador": 1, "admin": 2}
+    ROLE_RANK = {"blocked": -1, "aluno": 0, "moderador": 1, "admin": 2}
     user_id = await get_or_create_user(
         user["uid"], user.get("email", ""), user.get("name", "")
     )
@@ -192,8 +192,8 @@ class RoleIn(BaseModel):
     @field_validator("role")
     @classmethod
     def valid_role(cls, v):
-        if v not in {"aluno", "formador", "admin", "blocked"}:
-            raise ValueError("Role inválido. Use: aluno, formador, admin, blocked.")
+        if v not in {"aluno", "moderador", "admin", "blocked"}:
+            raise ValueError("Role inválido. Use: aluno, moderador, admin, blocked.")
         return v
 
 
@@ -338,7 +338,7 @@ async def delete_material(
                 """DELETE FROM cet.materials
                    WHERE id=$1 AND uc_code=$2
                    AND (added_by=$3 OR EXISTS (
-                       SELECT 1 FROM cet.users WHERE id=$3 AND role IN ('formador','admin')
+                       SELECT 1 FROM cet.users WHERE id=$3 AND role IN ('moderador','admin')
                    ))""",
                 material_id, uc_code, user_id
             )
@@ -356,8 +356,8 @@ async def list_users(
     request: Request,
     user=Depends(get_current_user),
 ):
-    """Lista todos os utilizadores. Requer role formador ou admin."""
-    admin_id = await require_role(user, "formador")
+    """Lista todos os utilizadores. Requer role moderador ou admin."""
+    admin_id = await require_role(user, "moderador")
 
     rows = await pool.fetch(
         """SELECT id, firebase_uid, email, display_name, role, created_at, last_login
@@ -415,8 +415,8 @@ async def get_audit_log(
     offset: int = 0,
     user=Depends(get_current_user),
 ):
-    """Acesso ao log de auditoria. Requer role formador ou admin."""
-    admin_id = await require_role(user, "formador")
+    """Acesso ao log de auditoria. Requer role moderador ou admin."""
+    admin_id = await require_role(user, "moderador")
 
     params  = [min(limit, 500), offset]
     filters = []
@@ -454,15 +454,15 @@ async def get_stats(
     request: Request,
     user=Depends(get_current_user),
 ):
-    """Estatísticas do sistema. Requer role formador ou admin."""
-    await require_role(user, "formador")
+    """Estatísticas do sistema. Requer role moderador ou admin."""
+    await require_role(user, "moderador")
 
     async with pool.acquire() as conn:
         stats = await conn.fetchrow("""
             SELECT
                 COUNT(*)                                         AS total_users,
                 COUNT(*) FILTER (WHERE role = 'aluno')          AS alunos,
-                COUNT(*) FILTER (WHERE role = 'formador')       AS formadores,
+                COUNT(*) FILTER (WHERE role = 'moderador')       AS moderadores,
                 COUNT(*) FILTER (WHERE role = 'admin')          AS admins,
                 COUNT(*) FILTER (WHERE last_login >= NOW() - INTERVAL '24h') AS active_24h
             FROM cet.users
@@ -494,8 +494,8 @@ async def get_activity(
     request: Request,
     user=Depends(get_current_user),
 ):
-    """Atividade por UC e por utilizador. Requer role formador ou admin."""
-    await require_role(user, "formador")
+    """Atividade por UC e por utilizador. Requer role moderador ou admin."""
+    await require_role(user, "moderador")
 
     async with pool.acquire() as conn:
         uc_rows   = await conn.fetch("SELECT * FROM cet.uc_activity ORDER BY ultima_nota DESC NULLS LAST")

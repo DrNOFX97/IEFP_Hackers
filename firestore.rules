@@ -18,8 +18,8 @@ service cloud.firestore {
 
     function isBlocked()  { return isAuth() && getRole() == 'blocked'; }
     function isAdmin()    { return isAuth() && !isBlocked() && getRole() == 'admin'; }
-    function isFormador() { return isAuth() && !isBlocked() && getRole() in ['formador', 'admin']; }
-    function isAluno()    { return isAuth() && !isBlocked() && getRole() in ['aluno', 'formador', 'admin']; }
+    function isModerador() { return isAuth() && !isBlocked() && getRole() in ['moderador', 'admin']; }
+    function isAluno()    { return isAuth() && !isBlocked() && getRole() in ['aluno', 'moderador', 'admin']; }
 
     // ── users ─────────────────────────────────────────────────────────
     // Qualquer utilizador autenticado pode ler (colega de turma).
@@ -45,7 +45,7 @@ service cloud.firestore {
     // Aluno vê e edita as suas; formador/admin vê todas.
     match /notes/{docId} {
       allow read: if isAuth() && (
-        docId.matches(request.auth.uid + '_.*') || isFormador()
+        docId.matches(request.auth.uid + '_.*') || isModerador()
       );
       allow write: if isAuth() && docId.matches(request.auth.uid + '_.*');
       allow delete: if isAdmin();
@@ -67,7 +67,7 @@ service cloud.firestore {
                     && request.resource.data.deleted == false;
       allow update: if isAuth()
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted'])
-                    && (resource.data.uid == request.auth.uid || isFormador());
+                    && (resource.data.uid == request.auth.uid || isModerador());
       allow delete: if isAdmin();
     }
 
@@ -81,7 +81,7 @@ service cloud.firestore {
                     && request.resource.data.deleted == false;
       allow update: if isAuth()
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted'])
-                    && (resource.data.uid == request.auth.uid || isFormador());
+                    && (resource.data.uid == request.auth.uid || isModerador());
       allow delete: if isAdmin();
     }
 

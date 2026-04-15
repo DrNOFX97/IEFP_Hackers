@@ -4375,9 +4375,9 @@ async def _pg_exec_async(files, ns, tab_id):
                 }}
                 // Write user presence to Firestore for Turma panel
                 userPresenceWrite(user);
-                // Mostrar link de admin/formador (role já verificado em onAuthStateChanged)
+                // Mostrar link de admin/moderador (role já verificado em onAuthStateChanged)
                 const adminLink = document.getElementById('nav-admin-link');
-                if (adminLink && (window._userRole === 'admin' || window._userRole === 'formador')) {{
+                if (adminLink && (window._userRole === 'admin' || window._userRole === 'moderador')) {{
                     adminLink.style.display = '';
                 }}
                 // Audit: login
@@ -4432,6 +4432,7 @@ async def _pg_exec_async(files, ns, tab_id):
                         }}
                         // Guardar role para uso no init()
                         window._userRole = role;
+                        window._isModerador = (role === 'moderador' || role === 'admin');
                     }} catch(e) {{
                         // Se Firestore falha, continua com role padrão
                         window._userRole = 'aluno';
@@ -4444,6 +4445,7 @@ async def _pg_exec_async(files, ns, tab_id):
                 }} else {{
                     window._dashboardInited = false;
                     window._userRole = null;
+                    window._isModerador = false;
                     showAuthGate();
                 }}
             }});
@@ -4607,7 +4609,7 @@ async def _pg_exec_async(files, ns, tab_id):
                 <div class="chat-bubble">${{escapeHtml(m.text)}}</div>
                 <div style="display:flex;gap:0.25rem;align-items:center;">
                     <span class="chat-msg-time">${{time}}</span>
-                    ${{mine || window._isFormador ? delBtn : ''}}
+                    ${{mine || window._isModerador ? delBtn : ''}}
                 </div>
             </div>`;
         }}

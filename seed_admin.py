@@ -4,7 +4,7 @@ seed_admin.py — Bootstrap do utilizador administrador no Firestore.
 
 Uso:
     python3 seed_admin.py
-    python3 seed_admin.py --email outro@gmail.com --role formador
+    python3 seed_admin.py --email outro@gmail.com --role moderador
 
 Requer:
     pip install firebase-admin
@@ -26,7 +26,7 @@ except ImportError:
 PROJECT_ID     = "ligafaro-8000"
 DEFAULT_EMAIL  = "f.nuno.ss@gmail.com"
 DEFAULT_ROLE   = "admin"
-VALID_ROLES    = ("aluno", "formador", "admin", "blocked")
+VALID_ROLES    = ("aluno", "moderador", "admin", "blocked")
 
 
 def init_firebase():

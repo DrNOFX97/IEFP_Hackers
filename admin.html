@@ -213,7 +213,7 @@
       font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
     }
     .role-admin    { background: var(--red-dim);    color: var(--red); }
-    .role-formador { background: var(--yellow-dim); color: var(--yellow); }
+    .role-moderador { background: var(--yellow-dim); color: var(--yellow); }
     .role-aluno    { background: var(--accent-dim); color: var(--accent); }
     .role-blocked  { background: rgba(100,100,100,.2); color: #666; text-decoration: line-through; }
 
@@ -388,7 +388,7 @@
           <div class="stats-grid" id="stats-grid">
             <div class="stat-card blue"><div class="stat-label">Utilizadores</div><div class="stat-value" id="stat-total">–</div></div>
             <div class="stat-card green"><div class="stat-label">Alunos</div><div class="stat-value" id="stat-alunos">–</div></div>
-            <div class="stat-card yellow"><div class="stat-label">Formadores</div><div class="stat-value" id="stat-formadores">–</div></div>
+            <div class="stat-card yellow"><div class="stat-label">Moderadores</div><div class="stat-value" id="stat-moderadores">–</div></div>
             <div class="stat-card red"><div class="stat-label">Admins</div><div class="stat-value" id="stat-admins">–</div></div>
             <div class="stat-card red"><div class="stat-label">Bloqueados</div><div class="stat-value" id="stat-blocked">–</div></div>
             <div class="stat-card blue"><div class="stat-label">Logins Hoje</div><div class="stat-value" id="stat-logins">–</div></div>
@@ -423,7 +423,7 @@
             <select class="toolbar-select" id="user-role-filter" onchange="filterUsers()">
               <option value="">Todos os roles</option>
               <option value="admin">Admin</option>
-              <option value="formador">Formador</option>
+              <option value="moderador">Moderador</option>
               <option value="aluno">Aluno</option>
             </select>
           </div>
@@ -742,12 +742,12 @@ async function loadOverview() {
     ]);
 
     // Contagem de utilizadores por role
-    let total = 0, admins = 0, formadores = 0, alunos = 0, blocked = 0;
+    let total = 0, admins = 0, moderadores = 0, alunos = 0, blocked = 0;
     usersSnap.docs.forEach(d => {
       total++;
       const r = d.data().role || 'aluno';
       if      (r === 'admin')    admins++;
-      else if (r === 'formador') formadores++;
+      else if (r === 'moderador') moderadores++;
       else if (r === 'blocked')  blocked++;
       else                       alunos++;
     });
@@ -761,7 +761,7 @@ async function loadOverview() {
 
     document.getElementById('stat-total').textContent      = total;
     document.getElementById('stat-alunos').textContent     = alunos;
-    document.getElementById('stat-formadores').textContent = formadores;
+    document.getElementById('stat-moderadores').textContent = moderadores;
     document.getElementById('stat-admins').textContent     = admins;
     document.getElementById('stat-blocked').textContent    = blocked;
     document.getElementById('stat-logins').textContent     = loginsToday;
@@ -834,7 +834,7 @@ function renderUsers(users) {
     const role    = u.role || 'aluno';
     const photo   = u.photoURL ? `<img src="${escHtml(u.photoURL)}" alt="">` : initials(u.displayName || u.email);
     const isSelf  = u.id === currentAdminUid;
-    const roleOpts = ['aluno', 'formador', 'admin', 'blocked'].map(r =>
+    const roleOpts = ['aluno', 'moderador', 'admin', 'blocked'].map(r =>
       `<option value="${r}" ${r === role ? 'selected' : ''}>${r}</option>`
     ).join('');
 
