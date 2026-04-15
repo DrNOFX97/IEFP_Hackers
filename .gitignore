@@ -1,0 +1,25 @@
+# Ficheiro gerado — recriar com: python gerador_dashboard.py
+dashboard.html
+
+# Dependências Node (Netlify legacy, não usado em produção Firebase)
+node_modules/
+
+# Estado local de ferramentas e serviços
+.netlify/
+.firebase/
+.playwright-mcp/
+.claude/
+
+# Variáveis de ambiente / segredos
+api/.env
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# macOS
+.DS_Store
