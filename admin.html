@@ -432,13 +432,14 @@
               <thead>
                 <tr>
                   <th>Utilizador</th>
+                  <th>Email</th>
                   <th>Role</th>
                   <th>Último acesso</th>
                   <th>Alterar role</th>
                 </tr>
               </thead>
               <tbody id="users-tbody">
-                <tr><td colspan="4"><div class="loader"><div class="spinner"></div> A carregar…</div></td></tr>
+                <tr><td colspan="5"><div class="loader"><div class="spinner"></div> A carregar…</div></td></tr>
               </tbody>
             </table>
           </div>
@@ -808,7 +809,7 @@ async function loadUsers() {
     allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderUsers(allUsers);
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--red);padding:1rem;">${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--red);padding:1rem;">${e.message}</td></tr>`;
   }
 }
 
@@ -818,7 +819,7 @@ function renderUsers(users) {
   count.textContent = `${users.length} utilizador${users.length !== 1 ? 'es' : ''}`;
 
   if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><div class="empty-icon">👤</div>Nenhum utilizador encontrado.</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">👤</div>Nenhum utilizador encontrado.</div></td></tr>';
     return;
   }
 
@@ -839,10 +840,10 @@ function renderUsers(users) {
           <div class="td-avatar">${photo}</div>
           <div>
             <div class="td-name">${name}${isSelf ? ' <span style="color:var(--text3);font-size:0.72rem;">(tu)</span>' : ''}</div>
-            <div class="td-email">${email}</div>
           </div>
         </div>
       </td>
+      <td style="color:var(--text2);font-size:0.82rem;">${email}</td>
       <td>${roleBadge(role)}</td>
       <td style="color:var(--text2)">${fmtDate(u.lastSeen)}</td>
       <td>
