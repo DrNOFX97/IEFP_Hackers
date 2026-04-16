@@ -1206,7 +1206,7 @@ async function forceUserLogout(uid, name) {
     }, { merge: true });
     
     // Audit write this administrative action
-    await auditWrite('role_change', \`Sessão de \${name} terminada remotamente\`);
+    await auditWrite('role_change', `Sessão de ${name} terminada remotamente`);
     
     toast(`Sinal de logout enviado para ${name}`);
     loadSecurityData(); // refresh the view
