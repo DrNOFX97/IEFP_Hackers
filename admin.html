@@ -347,6 +347,9 @@
         <button class="nav-btn" data-tab="logs" onclick="switchTab('logs')">
           <span class="nav-btn-icon">📋</span><span>Auditoria</span>
         </button>
+        <button class="nav-btn" data-tab="security" onclick="switchTab('security')">
+          <span class="nav-btn-icon">🛡️</span><span>Segurança</span>
+        </button>
         <button class="nav-btn" data-tab="config" onclick="switchTab('config')">
           <span class="nav-btn-icon">⚙️</span><span>Configuração</span>
         </button>
@@ -494,6 +497,89 @@
             </table>
           </div>
           <div style="margin-top:0.6rem; font-size:0.75rem; color:var(--text3);" id="logs-count"></div>
+        </div>
+      </div>
+
+      <!-- ── TAB: SEGURANÇA ────────────────────────────────── -->
+      <div id="tab-security" class="tab-panel">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Centro de Segurança</div>
+            <div class="page-sub">Monitorização de ameaças e sessões em tempo real</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn" onclick="loadSecurityData()">↻ Atualizar</button>
+          </div>
+        </div>
+        <div class="content" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Brute Force & CSP Rows -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            
+            <!-- Brute Force Detector -->
+            <div class="table-wrap">
+              <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+                <div style="font-weight: 600; font-size: 0.9rem;">Detetor de Brute-Force (Falhas Recentes)</div>
+                <span class="role-badge" style="background:var(--red-dim);color:var(--red);">Alerta Ativo</span>
+              </div>
+              <table style="font-size: 0.8rem;">
+                <thead>
+                  <tr><th>IP / Origem</th><th>Utilizador Alvo</th><th>Tentativas</th><th>Ação</th></tr>
+                </thead>
+                <tbody id="bruteforce-tbody">
+                  <tr><td colspan="4" style="text-align:center;padding:1rem;">Nenhuma anomalia detetada.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- CSP Violations -->
+            <div class="table-wrap">
+              <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+                <div style="font-weight: 600; font-size: 0.9rem;">Violações de CSP</div>
+                <span class="role-badge" style="background:var(--yellow-dim);color:var(--yellow);">Monitorização</span>
+              </div>
+              <table style="font-size: 0.8rem;">
+                <thead>
+                  <tr><th>Data/Hora</th><th>URI Bloqueado</th><th>Diretiva Violação</th></tr>
+                </thead>
+                <tbody id="csp-tbody">
+                  <tr><td colspan="3" style="text-align:center;padding:1rem;">Nenhuma violação recente.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- Active Sessions & Login Map -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+            
+            <!-- Login Map -->
+            <div class="table-wrap">
+              <div style="padding: 1rem; border-bottom: 1px solid var(--border);">
+                <div style="font-weight: 600; font-size: 0.9rem;">Mapa de Logins (Tempo Real)</div>
+              </div>
+              <div id="login-map" style="height: 250px; background: #0a0a0a; padding: 1rem; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
+                <!-- Simulated log entries -->
+              </div>
+            </div>
+
+            <!-- Active Sessions -->
+            <div class="table-wrap">
+              <div style="padding: 1rem; border-bottom: 1px solid var(--border);">
+                <div style="font-weight: 600; font-size: 0.9rem;">Sessões Ativas</div>
+              </div>
+              <table style="font-size: 0.8rem;">
+                <thead>
+                  <tr><th>Utilizador</th><th>Ação</th></tr>
+                </thead>
+                <tbody id="sessions-tbody">
+                  <tr><td colspan="2" style="text-align:center;padding:1rem;">A carregar...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+          
         </div>
       </div>
 
@@ -662,7 +748,7 @@ async function auditWrite(action, details) {
 }
 
 // ── Tab switching ──────────────────────────────────────────────────
-function switchTab(tab) {
+function _switchTabInternal(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
@@ -670,7 +756,9 @@ function switchTab(tab) {
   if (tab === 'overview') loadOverview();
   if (tab === 'users')    loadUsers();
   if (tab === 'logs')     loadLogs();
+  if (tab === 'security') loadSecurityData();
 }
+window.switchTab = _switchTabInternal;
 
 // ── AUTH ───────────────────────────────────────────────────────────
 function signInWithGoogle() {
@@ -1018,6 +1106,132 @@ function reloadConfig() {
     .then(() => toast('Config recarregada'))
     .catch(e => toast('Erro: ' + e.message, 'error'));
 }
+
+// ── SECURITY DATA (REAL FIREBASE) ──────────────────────────────────
+async function loadSecurityData() {
+  const bfTbody = document.getElementById('bruteforce-tbody');
+  const cspTbody = document.getElementById('csp-tbody');
+  const sTbody = document.getElementById('sessions-tbody');
+  const mapDiv = document.getElementById('login-map');
+  
+  // Real CSP Violations
+  cspTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem;"><div class="spinner"></div></td></tr>';
+  try {
+    const cspSnap = await db.collection('csp_violations').orderBy('timestamp', 'desc').limit(15).get();
+    if (cspSnap.empty) {
+      cspTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem;">Nenhuma violação recente associada.</td></tr>';
+    } else {
+      cspTbody.innerHTML = cspSnap.docs.map(d => {
+        const data = d.data();
+        return `<tr><td style="color:var(--text2);font-size:0.75rem;">${fmtDateShort(data.timestamp)}</td><td>${escHtml(data.blockedUri || 'inline')}</td><td><span style="font-family:monospace;background:var(--surface2);padding:0.1rem 0.3rem;border-radius:4px;">${escHtml(data.violatedDirective)}</span></td></tr>`;
+      }).join('');
+    }
+  } catch(e) {
+    cspTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem;color:var(--text2);">Sem dados de CSP ou limite de leitura atingido.</td></tr>';
+  }
+
+  // Sessões Ativas Reais (lastSeen > 5 mins)
+  sTbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:1rem;"><div class="spinner"></div></td></tr>';
+  try {
+    const now = new Date();
+    const fiveMinsAgo = new Date(now.getTime() - 5 * 60000);
+    const uSnap = await db.collection('users').where('lastSeen', '>=', fiveMinsAgo).get();
+    if (uSnap.empty) {
+      sTbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:1rem;">Sem sessões aparentes.</td></tr>';
+    } else {
+      sTbody.innerHTML = uSnap.docs.map(d => {
+        const data = d.data();
+        const uid = d.id;
+        const name = escHtml(data.displayName || data.email || 'Desconhecido');
+        if (uid === currentAdminUid) {
+          return `<tr><td>${name} <span style="color:var(--text3);font-size:0.72rem;">(neste dispositivo)</span></td><td><span class="role-badge role-admin">Tu</span></td></tr>`;
+        }
+        return `<tr><td>${name}</td><td><button class="btn" style="padding:0.2rem 0.5rem;font-size:0.7rem;color:var(--red);border-color:var(--red);" onclick="forceUserLogout('${uid}', '${name}')">Logout Remoto</button></td></tr>`;
+      }).join('');
+    }
+  } catch(e) {
+    sTbody.innerHTML = `<tr><td colspan="2" style="text-align:center;padding:1rem;color:var(--red);">Erro de leitura: ${e.message}</td></tr>`;
+  }
+
+  // Mapa de Logins Real & Brute Force (Filtering from generic audit_logs to avoid compound index needs)
+  mapDiv.innerHTML = '<div style="color:var(--text3);text-align:center;">A procurar logs globais...</div>';
+  bfTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;"><div class="spinner"></div></td></tr>';
+  
+  try {
+    const lSnap = await db.collection('audit_log').orderBy('timestamp', 'desc').limit(200).get();
+    const logins = [];
+    const fails = {};
+    
+    lSnap.docs.forEach(d => {
+      const data = d.data();
+      if (data.action === 'login') {
+        logins.push(data);
+      } else if (data.action === 'login_failed') {
+        const key = data.email || data.details || 'Unknown';
+        if (!fails[key]) fails[key] = { count: 0, target: data.email || '?', details: data.details };
+        fails[key].count++;
+      }
+    });
+
+    if (logins.length === 0) {
+      mapDiv.innerHTML = '<div style="color:var(--text3);">Sem eventos recentes conectáveis.</div>';
+    } else {
+      mapDiv.innerHTML = '';
+      logins.slice(0, 15).reverse().forEach(data => {
+        const dateStr = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString('pt-PT') : '--:--:--';
+        mapDiv.innerHTML = `<div style="margin-bottom:6px;color:var(--accent)">[${dateStr}] ${escHtml(data.email || data.displayName)} — ${escHtml(data.details)}</div>` + mapDiv.innerHTML;
+      });
+    }
+
+    const failEntries = Object.entries(fails);
+    if (failEntries.length === 0) {
+      bfTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;">Nenhuma falha detetada recentemente.</td></tr>';
+    } else {
+      bfTbody.innerHTML = failEntries.map(([key, info]) => `
+        <tr><td style="font-family:monospace;">${escHtml(info.details || 'IP Desconhecido')}</td><td>${escHtml(info.target)}</td><td style="color:${info.count >= 5 ? 'var(--red)' : 'var(--yellow)'};font-weight:bold;">${info.count}</td><td><button class="btn" style="padding:0.2rem 0.5rem;font-size:0.7rem;" onclick="toast('Configuração Firewall Web indisponível neste plano','error')">Ignorar/Block</button></td></tr>
+      `).join('');
+    }
+
+  } catch(e) {
+    mapDiv.innerHTML = `<div style="color:var(--red);">Erro: ${e.message}</div>`;
+    bfTbody.innerHTML = `<tr><td colspan="4" style="color:var(--red);text-align:center;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+async function forceUserLogout(uid, name) {
+  if(!confirm(`Forçar o encerramento da sessão ativa de ${name}?\nEles serão notificados e obrigados a fazer login novamente.`)) return;
+  try {
+    await db.collection('users').doc(uid).set({
+      forceLogoutAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    
+    // Audit write this administrative action
+    await auditWrite('role_change', \`Sessão de \${name} terminada remotamente\`);
+    
+    toast(`Sinal de logout enviado para ${name}`);
+    loadSecurityData(); // refresh the view
+  } catch(e) {
+    toast(`Erro ao forçar término: ${e.message}`, 'error');
+  }
+}
+
+// CSP Violation Listener (Client-side Reporting)
+document.addEventListener('securitypolicyviolation', (e) => {
+    fetch('https://europe-west1-ligafaro-8000.cloudfunctions.net/cspReport', {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'application/csp-report' },
+        body: JSON.stringify({
+            'csp-report': {
+                'document-uri': e.documentURI,
+                'violated-directive': e.violatedDirective,
+                'blocked-uri': e.blockedURI,
+                'original-policy': e.originalPolicy,
+                'source-file': e.sourceFile,
+                'line-number': e.lineNumber
+            }
+        })
+    }).catch(()=>{});
+});
 </script>
 </body>
 </html>
