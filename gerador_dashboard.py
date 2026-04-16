@@ -3278,7 +3278,8 @@ def main():
         }}
 
         async function openSessionDetail(ucCode, date, num, hora, diaSemana, mesAno) {{
-            const key = `${{ucCode}}_${{date}}`;
+            // S1 reuses the original UC key so existing notes/materials are preserved
+            const key = num === 1 ? ucCode : `${{ucCode}}_${{date}}`;
             currentSessionKey = key;
             previousView = 'uc-detail';  // back button → UC detail
 
