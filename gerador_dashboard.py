@@ -4785,7 +4785,7 @@ async def _pg_exec_async(files, ns, tab_id):
                 const uid  = auth.currentUser?.uid;
                 const snap = await db.collection('invites')
                     .where('createdBy', '==', uid)
-                    .get();
+                    .get({{ source: 'server' }});
                 if (snap.empty) {{
                     list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Nenhum convite criado ainda.</span>';
                     return;
