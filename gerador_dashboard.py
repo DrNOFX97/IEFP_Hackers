@@ -2758,10 +2758,14 @@ def main():
                 const params = new URLSearchParams(window.location.search);
                 const token  = params.get('invite');
                 if (token && /^[a-f0-9]{{32,64}}$/.test(token)) {{
-                    sessionStorage.setItem('pending_invite', token);
-                    // Limpar URL sem recarregar
+                    // localStorage em vez de sessionStorage — sobrevive ao signInWithRedirect em mobile
+                    localStorage.setItem('pending_invite', token);
                     history.replaceState({{}}, '', window.location.pathname);
-                    // Mostrar badge no auth gate
+                    const badge = document.getElementById('auth-invite-badge');
+                    if (badge) badge.style.display = 'block';
+                }}
+                // Mostrar badge se já havia token guardado (utilizador voltou após redirect)
+                if (localStorage.getItem('pending_invite')) {{
                     const badge = document.getElementById('auth-invite-badge');
                     if (badge) badge.style.display = 'block';
                 }}
@@ -4540,15 +4544,15 @@ async def _pg_exec_async(files, ns, tab_id):
             auth.onAuthStateChanged(async user => {{
                 if (user) {{
                     // 1. Verificar se há convite pendente e resgatar via Cloud Function
-                    const pendingInvite = sessionStorage.getItem('pending_invite');
+                    const pendingInvite = localStorage.getItem('pending_invite');
                     if (pendingInvite) {{
-                        sessionStorage.removeItem('pending_invite');
+                        localStorage.removeItem('pending_invite');
                         try {{
-                            const redeemInvite = firebase.functions().httpsCallable('redeemInvite');
-                            await redeemInvite({{ token: pendingInvite }});
+                            // Região explícita — a função está em europe-west1, não us-central1
+                            const fn = firebase.app().functions('europe-west1').httpsCallable('redeemInvite');
+                            await fn({{ token: pendingInvite }});
                         }} catch(e) {{
-                            console.warn('Invite redeem failed:', e.message);
-                            // Continua — se falhou, o role fica blocked e é barrado abaixo
+                            console.error('Invite redeem failed:', e.code, e.message);
                         }}
                     }}
 
