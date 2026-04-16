@@ -2903,6 +2903,9 @@ def main():
             }} else if (view === 'uc-detail') {{
                 document.getElementById('view-uc-detail').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
+            }} else if (view === 'session-detail') {{
+                document.getElementById('view-session-detail').style.display = 'block';
+                monthSelectContainer.style.display = 'none';
             }} else if (view === 'playground') {{
                 document.getElementById('view-playground').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
