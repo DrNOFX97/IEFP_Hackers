@@ -1402,6 +1402,11 @@ def main():
         .week-aula-card.current {{ border-left-color: #f0c040; background: rgba(240,192,64,0.07); }}
         .week-aula-card.holiday {{ border-left-color: var(--holiday-color); }}
         .week-aula-card.filtered-out {{ opacity: 0.1; filter: grayscale(1); pointer-events: none; }}
+        .week-aula-card.remote {{ border-left-color: #2ecc71; background: rgba(46,204,113,0.07); }}
+        .week-aula-card.remote .week-aula-desc {{ color: #2ecc71; }}
+        .week-aula-card.remote.clickable:hover {{ background: rgba(46,204,113,0.14); border-left-color: #5fdc91; }}
+        .week-aula-card.remote.past {{ border-left-color: #1a5e36; background: transparent; opacity: 0.4; }}
+        .week-aula-card.remote.past .week-aula-desc {{ color: inherit; }}
         .week-aula-time {{ font-size: 0.68rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.15rem; }}
         .week-aula-card.current .week-aula-time {{ color: #f0c040; }}
         .week-aula-desc {{ font-size: 0.75rem; font-weight: 500; color: var(--text-primary); line-height: 1.3; }}
@@ -3132,15 +3137,18 @@ def main():
                         mergedAulas.forEach(aula => {{
                             const matched   = aulaMatchesFilter(aula, filter);
                             if (matched) colMatches = true;
-                            const state     = getAulaState(dia.data, aula.hora);
-                            const dimCls    = (filter && !matched) ? 'filtered-out' : '';
-                            const clickCls  = UC_MAP[aula.uc] ? 'clickable' : '';
-                            const clickAttr = UC_MAP[aula.uc] ? `onclick="openUCFromSchedule('${{aula.uc}}')"` : '';
+                            const state      = getAulaState(dia.data, aula.hora);
+                            const dimCls     = (filter && !matched) ? 'filtered-out' : '';
+                            const clickCls   = UC_MAP[aula.uc] ? 'clickable' : '';
+                            const clickAttr  = UC_MAP[aula.uc] ? `onclick="openUCFromSchedule('${{aula.uc}}')"` : '';
+                            const isRemote   = (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
+                            const remoteCls  = isRemote ? 'remote' : '';
+                            const remoteBadge = isRemote ? `<span class="badge remote" style="font-size:0.62rem;padding:0.1rem 0.4rem;margin-top:3px;display:inline-block;">🌐 Remoto</span>` : '';
                             bodyHtml += `
-                            <div class="week-aula-card ${{state}} ${{clickCls}} ${{dimCls}}" ${{clickAttr}}>
+                            <div class="week-aula-card ${{state}} ${{clickCls}} ${{remoteCls}} ${{dimCls}}" ${{clickAttr}}>
                                 <div class="week-aula-time">${{aula.hora}}</div>
                                 <div class="week-aula-desc">${{aula.descricao}}</div>
-                                <div class="week-aula-uc">${{aula.uc}}</div>
+                                <div class="week-aula-uc">${{aula.uc}}${{remoteBadge}}</div>
                             </div>`;
                         }});
                     }} else if (dia.nota) {{
