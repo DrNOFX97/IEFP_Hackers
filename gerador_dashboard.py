@@ -1061,15 +1061,18 @@ def main():
         }}
         .session-chip {{
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.35rem 0.75rem;
+            gap: 0.15rem;
+            padding: 0.45rem 0.65rem;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             background: rgba(0,0,0,0.2);
             font-size: 0.8rem;
             transition: border-color 0.2s;
             white-space: nowrap;
+            min-width: 58px;
+            text-align: center;
         }}
         .session-chip:hover {{ border-color: rgba(0,255,65,0.4); }}
         .session-chip.past {{ opacity: 0.4; filter: grayscale(0.7); }}
@@ -1079,12 +1082,15 @@ def main():
             color: #f0c040;
         }}
         .session-chip.future {{ border-color: var(--border-color); }}
-        .session-chip-date {{ font-weight: 600; color: var(--text-primary); }}
-        .session-chip-day {{ color: var(--text-secondary); font-size: 0.72rem; }}
-        .session-chip-time {{ color: var(--accent-color); font-size: 0.78rem; font-weight: 500; }}
+        .session-chip-num {{ font-weight: 700; font-size: 0.8rem; color: var(--accent-color); letter-spacing: 0.02em; }}
+        .session-chip-date {{ font-weight: 600; color: var(--text-primary); font-size: 0.72rem; }}
+        .session-chip-day {{ color: var(--text-secondary); font-size: 0.65rem; }}
+        .session-chip-time {{ color: var(--text-secondary); font-size: 0.65rem; }}
+        .session-chip.current .session-chip-num {{ color: #f0c040; }}
         .session-chip.current .session-chip-date,
         .session-chip.current .session-chip-day,
         .session-chip.current .session-chip-time {{ color: #f0c040; }}
+        .session-chip.past .session-chip-num {{ color: var(--text-secondary); }}
         .session-chip.past .session-chip-date {{ color: var(--text-secondary); }}
         .no-sessions-msg {{
             font-size: 0.85rem;
@@ -3330,6 +3336,10 @@ def main():
                 byMonth[key].push(s);
             }});
 
+            // Assign global session numbers before grouping by month
+            let sessionNum = 1;
+            sessions.forEach(s => {{ s.num = sessionNum++; }});
+
             contentEl.innerHTML = Object.entries(byMonth).map(([mes, list]) => `
                 <div class="schedule-month-group">
                     <div class="schedule-month-label">${{mes}}</div>
@@ -3337,6 +3347,7 @@ def main():
                         ${{list.map(s => {{
                             const [y, mo, d] = s.data.split('-');
                             return `<div class="session-chip ${{s.state}}">
+                                <span class="session-chip-num">S${{s.num}}</span>
                                 <span class="session-chip-date">${{d}}/${{mo}}</span>
                                 <span class="session-chip-day">${{s.dia_semana}}</span>
                                 <span class="session-chip-time">${{s.hora}}</span>
