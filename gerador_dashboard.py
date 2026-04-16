@@ -1130,9 +1130,16 @@ def main():
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 1rem;
+            padding: 0 0 1rem;
             gap: 1rem;
             flex-wrap: wrap;
+            position: sticky;
+            top: -2rem;
+            margin: -2rem -2.5rem 0;
+            padding: 1.5rem 2.5rem 1rem;
+            background: var(--bg-color);
+            z-index: 50;
+            border-bottom: 1px solid var(--border-color);
         }}
         .schedule-controls {{
             display: flex;
@@ -2295,7 +2302,7 @@ def main():
             .mobile-bottom-nav {{ display: flex; }}
             #view-dashboard, #view-turma, #view-definicoes, #view-horario,
             #view-disciplinas, #view-playground, #view-chat {{ max-width: 100%; }}
-            .schedule-toolbar {{ flex-direction: column; align-items: flex-start; gap: 0.6rem; }}
+            .schedule-toolbar {{ flex-direction: column; align-items: flex-start; gap: 0.6rem; top: -0.85rem; margin: -0.85rem -0.85rem 0; padding: 0.85rem 0.85rem 0.85rem; }}
             .schedule-controls {{ flex-wrap: wrap; gap: 0.5rem; width: 100%; justify-content: flex-start; }}
             .pdf-group {{ display: none; }}
             .day-card:hover {{ transform: none; }}
@@ -3173,19 +3180,13 @@ def main():
             const today = new Date();
             const pad = n => String(n).padStart(2, '0');
             const todayStr = `${{today.getFullYear()}}-${{pad(today.getMonth()+1)}}-${{pad(today.getDate())}}`;
-            // cards view
-            const card = document.querySelector(`.day-card[data-date="${{todayStr}}"]`);
-            if (card) {{
-                const headerH = (document.querySelector('.app-header')?.offsetHeight || 60) + 16;
-                window.scrollTo({{ top: card.getBoundingClientRect().top + window.scrollY - headerH, behavior: 'smooth' }});
-                return;
-            }}
-            // week view
-            const col = document.querySelector(`.week-day-col[data-date="${{todayStr}}"]`);
-            if (col) {{
-                const headerH = (document.querySelector('.app-header')?.offsetHeight || 60) + 16;
-                window.scrollTo({{ top: col.getBoundingClientRect().top + window.scrollY - headerH, behavior: 'smooth' }});
-            }}
+            const toolbar  = document.querySelector('.schedule-toolbar');
+            const offset   = (toolbar?.offsetHeight || 80) + 16;
+            const content  = document.getElementById('app-content');
+            const target   = document.querySelector(`.day-card[data-date="${{todayStr}}"]`)
+                          || document.querySelector(`.week-day-col[data-date="${{todayStr}}"]`);
+            if (!target || !content) return;
+            content.scrollTo({{ top: target.offsetTop - offset, behavior: 'smooth' }});
         }}
 
         function openUCFromSchedule(ucCode) {{
