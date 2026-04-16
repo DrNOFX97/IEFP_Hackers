@@ -712,6 +712,7 @@ def main():
 
         /* ── UC DETAIL VIEW ── */
         #view-uc-detail {{ display: none; }}
+        #view-session-detail {{ display: none; }}
 
         .detail-header {{
             display: flex;
@@ -2683,6 +2684,54 @@ def main():
                 </div>
             </div>
 
+            <!-- VIEW: SESSION DETAIL -->
+            <div id="view-session-detail">
+                <div class="detail-header">
+                    <button class="back-btn" onclick="goBackFromSession()">← Voltar</button>
+                    <div class="detail-title-block">
+                        <div class="detail-uc-code" id="session-detail-num"></div>
+                        <div class="detail-uc-name" id="session-detail-uc-name"></div>
+                        <div class="detail-uc-meta" id="session-detail-meta"></div>
+                    </div>
+                </div>
+
+                <div class="detail-layout">
+                    <!-- Notes column -->
+                    <div class="panel notes-panel">
+                        <div class="notes-toolbar">
+                            <h2 style="margin-bottom:0; font-size:1.1rem;">📝 Apontamentos da sessão</h2>
+                            <span class="notes-saved-indicator" id="session-notes-saved">✓ Guardado</span>
+                        </div>
+                        <textarea class="notes-textarea" id="session-notes-textarea"
+                            placeholder="Apontamentos específicos desta sessão…&#10;&#10;Guardado automaticamente."></textarea>
+                    </div>
+
+                    <!-- Materials column -->
+                    <div class="panel materials-panel">
+                        <h2 style="margin-bottom:0.75rem; font-size:1.1rem;">📎 Materiais da sessão</h2>
+                        <div class="add-material-form">
+                            <div class="form-row">
+                                <select class="form-select" id="session-mat-type">
+                                    <option value="link">🔗 Link</option>
+                                    <option value="pdf">📄 PDF</option>
+                                    <option value="doc">📝 Doc</option>
+                                    <option value="video">🎬 Vídeo</option>
+                                    <option value="slide">📊 Slides</option>
+                                    <option value="outro">📁 Outro</option>
+                                </select>
+                                <input type="text" class="form-input" id="session-mat-label" placeholder="Descrição / título">
+                            </div>
+                            <div class="form-row">
+                                <input type="text" class="form-input" id="session-mat-url" placeholder="URL (https://...)"
+                                       oninput="if(getYouTubeId(this.value)) document.getElementById('session-mat-type').value='video'">
+                                <button class="btn-primary" onclick="addSessionMaterial()">+ Adicionar</button>
+                            </div>
+                        </div>
+                        <div class="materials-list" id="session-materials-list"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- VIEW: TURMA -->
             <div id="view-turma">
                 <h2 style="margin-bottom:0.5rem;">👥 Turma</h2>
@@ -2798,12 +2847,14 @@ def main():
         }}
 
         // ── STATE ───────────────────────────────────────────────────────
-        let currentView       = 'dashboard';
-        let previousView      = 'dashboard';
-        let currentUCCode     = null;
-        let currentMonthIndex = 0;
-        let notesTimer        = null;
-        let materialsCache    = {{}};         // ucCode → array (in-memory cache)
+        let currentView         = 'dashboard';
+        let previousView        = 'dashboard';
+        let currentUCCode       = null;
+        let currentSessionKey   = null;  // "ucCode_date" for active session detail
+        let currentMonthIndex   = 0;
+        let notesTimer          = null;
+        let sessionNotesTimer   = null;
+        let materialsCache      = {{}};   // key → array (ucCode or session key)
         let scheduleFilter   = '';
         let scheduleViewMode = 'cards';
 
@@ -2819,7 +2870,7 @@ def main():
         const scheduleTitle        = document.getElementById('schedule-title');
 
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','playground','chat','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','definicoes'];
 
         function switchView(view) {{
             ALL_VIEWS.forEach(v => {{
@@ -2877,7 +2928,7 @@ def main():
             mobMoreClose();
 
             // Sync sidebar + mobile bottom nav active state
-            const navKey = view === 'uc-detail' ? previousView : view;
+            const navKey = (view === 'uc-detail' || view === 'session-detail') ? previousView : view;
             document.querySelectorAll('.nav-item[data-view]').forEach(btn => {{
                 btn.classList.toggle('active', btn.dataset.view === navKey);
             }});
@@ -2897,6 +2948,16 @@ def main():
         function goBackFromDetail() {{
             if (ucChatUnsub) {{ ucChatUnsub(); ucChatUnsub = null; }}
             switchView(previousView);
+        }}
+
+        function goBackFromSession() {{
+            // Always go back to the UC detail that owns this session
+            if (currentSessionKey) {{
+                const ucCode = currentSessionKey.split('_')[0];
+                openUCDetail(ucCode);
+            }} else {{
+                switchView(previousView);
+            }}
         }}
 
         // ── MOBILE SIDEBAR ──────────────────────────────────────────────
@@ -3213,6 +3274,120 @@ def main():
             openUCDetail(ucCode);
         }}
 
+        async function openSessionDetail(ucCode, date, num, hora, diaSemana, mesAno) {{
+            const key = `${{ucCode}}_${{date}}`;
+            currentSessionKey = key;
+            previousView = 'uc-detail';  // back button → UC detail
+
+            const uc = UC_MAP[ucCode] || {{}};
+            const [y, mo, d] = date.split('-');
+
+            document.getElementById('session-detail-num').textContent  = `S${{num}} · ${{ucCode}}`;
+            document.getElementById('session-detail-uc-name').textContent = uc.descricao || ucCode;
+            document.getElementById('session-detail-meta').innerHTML =
+                `<span class="detail-meta-pill">📅 ${{d}}/${{mo}}/${{y}} ${{diaSemana}}</span>` +
+                `<span class="detail-meta-pill">🕐 ${{hora}}</span>` +
+                `<span class="detail-meta-pill">📆 ${{mesAno}}</span>`;
+
+            // Load session notes
+            const ta = document.getElementById('session-notes-textarea');
+            ta.value = '';
+            ta.oninput = () => autoSaveSessionNote(key, ta.value);
+            document.getElementById('session-notes-saved').classList.remove('visible');
+            try {{
+                const res = await fetch(`${{API_URL}}/notes/${{encodeURIComponent(key)}}`, {{
+                    headers: await apiHeaders()
+                }});
+                if (res.ok) {{ const {{ note }} = await res.json(); ta.value = note || ''; }}
+            }} catch(e) {{ console.warn('Erro a carregar notas de sessão:', e); }}
+
+            // Load session materials
+            document.getElementById('session-materials-list').innerHTML =
+                '<div class="no-materials">⏳ A carregar materiais...</div>';
+
+            switchView('session-detail');
+
+            const list = await getSessionMaterials(key);
+            renderSessionMaterials(key, list);
+        }}
+
+        function autoSaveSessionNote(key, value) {{
+            clearTimeout(sessionNotesTimer);
+            sessionNotesTimer = setTimeout(async () => {{
+                try {{
+                    await fetch(`${{API_URL}}/notes/${{encodeURIComponent(key)}}`, {{
+                        method: 'POST',
+                        headers: await apiHeaders(),
+                        body: JSON.stringify({{ content: value }})
+                    }});
+                }} catch(e) {{ console.warn('Erro ao guardar notas de sessão:', e); }}
+                const ind = document.getElementById('session-notes-saved');
+                ind.classList.add('visible');
+                setTimeout(() => ind.classList.remove('visible'), 2000);
+            }}, 800);
+        }}
+
+        async function getSessionMaterials(key) {{
+            if (materialsCache[key]) return materialsCache[key];
+            try {{
+                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(key)}}`, {{
+                    headers: await apiHeaders()
+                }});
+                const list = res.ok ? await res.json() : [];
+                materialsCache[key] = list;
+                return list;
+            }} catch(e) {{ return []; }}
+        }}
+
+        function renderSessionMaterials(key, list) {{
+            const el = document.getElementById('session-materials-list');
+            if (!list || list.length === 0) {{
+                el.innerHTML = '<div class="no-materials">Sem materiais adicionados nesta sessão.</div>';
+                return;
+            }}
+            el.innerHTML = list.map((m, i) => `
+                <div class="material-item">
+                    <span class="material-icon">${{getTypeIcon(m.type)}}</span>
+                    <div class="material-info">
+                        <a class="material-label" href="${{escHtml(m.url)}}" target="_blank" rel="noopener">${{escHtml(m.label || m.url)}}</a>
+                    </div>
+                    <button class="material-delete" onclick="deleteSessionMaterial('${{key}}',${{i}})">✕</button>
+                </div>`).join('');
+        }}
+
+        async function addSessionMaterial() {{
+            const key   = currentSessionKey;
+            const type  = document.getElementById('session-mat-type').value;
+            const label = document.getElementById('session-mat-label').value.trim();
+            const url   = document.getElementById('session-mat-url').value.trim();
+            if (!url) {{ alert('Introduz um URL.'); return; }}
+            try {{
+                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(key)}}`, {{
+                    method: 'POST',
+                    headers: await apiHeaders(),
+                    body: JSON.stringify({{ type, label: label || url, url }})
+                }});
+                if (!res.ok) throw new Error(await res.text());
+                delete materialsCache[key];
+                document.getElementById('session-mat-label').value = '';
+                document.getElementById('session-mat-url').value   = '';
+                const list = await getSessionMaterials(key);
+                renderSessionMaterials(key, list);
+            }} catch(e) {{ alert('Erro ao adicionar material: ' + e.message); }}
+        }}
+
+        async function deleteSessionMaterial(key, index) {{
+            if (!confirm('Remover este material?')) return;
+            try {{
+                await fetch(`${{API_URL}}/materials/${{encodeURIComponent(key)}}/${{index}}`, {{
+                    method: 'DELETE', headers: await apiHeaders()
+                }});
+                delete materialsCache[key];
+                const list = await getSessionMaterials(key);
+                renderSessionMaterials(key, list);
+            }} catch(e) {{ alert('Erro ao remover: ' + e.message); }}
+        }}
+
         function goToSession(dateStr) {{
             // Find which month index contains this date
             let targetIdx = -1;
@@ -3377,7 +3552,7 @@ def main():
                     <div class="session-list">
                         ${{list.map(s => {{
                             const [y, mo, d] = s.data.split('-');
-                            return `<div class="session-chip ${{s.state}}" onclick="goToSession('${{s.data}}')">
+                            return `<div class="session-chip ${{s.state}}" onclick="openSessionDetail('${{ucCode}}','${{s.data}}',${{s.num}},'${{s.hora}}','${{s.dia_semana}}','${{s.mes_ano}}')">
                                 <span class="session-chip-num">S${{s.num}}</span>
                                 <span class="session-chip-date">${{d}}/${{mo}}</span>
                                 <span class="session-chip-day">${{s.dia_semana}}</span>
