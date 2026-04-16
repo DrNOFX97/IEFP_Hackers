@@ -1069,12 +1069,13 @@ def main():
             border: 1px solid var(--border-color);
             background: rgba(0,0,0,0.2);
             font-size: 0.8rem;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, opacity 0.2s;
             white-space: nowrap;
             min-width: 58px;
             text-align: center;
+            cursor: pointer;
         }}
-        .session-chip:hover {{ border-color: rgba(0,255,65,0.4); }}
+        .session-chip:hover {{ border-color: rgba(0,255,65,0.4); opacity: 1 !important; filter: none !important; }}
         .session-chip.past {{ opacity: 0.4; filter: grayscale(0.7); }}
         .session-chip.current {{
             border-color: #f0c040;
@@ -3212,6 +3213,36 @@ def main():
             openUCDetail(ucCode);
         }}
 
+        function goToSession(dateStr) {{
+            // Find which month index contains this date
+            let targetIdx = -1;
+            HORARIOS.forEach((h, i) => {{
+                if (h.dias.some(d => d.data === dateStr)) targetIdx = i;
+            }});
+            if (targetIdx === -1) return;
+
+            previousView = 'uc-detail';
+            switchView('horario');
+
+            const doScroll = () => {{
+                const pad = n => String(n).padStart(2, '0');
+                const toolbar = document.querySelector('.schedule-toolbar');
+                const offset  = (toolbar?.offsetHeight || 80) + 16;
+                const content = document.getElementById('app-content');
+                const target  = document.querySelector(`.day-card[data-date="${{dateStr}}"]`)
+                              || document.querySelector(`.week-day-col[data-date="${{dateStr}}"]`);
+                if (target && content) content.scrollTo({{ top: target.offsetTop - offset, behavior: 'smooth' }});
+            }};
+
+            if (targetIdx !== currentMonthIndex) {{
+                monthSelect.value = targetIdx;
+                renderHorario(targetIdx);
+                setTimeout(doScroll, 80);
+            }} else {{
+                setTimeout(doScroll, 60);
+            }}
+        }}
+
         // ── DISCIPLINES LIST ────────────────────────────────────────────
         function getTypeIcon(type) {{
             const icons = {{ link:'🔗', pdf:'📄', doc:'📝', video:'🎬', slide:'📊', outro:'📁', file:'📎' }};
@@ -3346,7 +3377,7 @@ def main():
                     <div class="session-list">
                         ${{list.map(s => {{
                             const [y, mo, d] = s.data.split('-');
-                            return `<div class="session-chip ${{s.state}}">
+                            return `<div class="session-chip ${{s.state}}" onclick="goToSession('${{s.data}}')">
                                 <span class="session-chip-num">S${{s.num}}</span>
                                 <span class="session-chip-date">${{d}}/${{mo}}</span>
                                 <span class="session-chip-day">${{s.dia_semana}}</span>
