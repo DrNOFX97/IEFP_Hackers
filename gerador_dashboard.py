@@ -1057,43 +1057,53 @@ def main():
         }}
         .session-list {{
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             gap: 0.5rem;
+            padding-bottom: 0.4rem;
+            scrollbar-width: thin;
         }}
+        .session-nav-strip {{
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.6rem 0 0.6rem 0;
+            margin-bottom: 1rem;
+        }}
+        .session-nav-strip .session-list {{ padding-bottom: 0; }}
         .session-chip {{
-            display: flex;
-            flex-direction: column;
+            display: inline-flex;
             align-items: center;
-            gap: 0.15rem;
-            padding: 0.45rem 0.65rem;
-            border-radius: 8px;
+            gap: 0.35rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
             border: 1px solid var(--border-color);
             background: rgba(0,0,0,0.2);
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             transition: border-color 0.2s, opacity 0.2s;
             white-space: nowrap;
-            min-width: 58px;
-            text-align: center;
+            flex-shrink: 0;
             cursor: pointer;
         }}
         .session-chip:hover {{ border-color: rgba(0,255,65,0.4); opacity: 1 !important; filter: none !important; }}
-        .session-chip.past {{ opacity: 0.4; filter: grayscale(0.7); }}
+        .session-chip.past {{ opacity: 0.45; filter: grayscale(0.6); }}
         .session-chip.current {{
             border-color: #f0c040;
             background: rgba(240,192,64,0.08);
-            color: #f0c040;
         }}
-        .session-chip.future {{ border-color: var(--border-color); }}
-        .session-chip-num {{ font-weight: 700; font-size: 0.8rem; color: var(--accent-color); letter-spacing: 0.02em; }}
-        .session-chip-date {{ font-weight: 600; color: var(--text-primary); font-size: 0.72rem; }}
-        .session-chip-day {{ color: var(--text-secondary); font-size: 0.65rem; }}
-        .session-chip-time {{ color: var(--text-secondary); font-size: 0.65rem; }}
+        .session-chip.active-session {{
+            border-color: var(--accent-color);
+            background: rgba(0,255,65,0.08);
+        }}
+        .session-chip-num {{ font-weight: 700; color: var(--accent-color); }}
         .session-chip.current .session-chip-num {{ color: #f0c040; }}
-        .session-chip.current .session-chip-date,
-        .session-chip.current .session-chip-day,
-        .session-chip.current .session-chip-time {{ color: #f0c040; }}
+        .session-chip.active-session .session-chip-num {{ color: var(--accent-color); }}
         .session-chip.past .session-chip-num {{ color: var(--text-secondary); }}
-        .session-chip.past .session-chip-date {{ color: var(--text-secondary); }}
+        .session-chip-date {{ color: var(--text-secondary); font-size: 0.7rem; }}
+        .session-chip.current .session-chip-date {{ color: #f0c040; }}
+        .session-chip.active-session .session-chip-date {{ color: var(--text-primary); }}
         .no-sessions-msg {{
             font-size: 0.85rem;
             color: var(--text-secondary);
@@ -2617,7 +2627,7 @@ def main():
                     </div>
                 </div>
 
-                <!-- Schedule for this UC -->
+                <!-- Sessions nav -->
                 <div class="uc-schedule-section">
                     <div class="uc-schedule-header">
                         <h2 style="margin-bottom:0;font-size:1.1rem;">📅 Sessões</h2>
@@ -2627,48 +2637,6 @@ def main():
                         </div>
                     </div>
                     <div id="uc-schedule-content"></div>
-                </div>
-
-                <div class="detail-layout">
-                    <!-- Notes column -->
-                    <div class="panel notes-panel">
-                        <div class="notes-toolbar">
-                            <h2 style="margin-bottom:0; font-size:1.1rem;">📝 Apontamentos</h2>
-                            <span class="notes-saved-indicator" id="notes-saved-indicator">✓ Guardado</span>
-                        </div>
-                        <textarea class="notes-textarea" id="notes-textarea"
-                            placeholder="Escreve aqui os teus apontamentos, resumos, conceitos-chave...&#10;&#10;Suporta texto livre. Guardado automaticamente no browser."></textarea>
-                    </div>
-
-                    <!-- Materials column -->
-                    <div class="panel materials-panel">
-                        <h2 style="margin-bottom:0.75rem; font-size:1.1rem;">📎 Materiais</h2>
-
-                        <div class="add-material-form">
-                            <div class="form-row">
-                                <select class="form-select" id="mat-type">
-                                    <option value="link">🔗 Link</option>
-                                    <option value="pdf">📄 PDF</option>
-                                    <option value="doc">📝 Doc</option>
-                                    <option value="video">🎬 Vídeo</option>
-                                    <option value="slide">📊 Slides</option>
-                                    <option value="outro">📁 Outro</option>
-                                </select>
-                                <input type="text" class="form-input" id="mat-label" placeholder="Descrição / título">
-                            </div>
-                            <div class="form-row">
-                                <input type="text" class="form-input" id="mat-url" placeholder="URL (https://...) ou link YouTube"
-                                       oninput="if(getYouTubeId(this.value)) document.getElementById('mat-type').value='video'">
-                                <button class="btn-primary" onclick="addMaterial()">+ Adicionar</button>
-                            </div>
-                            <div class="file-drop-zone" id="file-drop-zone">
-                                📂 Arrastar ficheiro ou clicar para selecionar
-                                <input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.png,.jpg" onchange="handleFileSelect(event)">
-                            </div>
-                        </div>
-
-                        <div class="materials-list" id="materials-list"></div>
-                    </div>
                 </div>
 
                 <!-- UC Chat -->
@@ -2695,20 +2663,25 @@ def main():
                     </div>
                 </div>
 
+                <!-- Sticky session nav strip -->
+                <div class="session-nav-strip">
+                    <div class="session-list" id="session-nav-chips"></div>
+                </div>
+
                 <div class="detail-layout">
                     <!-- Notes column -->
                     <div class="panel notes-panel">
                         <div class="notes-toolbar">
-                            <h2 style="margin-bottom:0; font-size:1.1rem;">📝 Apontamentos da sessão</h2>
+                            <h2 style="margin-bottom:0; font-size:1.1rem;">📝 Apontamentos</h2>
                             <span class="notes-saved-indicator" id="session-notes-saved">✓ Guardado</span>
                         </div>
                         <textarea class="notes-textarea" id="session-notes-textarea"
-                            placeholder="Apontamentos específicos desta sessão…&#10;&#10;Guardado automaticamente."></textarea>
+                            placeholder="Apontamentos desta sessão…&#10;&#10;Guardado automaticamente."></textarea>
                     </div>
 
                     <!-- Materials column -->
                     <div class="panel materials-panel">
-                        <h2 style="margin-bottom:0.75rem; font-size:1.1rem;">📎 Materiais da sessão</h2>
+                        <h2 style="margin-bottom:0.75rem; font-size:1.1rem;">📎 Materiais</h2>
                         <div class="add-material-form">
                             <div class="form-row">
                                 <select class="form-select" id="session-mat-type">
@@ -3289,9 +3262,15 @@ def main():
             document.getElementById('session-detail-num').textContent  = `S${{num}} · ${{ucCode}}`;
             document.getElementById('session-detail-uc-name').textContent = uc.descricao || ucCode;
             document.getElementById('session-detail-meta').innerHTML =
-                `<span class="detail-meta-pill">📅 ${{d}}/${{mo}}/${{y}} ${{diaSemana}}</span>` +
-                `<span class="detail-meta-pill">🕐 ${{hora}}</span>` +
-                `<span class="detail-meta-pill">📆 ${{mesAno}}</span>`;
+                `<span class="detail-meta-pill">📅 ${{d}}/${{mo}} ${{diaSemana}}</span>` +
+                `<span class="detail-meta-pill">🕐 ${{hora}}</span>`;
+
+            // Populate sticky session nav strip with all sessions of this UC
+            const sessions = buildUCSchedule(ucCode);
+            let sNum = 1;
+            sessions.forEach(s => {{ s.num = sNum++; }});
+            document.getElementById('session-nav-chips').innerHTML =
+                buildSessionChipsHTML(ucCode, sessions, key);
 
             // Load session notes
             const ta = document.getElementById('session-notes-textarea');
@@ -3520,6 +3499,18 @@ def main():
             return e - s;
         }}
 
+        function buildSessionChipsHTML(ucCode, sessions, activeKey) {{
+            return sessions.map(s => {{
+                const [y, mo, d] = s.data.split('-');
+                const sKey = s.num === 1 ? ucCode : `${{ucCode}}_${{s.data}}`;
+                const isActive = sKey === activeKey ? ' active-session' : '';
+                return `<div class="session-chip ${{s.state}}${{isActive}}" onclick="openSessionDetail('${{ucCode}}','${{s.data}}',${{s.num}},'${{s.hora}}','${{s.dia_semana}}','${{s.mes_ano}}')">
+                    <span class="session-chip-num">S${{s.num}}</span>
+                    <span class="session-chip-date">${{d}}/${{mo}}</span>
+                </div>`;
+            }}).join('');
+        }}
+
         function renderUCSchedule(ucCode) {{
             const sessions = buildUCSchedule(ucCode);
             const contentEl = document.getElementById('uc-schedule-content');
@@ -3538,34 +3529,12 @@ def main():
                 ? `${{doneH.toFixed(0)}}h / ${{totalH.toFixed(0)}}h realizadas`
                 : `${{totalH.toFixed(0)}}h programadas`;
 
-            // Group by month
-            const byMonth = {{}};
-            sessions.forEach(s => {{
-                const key = s.mes_ano;
-                if (!byMonth[key]) byMonth[key] = [];
-                byMonth[key].push(s);
-            }});
-
-            // Assign global session numbers before grouping by month
+            // Assign session numbers
             let sessionNum = 1;
             sessions.forEach(s => {{ s.num = sessionNum++; }});
 
-            contentEl.innerHTML = Object.entries(byMonth).map(([mes, list]) => `
-                <div class="schedule-month-group">
-                    <div class="schedule-month-label">${{mes}}</div>
-                    <div class="session-list">
-                        ${{list.map(s => {{
-                            const [y, mo, d] = s.data.split('-');
-                            return `<div class="session-chip ${{s.state}}" onclick="openSessionDetail('${{ucCode}}','${{s.data}}',${{s.num}},'${{s.hora}}','${{s.dia_semana}}','${{s.mes_ano}}')">
-                                <span class="session-chip-num">S${{s.num}}</span>
-                                <span class="session-chip-date">${{d}}/${{mo}}</span>
-                                <span class="session-chip-day">${{s.dia_semana}}</span>
-                                <span class="session-chip-time">${{s.hora}}</span>
-                            </div>`;
-                        }}).join('')}}
-                    </div>
-                </div>
-            `).join('');
+            // Flat horizontal chips (no month grouping)
+            contentEl.innerHTML = `<div class="session-list">${{buildSessionChipsHTML(ucCode, sessions, null)}}</div>`;
         }}
 
         // ── UC DETAIL ───────────────────────────────────────────────────
@@ -3582,34 +3551,10 @@ def main():
             if (uc.formador)      metaHtml += `<span class="detail-meta-pill">👤 ${{shortName(uc.formador)}}</span>`;
             document.getElementById('detail-uc-meta').innerHTML = metaHtml;
 
-            // Load notes from Firestore (per-user, per-UC)
-            const textarea = document.getElementById('notes-textarea');
-            textarea.value = '';
-            textarea.oninput = () => autoSaveNote(ucCode, textarea.value);
-            document.getElementById('notes-saved-indicator').classList.remove('visible');
-            try {{
-                const res = await fetch(`${{API_URL}}/notes/${{encodeURIComponent(ucCode)}}`, {{
-                    headers: await apiHeaders()
-                }});
-                if (res.ok) {{
-                    const {{ note }} = await res.json();
-                    textarea.value = note || '';
-                    if (note?.trim()) localStorage.setItem(`uc_notes_${{ucCode}}`, '1');
-                }}
-            }} catch (e) {{ console.warn('Não foi possível carregar apontamentos:', e); }}
-
-            // Render this UC's schedule from horarios data
+            // Render sessions (horizontal chips)
             renderUCSchedule(ucCode);
 
-            // Show loading for materials
-            document.getElementById('materials-list').innerHTML =
-                '<div class="no-materials">⏳ A carregar materiais...</div>';
-
             switchView('uc-detail');
-
-            // Load materials from API
-            const list = await getMaterials(ucCode);
-            renderMaterials(list);
 
             // Subscribe UC chat
             ucChatInit(ucCode);
