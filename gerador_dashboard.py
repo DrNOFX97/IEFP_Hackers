@@ -2810,6 +2810,14 @@ def main():
             }} else if (view === 'horario') {{
                 document.getElementById('view-horario').style.display = 'block';
                 monthSelectContainer.style.display = HORARIOS.length > 0 ? 'flex' : 'none';
+                // Saltar para o mês que contém hoje, depois fazer scroll até ao dia
+                const todayIdx = findTodayMonthIndex();
+                if (todayIdx !== -1 && todayIdx !== currentMonthIndex) {{
+                    monthSelect.value = todayIdx;
+                    renderHorario(todayIdx);
+                }} else {{
+                    setTimeout(scrollToToday, 80);
+                }}
             }} else if (view === 'disciplinas') {{
                 document.getElementById('view-disciplinas').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -3151,23 +3159,33 @@ def main():
 
             scheduleGrid.innerHTML = weeksHtml || '<div class="empty-state">Nenhuma aula encontrada.</div>';
 
-            setTimeout(() => {{
-                const todayCol = document.querySelector(`.week-day-col[data-date="${{todayStr}}"]`);
-                if (!todayCol) return;
-                const headerH = (document.querySelector('.app-header')?.offsetHeight || 60) + 16;
-                window.scrollTo({{ top: todayCol.getBoundingClientRect().top + window.scrollY - headerH, behavior: 'smooth' }});
-            }}, 60);
+            setTimeout(scrollToToday, 60);
+        }}
+
+        function findTodayMonthIndex() {{
+            const today = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const todayStr = `${{today.getFullYear()}}-${{pad(today.getMonth()+1)}}-${{pad(today.getDate())}}`;
+            return HORARIOS.findIndex(h => h.dias.some(d => d.data === todayStr));
         }}
 
         function scrollToToday() {{
             const today = new Date();
             const pad = n => String(n).padStart(2, '0');
             const todayStr = `${{today.getFullYear()}}-${{pad(today.getMonth()+1)}}-${{pad(today.getDate())}}`;
+            // cards view
             const card = document.querySelector(`.day-card[data-date="${{todayStr}}"]`);
-            if (!card) return;
-            const headerH = (document.querySelector('.app-header')?.offsetHeight || 60) + 16;
-            const top = card.getBoundingClientRect().top + window.scrollY - headerH;
-            window.scrollTo({{ top, behavior: 'smooth' }});
+            if (card) {{
+                const headerH = (document.querySelector('.app-header')?.offsetHeight || 60) + 16;
+                window.scrollTo({{ top: card.getBoundingClientRect().top + window.scrollY - headerH, behavior: 'smooth' }});
+                return;
+            }}
+            // week view
+            const col = document.querySelector(`.week-day-col[data-date="${{todayStr}}"]`);
+            if (col) {{
+                const headerH = (document.querySelector('.app-header')?.offsetHeight || 60) + 16;
+                window.scrollTo({{ top: col.getBoundingClientRect().top + window.scrollY - headerH, behavior: 'smooth' }});
+            }}
         }}
 
         function openUCFromSchedule(ucCode) {{
