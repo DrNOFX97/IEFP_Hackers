@@ -55,7 +55,7 @@ service cloud.firestore {
       // Só permite revogar (alterar apenas campo 'active')
       allow update: if isModerador()
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active']);
-      allow delete: if isAdmin();
+      allow delete: if isModerador();
     }
 
     // ── notes ─────────────────────────────────────────────────────────

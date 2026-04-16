@@ -4735,6 +4735,17 @@ async def _pg_exec_async(files, ns, tab_id):
             }}
         }}
 
+        async function deleteInvite(token) {{
+            if (!confirm('Apagar este convite permanentemente?')) return;
+            try {{
+                await db.collection('invites').doc(token).delete();
+                toast('Convite apagado');
+                loadInvites();
+            }} catch(e) {{
+                toast('Erro: ' + e.message, 'error');
+            }}
+        }}
+
         async function loadInvites() {{
             const list = document.getElementById('invite-list');
             if (!list) return;
@@ -4791,6 +4802,7 @@ async def _pg_exec_async(files, ns, tab_id):
                     <button class="invite-action-btn" onclick="navigator.clipboard.writeText('${{link}}').then(()=>toast('Link copiado!'))">📋 Copiar link</button>
                     <button class="invite-action-btn" onclick="toggleQR(this,'${{token}}','${{link}}')">📷 QR Code</button>
                     ${{inv.active ? `<button class="invite-action-btn danger" onclick="revokeInvite('${{token}}')">🚫 Revogar</button>` : ''}}
+                    <button class="invite-action-btn danger" onclick="deleteInvite('${{token}}')">🗑️ Apagar</button>
                 </div>
                 <div class="invite-qr-wrap" id="qr-${{token}}" style="display:none;margin-top:0.8rem;"></div>`;
             return div;
