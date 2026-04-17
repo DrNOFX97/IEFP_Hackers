@@ -3276,11 +3276,18 @@ def main():
             document.getElementById('session-nav-chips').innerHTML =
                 buildSessionChipsHTML(ucCode, sessions, key);
 
-            // Load session notes
+            // Reset notes & materials UI before switching view
             const ta = document.getElementById('session-notes-textarea');
             ta.value = '';
             ta.oninput = () => autoSaveSessionNote(key, ta.value);
             document.getElementById('session-notes-saved').classList.remove('visible');
+            document.getElementById('session-materials-list').innerHTML =
+                '<div class="no-materials">⏳ A carregar...</div>';
+
+            // Switch view immediately — don't block on async API calls
+            switchView('session-detail');
+
+            // Load notes async (after view is visible)
             try {{
                 const res = await fetch(`${{API_URL}}/notes/${{encodeURIComponent(key)}}`, {{
                     headers: await apiHeaders()
@@ -3288,12 +3295,7 @@ def main():
                 if (res.ok) {{ const {{ note }} = await res.json(); ta.value = note || ''; }}
             }} catch(e) {{ console.warn('Erro a carregar notas de sessão:', e); }}
 
-            // Load session materials
-            document.getElementById('session-materials-list').innerHTML =
-                '<div class="no-materials">⏳ A carregar materiais...</div>';
-
-            switchView('session-detail');
-
+            // Load materials async
             const list = await getSessionMaterials(key);
             renderSessionMaterials(key, list);
         }}
@@ -3577,8 +3579,10 @@ def main():
                     }});
                 }} catch (e) {{ console.warn('Erro ao guardar apontamentos:', e); }}
                 const indicator = document.getElementById('notes-saved-indicator');
-                indicator.classList.add('visible');
-                setTimeout(() => indicator.classList.remove('visible'), 2000);
+                if (indicator) {{
+                    indicator.classList.add('visible');
+                    setTimeout(() => indicator.classList.remove('visible'), 2000);
+                }}
             }}, 800);
         }}
 
