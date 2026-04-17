@@ -710,6 +710,20 @@ def main():
         .uc-has-notes {{ background: rgba(63,185,80,0.15); color: var(--success-color); }}
         .uc-has-materials {{ background: rgba(0,255,65,0.15); color: var(--accent-color); }}
 
+        /* UC section groups */
+        .uc-section {{ display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem; }}
+        .uc-section-header {{
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);
+        }}
+        .uc-section-icon {{ font-size: 0.9rem; }}
+        .uc-section-title {{ font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-secondary); }}
+        .uc-section-count {{
+            margin-left: 0.35rem; background: rgba(255,255,255,0.07);
+            color: var(--text-secondary); font-size: 0.7rem; font-weight: 600;
+            padding: 0.1rem 0.45rem; border-radius: 10px;
+        }}
+
         /* ── UC DETAIL VIEW ── */
         #view-uc-detail {{ display: none; }}
         #view-session-detail {{ display: none; }}
@@ -2580,7 +2594,7 @@ def main():
                     <h2 style="margin-bottom:0;">Disciplinas</h2>
                     <input type="text" class="uc-search" id="uc-search" placeholder="🔍  Pesquisar UC..." oninput="filterUCs(this.value)">
                 </div>
-                <div class="disciplines-grid" id="disciplines-grid"></div>
+                <div id="disciplines-grid"></div>
             </div>
 
             <!-- VIEW: PLAYGROUND -->
@@ -3424,6 +3438,48 @@ def main():
             return icons[type] || '📎';
         }}
 
+        function buildUCCard(uc) {{
+            const hasNotes     = !!localStorage.getItem(`uc_notes_${{uc.codigo}}`);
+            const numMaterials = parseInt(localStorage.getItem(`uc_mat_count_${{uc.codigo}}`)) || 0;
+            const notesBadge = hasNotes
+                ? `<span class="uc-meta-tag uc-has-notes">📝 Apontamentos</span>` : '';
+            const matBadge = numMaterials > 0
+                ? `<span class="uc-meta-tag uc-has-materials">📎 ${{numMaterials}} material${{numMaterials !== 1 ? 'is' : ''}}</span>` : '';
+            const chBadge = uc.carga_horaria
+                ? `<span class="uc-meta-tag">⏱ ${{uc.carga_horaria}}h</span>` : '';
+            const formBadge = uc.formador
+                ? `<span class="uc-meta-tag">👤 ${{shortName(uc.formador)}}</span>` : '';
+
+            const {{ done: ucDone, scheduled: ucSched }} = computeUCHours(uc.codigo);
+            const ucTarget = uc.carga_horaria;
+            let progressHtml = '';
+            if (ucTarget && ucSched > 0) {{
+                const donePct  = Math.min(100, Math.round((ucDone  / ucTarget) * 100));
+                const schedPct = Math.min(100, Math.round((ucSched / ucTarget) * 100));
+                const label = ucDone > 0
+                    ? `${{ucDone.toFixed(0)}}h realizadas · ${{ucSched.toFixed(0)}}h agendadas · ${{ucTarget}}h total`
+                    : `${{ucSched.toFixed(0)}}h agendadas · ${{ucTarget}}h total`;
+                progressHtml = `
+                    <div class="uc-progress-wrap">
+                        <div class="uc-progress-bar">
+                            <div class="uc-progress-sched" style="width:${{schedPct}}%"></div>
+                            <div class="uc-progress-done"  style="width:${{donePct}}%"></div>
+                        </div>
+                        <div class="uc-progress-label">${{label}}</div>
+                    </div>`;
+            }}
+
+            return `
+            <div class="uc-card" onclick="openUCDetail('${{uc.codigo}}')">
+                <div class="uc-card-code">${{uc.codigo}}</div>
+                <div class="uc-card-name">${{uc.descricao}}</div>
+                ${{progressHtml}}
+                <div class="uc-card-meta">
+                    ${{chBadge}}${{formBadge}}${{notesBadge}}${{matBadge}}
+                </div>
+            </div>`;
+        }}
+
         function renderDisciplines(filter) {{
             const grid = document.getElementById('disciplines-grid');
             const q = (filter || '').toLowerCase();
@@ -3439,47 +3495,42 @@ def main():
                 return;
             }}
 
-            grid.innerHTML = filtered.map(uc => {{
-                const hasNotes     = !!localStorage.getItem(`uc_notes_${{uc.codigo}}`);
-                const numMaterials = parseInt(localStorage.getItem(`uc_mat_count_${{uc.codigo}}`)) || 0;
-                const notesBadge = hasNotes
-                    ? `<span class="uc-meta-tag uc-has-notes">📝 Apontamentos</span>` : '';
-                const matBadge = numMaterials > 0
-                    ? `<span class="uc-meta-tag uc-has-materials">📎 ${{numMaterials}} material${{numMaterials !== 1 ? 'is' : ''}}</span>` : '';
-                const chBadge = uc.carga_horaria
-                    ? `<span class="uc-meta-tag">⏱ ${{uc.carga_horaria}}h</span>` : '';
-                const formBadge = uc.formador
-                    ? `<span class="uc-meta-tag">👤 ${{shortName(uc.formador)}}</span>` : '';
-
-                const {{ done: ucDone, scheduled: ucSched }} = computeUCHours(uc.codigo);
-                const ucTarget = uc.carga_horaria;
-                let progressHtml = '';
-                if (ucTarget && ucSched > 0) {{
-                    const donePct  = Math.min(100, Math.round((ucDone  / ucTarget) * 100));
-                    const schedPct = Math.min(100, Math.round((ucSched / ucTarget) * 100));
-                    const label = ucDone > 0
-                        ? `${{ucDone.toFixed(0)}}h realizadas · ${{ucSched.toFixed(0)}}h agendadas · ${{ucTarget}}h total`
-                        : `${{ucSched.toFixed(0)}}h agendadas · ${{ucTarget}}h total`;
-                    progressHtml = `
-                        <div class="uc-progress-wrap">
-                            <div class="uc-progress-bar">
-                                <div class="uc-progress-sched" style="width:${{schedPct}}%"></div>
-                                <div class="uc-progress-done"  style="width:${{donePct}}%"></div>
-                            </div>
-                            <div class="uc-progress-label">${{label}}</div>
-                        </div>`;
+            // Categorise UCs
+            const emCurso = [], porAgendar = [], concluidas = [];
+            filtered.forEach(uc => {{
+                const {{ done, scheduled }} = computeUCHours(uc.codigo);
+                const target = uc.carga_horaria || scheduled;
+                if (done > 0 && target && done >= target) {{
+                    concluidas.push(uc);
+                }} else if (done > 0) {{
+                    emCurso.push(uc);
+                }} else {{
+                    porAgendar.push(uc);
                 }}
+            }});
 
+            function sectionHtml(title, icon, ucs, emptyMsg) {{
+                if (ucs.length === 0) return '';
                 return `
-                <div class="uc-card" onclick="openUCDetail('${{uc.codigo}}')">
-                    <div class="uc-card-code">${{uc.codigo}}</div>
-                    <div class="uc-card-name">${{uc.descricao}}</div>
-                    ${{progressHtml}}
-                    <div class="uc-card-meta">
-                        ${{chBadge}}${{formBadge}}${{notesBadge}}${{matBadge}}
+                <div class="uc-section">
+                    <div class="uc-section-header">
+                        <span class="uc-section-icon">${{icon}}</span>
+                        <span class="uc-section-title">${{title}}</span>
+                        <span class="uc-section-count">${{ucs.length}}</span>
+                    </div>
+                    <div class="disciplines-grid">
+                        ${{ucs.map(buildUCCard).join('')}}
                     </div>
                 </div>`;
-            }}).join('');
+            }}
+
+            const html = [
+                sectionHtml('Em curso', '🔵', emCurso),
+                sectionHtml('Por agendar', '⏳', porAgendar),
+                sectionHtml('Concluídas', '✅', concluidas),
+            ].join('');
+
+            grid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma UC encontrada.</div>`;
         }}
 
         function filterUCs(value) {{
