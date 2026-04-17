@@ -2817,18 +2817,6 @@ def main():
         const storage = firebase.storage();
         const db      = firebase.firestore();
 
-        // API legada — usada apenas como fallback de leitura durante migração
-        const _LEGACY_API = "https://ciberseg-api-315653817267.europe-west1.run.app";
-        async function _legacyHeaders() {{
-            const token = await auth.currentUser?.getIdToken();
-            return {{ 'Authorization': `Bearer ${{token}}`, 'Content-Type': 'application/json' }};
-        }}
-        function _legacyFetch(url, opts, timeoutMs = 4000) {{
-            const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), timeoutMs);
-            return fetch(url, {{ ...opts, signal: controller.signal }})
-                .finally(() => clearTimeout(tid));
-        }}
 
         // ── STATE ───────────────────────────────────────────────────────
         let currentView         = 'dashboard';
@@ -3310,20 +3298,11 @@ def main():
         }}
 
         async function loadSessionNote(uid, key) {{
-            // 1. Tentar Firestore (dados novos)
-            if (uid) {{
-                try {{
-                    const doc = await db.collection('notes').doc(`${{uid}}_${{key}}`).get();
-                    if (doc.exists) return doc.data().content || '';
-                }} catch(e) {{ /* fallback below */ }}
-            }}
-            // 2. Fallback: API legada (dados anteriores à migração)
+            if (!uid) return '';
             try {{
-                const res = await _legacyFetch(`${{_LEGACY_API}}/notes/${{encodeURIComponent(key)}}`,
-                    {{ headers: await _legacyHeaders() }});
-                if (res.ok) {{ const d = await res.json(); return d.note || ''; }}
-            }} catch(e) {{}}
-            return '';
+                const doc = await db.collection('notes').doc(`${{uid}}_${{key}}`).get();
+                return doc.exists ? (doc.data().content || '') : '';
+            }} catch(e) {{ return ''; }}
         }}
 
         function autoSaveSessionNote(key, value) {{
@@ -3348,18 +3327,8 @@ def main():
             if (materialsCache[key]) return materialsCache[key];
             try {{
                 const doc = await db.collection('materials').doc(key).get();
-                if (doc.exists) {{
-                    const list = doc.data().items || [];
-                    materialsCache[key] = list;
-                    return list;
-                }}
-            }} catch(e) {{ /* fallback below */ }}
-            // Fallback: tentar API legada (dados anteriores à migração Firestore)
-            try {{
-                const res = await _legacyFetch(`${{_LEGACY_API}}/materials/${{encodeURIComponent(key)}}`,
-                    {{ headers: await _legacyHeaders() }});
-                const list = res.ok ? await res.json() : [];
-                if (list.length > 0) materialsCache[key] = list;
+                const list = doc.exists ? (doc.data().items || []) : [];
+                materialsCache[key] = list;
                 return list;
             }} catch(e) {{ return []; }}
         }}
@@ -3607,23 +3576,13 @@ def main():
             ucChatInit(ucCode);
         }}
 
-        // ── MATERIALS (Firestore + fallback API legada) ─────────────────
+        // ── MATERIALS (Firestore) ───────────────────────────────────────
         async function getMaterials(key) {{
             if (materialsCache[key]) return materialsCache[key];
             try {{
                 const doc = await db.collection('materials').doc(key).get();
-                if (doc.exists) {{
-                    const list = doc.data().items || [];
-                    materialsCache[key] = list;
-                    return list;
-                }}
-            }} catch(e) {{ /* fallback below */ }}
-            // Fallback: tentar API legada (dados anteriores à migração Firestore)
-            try {{
-                const res = await _legacyFetch(`${{_LEGACY_API}}/materials/${{encodeURIComponent(key)}}`,
-                    {{ headers: await _legacyHeaders() }});
-                const list = res.ok ? await res.json() : [];
-                if (list.length > 0) materialsCache[key] = list;
+                const list = doc.exists ? (doc.data().items || []) : [];
+                materialsCache[key] = list;
                 return list;
             }} catch(e) {{
                 console.error('Erro ao carregar materiais:', e);
