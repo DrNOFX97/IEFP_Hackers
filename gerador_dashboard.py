@@ -2823,6 +2823,12 @@ def main():
             const token = await auth.currentUser?.getIdToken();
             return {{ 'Authorization': `Bearer ${{token}}`, 'Content-Type': 'application/json' }};
         }}
+        function _legacyFetch(url, opts, timeoutMs = 4000) {{
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), timeoutMs);
+            return fetch(url, {{ ...opts, signal: controller.signal }})
+                .finally(() => clearTimeout(tid));
+        }}
 
         // ── STATE ───────────────────────────────────────────────────────
         let currentView         = 'dashboard';
@@ -3313,7 +3319,7 @@ def main():
             }}
             // 2. Fallback: API legada (dados anteriores à migração)
             try {{
-                const res = await fetch(`${{_LEGACY_API}}/notes/${{encodeURIComponent(key)}}`,
+                const res = await _legacyFetch(`${{_LEGACY_API}}/notes/${{encodeURIComponent(key)}}`,
                     {{ headers: await _legacyHeaders() }});
                 if (res.ok) {{ const d = await res.json(); return d.note || ''; }}
             }} catch(e) {{}}
@@ -3350,7 +3356,7 @@ def main():
             }} catch(e) {{ /* fallback below */ }}
             // Fallback: tentar API legada (dados anteriores à migração Firestore)
             try {{
-                const res = await fetch(`${{_LEGACY_API}}/materials/${{encodeURIComponent(key)}}`,
+                const res = await _legacyFetch(`${{_LEGACY_API}}/materials/${{encodeURIComponent(key)}}`,
                     {{ headers: await _legacyHeaders() }});
                 const list = res.ok ? await res.json() : [];
                 if (list.length > 0) materialsCache[key] = list;
@@ -3614,7 +3620,7 @@ def main():
             }} catch(e) {{ /* fallback below */ }}
             // Fallback: tentar API legada (dados anteriores à migração Firestore)
             try {{
-                const res = await fetch(`${{_LEGACY_API}}/materials/${{encodeURIComponent(key)}}`,
+                const res = await _legacyFetch(`${{_LEGACY_API}}/materials/${{encodeURIComponent(key)}}`,
                     {{ headers: await _legacyHeaders() }});
                 const list = res.ok ? await res.json() : [];
                 if (list.length > 0) materialsCache[key] = list;
