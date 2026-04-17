@@ -1,5 +1,5 @@
 # Ficheiro gerado — recriar com: python gerador_dashboard.py
-dashboard.html
+/dashboard.html
 
 # Dependências Node (Netlify legacy, não usado em produção Firebase)
 node_modules/

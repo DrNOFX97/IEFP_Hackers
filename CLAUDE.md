@@ -45,9 +45,22 @@ Reference documents (PDFs, DOCX, images) live in `docs/`.
 
 ## Architecture
 
-`gerador_dashboard.py` is a single-file generator. It loads the three data sources, serialises them to JSON, and interpolates them directly into a JS `const` at the top of the HTML template (using Python f-strings). The resulting `dashboard.html` is fully self-contained — no server needed.
+Two-file generator:
 
-The HTML/JS side (`dashboard.html`):
+- **`gerador_dashboard.py`** (~260 lines) — Python driver: loads JSON data, injects it into the template, writes `dashboard.html`
+- **`templates/dashboard.html`** — the full HTML/CSS/JS template (real syntax, no Python escaping). Uses `__INJECT_*__` markers as placeholders:
+  - `__INJECT_UC_MAP__` — UC catalogue as a JS object
+  - `__INJECT_UC_LIST__` — UC list as a JS array
+  - `__INJECT_HORARIOS__` — monthly schedules
+  - `__INJECT_CRONOGRAMA__` — programme metadata
+  - `__INJECT_PG_EXAMPLES__` — Playground Python examples
+
+The resulting `dashboard.html` is fully self-contained — no server needed.
+
+**Edit the template** (`templates/dashboard.html`) for any UI/JS/CSS changes.  
+**Edit the driver** (`gerador_dashboard.py`) for data loading or new injection points.
+
+The HTML/JS side (`templates/dashboard.html`):
 - `mergeTimeSlots()` — merges consecutive 1-hour slots of the same UC into one card
 - `renderCronograma()` — fills the sidebar with programme-level info
 - `renderHorario(index)` — renders the selected month's day cards
