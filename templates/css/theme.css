@@ -1,0 +1,368 @@
+/* ── ANIMATIONS ── */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fetchInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fetchInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Sidebar hidden — main content takes full width */
+        .sidebar.sidebar-hidden { display: none; }
+        .container.no-sidebar { grid-template-columns: 1fr; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+            .sidebar { position: relative; top: 0; }
+            .detail-layout { grid-template-columns: 1fr; }
+        }
+
+        /* ── MOBILE NAV ── */
+        .mobile-nav { display: none; }
+
+        @media (max-width: 680px) {
+            /* Compact header on small screens */
+            .app-header-inner { padding: 0 1rem; height: 52px; gap: 0.75rem; }
+            .app-nav { justify-content: flex-start; }
+            .app-brand-text .app-sub { display: none; }
+            .app-controls .month-selector label { display: none; }
+            .app-clock { display: none; }
+            .app-nav-btn.active::after { bottom: -11px; }
+        }
+
+        @media (max-width: 600px) {
+            body { padding-bottom: 72px; }
+            .container { padding: 0.9rem 0.75rem; gap: 0.9rem; }
+            .app-nav { display: none; }   /* Nav moves to bottom tab bar on mobile */
+            .sidebar { gap: 0.9rem; animation: none; }
+            .sidebar.mobile-hidden, .main-content.mobile-hidden { display: none !important; }
+            .panel { padding: 1rem; border-radius: 12px; }
+            h2 { font-size: 1rem; }
+            .schedule-grid { grid-template-columns: 1fr; gap: 0.85rem; }
+            .main-content { animation: none; }
+            .day-card { border-radius: 10px; }
+            .day-header { padding: 0.75rem 1rem; }
+            .day-date { font-size: 0.95rem; }
+            .day-body { padding: 0.75rem; gap: 0.6rem; }
+            .aula-card { padding: 0.6rem 0.75rem; gap: 0.75rem; border-radius: 8px; }
+            .aula-desc { font-size: 0.88rem; }
+            .aula-time { font-size: 0.78rem; }
+            .resumo-row { font-size: 0.82rem; padding: 0.4rem 0; }
+            .info-list li { margin-bottom: 0.75rem; padding-bottom: 0.75rem; }
+            .info-val { font-size: 0.95rem; }
+            .info-label { font-size: 0.75rem; }
+            .disciplines-grid { grid-template-columns: 1fr; }
+            .detail-layout { grid-template-columns: 1fr; }
+            .open-uc-btn { opacity: 1; }
+
+            .mobile-nav {
+                display: flex;
+                position: fixed; bottom: 0; left: 0; right: 0;
+                background: rgba(5, 5, 5, 0.98);
+                border-top: 1px solid var(--border-color);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                z-index: 200;
+                padding: 0.4rem 0.5rem;
+                gap: 0.4rem;
+            }
+            .mobile-nav-btn {
+                flex: 1; background: none; border: none;
+                color: var(--text-secondary); padding: 0.5rem 0.25rem;
+                border-radius: 10px; font-family: 'Fira Code', monospace;
+                cursor: pointer; transition: all 0.2s ease;
+                display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .mobile-nav-btn.active { background: rgba(0, 255, 65, 0.12); color: var(--accent-color); }
+            .mobile-nav-btn .nav-icon { font-size: 1.25rem; line-height: 1; }
+            .mobile-nav-btn .nav-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.03em; }
+        }
+
+        /* ── LIGHT THEME ── */
+        [data-theme="light"] {
+            --bg-color: #f6f8fa;
+            --surface-color: #ffffff;
+            --surface-color-hover: #f0f2f4;
+            --border-color: #c8d3da;
+            --text-primary: #1a7f37;
+            --text-secondary: #57606a;
+            --accent-color: #1a7f37;
+            --accent-glow: rgba(26, 127, 55, 0.2);
+            --gradient-accent: linear-gradient(135deg, #1a7f37 0%, #2da44e 100%);
+            --holiday-color: #6e40c9;
+            --glass-bg: rgba(255, 255, 255, 0.92);
+            --success-color: #1a7f37;
+            --warning-color: #9a6700;
+        }
+        [data-theme="light"] body {
+            background-image:
+                radial-gradient(ellipse at top left, rgba(26,127,55,0.06), transparent 40%),
+                radial-gradient(ellipse at bottom right, rgba(26,127,55,0.04), transparent 40%),
+                linear-gradient(to bottom, rgba(26,127,55,0.02) 1px, transparent 1px);
+        }
+        [data-theme="light"] .app-header { background: rgba(246,248,250,0.97); }
+        [data-theme="light"] .app-title { color: #24292f; }
+        [data-theme="light"] .aula-card { background: rgba(0,0,0,0.03); }
+        [data-theme="light"] .aula-card.clickable:hover { background: rgba(26,127,55,0.06); }
+        [data-theme="light"] .aula-card.current { background: rgba(240,192,64,0.12); }
+        [data-theme="light"] .aula-desc { color: #24292f; }
+        [data-theme="light"] .info-val { color: #24292f; }
+        [data-theme="light"] .notes-textarea {
+            background: rgba(0,0,0,0.03); color: #24292f;
+            border-color: var(--border-color);
+        }
+        [data-theme="light"] .notes-textarea::placeholder { color: #8c959f; }
+        [data-theme="light"] .add-material-form { background: rgba(0,0,0,0.03); }
+        [data-theme="light"] .form-input { background: rgba(0,0,0,0.04); color: #24292f; }
+        [data-theme="light"] .form-select { background: var(--surface-color); color: #24292f; }
+        [data-theme="light"] .material-item { background: rgba(0,0,0,0.03); }
+        [data-theme="light"] .material-video-header { background: rgba(0,0,0,0.06); }
+        [data-theme="light"] .material-video-header:hover { background: rgba(0,0,0,0.1); }
+        [data-theme="light"] .material-label { color: #24292f; }
+        [data-theme="light"] .week-aula-card { background: rgba(0,0,0,0.04); }
+        [data-theme="light"] .week-aula-card.clickable:hover { background: rgba(26,127,55,0.08); }
+        [data-theme="light"] .week-day-header { background: #f6f8fa; }
+        [data-theme="light"] .week-label { background: #f0f2f4; color: #57606a; }
+        [data-theme="light"] .uc-card-name { color: #24292f; }
+        [data-theme="light"] .detail-uc-name { color: #24292f; }
+        [data-theme="light"] .session-chip { background: rgba(0,0,0,0.04); }
+        [data-theme="light"] .uc-meta-tag { background: rgba(0,0,0,0.06); }
+        [data-theme="light"] .resumo-row { border-bottom-color: rgba(0,0,0,0.07); }
+        [data-theme="light"] .app-divider { background: #d0d7de; }
+        [data-theme="light"] .mobile-nav { background: rgba(246,248,250,0.98); }
+        [data-theme="light"] .empty-card { background: rgba(0,0,0,0.02); }
+        [data-theme="light"] .day-date { color: #24292f; }
+        [data-theme="light"] .week-aula-desc { color: #24292f; }
+        [data-theme="light"] .file-drop-zone { color: #57606a; }
+
+        /* ── THEME TOGGLE & NOTIF BUTTONS ── */
+        .theme-toggle-btn, .notif-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 7px;
+            padding: 0.3rem 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.18s;
+            line-height: 1;
+            color: var(--text-secondary);
+        }
+        .theme-toggle-btn:hover, .notif-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        .notif-btn.active { color: var(--accent-color); border-color: var(--accent-color); }
+        .notif-btn.denied { opacity: 0.4; cursor: not-allowed; }
+
+        /* ── UC DETAIL PDF BUTTON ── */
+        .btn-pdf-uc {
+            padding: 0.28rem 0.65rem;
+            font-size: 0.75rem;
+        }
+
+        /* ── WEEK VIEW ── */
+        .schedule-grid.week-view { display: flex; flex-direction: column; gap: 1.25rem; }
+        .week-block {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .week-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .week-days {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            min-width: 0;
+            overflow-x: auto;
+        }
+        .week-day-col {
+            border-right: 1px solid var(--border-color);
+            min-width: 120px;
+        }
+        .week-day-col:last-child { border-right: none; }
+        .week-day-col.no-class { opacity: 0.35; }
+        .week-day-col.col-hidden { opacity: 0.1; }
+        .week-day-col.today .week-day-header {
+            background: rgba(0,255,65,0.08);
+            border-bottom-color: rgba(0,255,65,0.3);
+        }
+        .week-day-col.today .week-day-name { color: var(--accent-color); }
+        .week-day-header {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .week-day-name { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); }
+        .week-day-date { font-size: 0.75rem; color: var(--text-secondary); }
+        .week-day-body { padding: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; min-height: 60px; }
+        .week-aula-card {
+            background: rgba(0,0,0,0.25);
+            border-left: 3px solid var(--accent-color);
+            border-radius: 6px;
+            padding: 0.4rem 0.5rem;
+            cursor: default;
+            transition: all 0.2s;
+        }
+        .week-aula-card.clickable { cursor: pointer; }
+        .week-aula-card.clickable:hover { background: rgba(0,255,65,0.08); }
+        .week-aula-card.past { border-left-color: #444; opacity: 0.4; filter: grayscale(0.9); }
+        .week-aula-card.current { border-left-color: #f0c040; background: rgba(240,192,64,0.07); }
+        .week-aula-card.holiday { border-left-color: var(--holiday-color); }
+        .week-aula-card.filtered-out { opacity: 0.1; filter: grayscale(1); pointer-events: none; }
+        .week-aula-card.remote { border-left-color: #2ecc71; background: rgba(46,204,113,0.07); }
+        .week-aula-card.remote .week-aula-desc { color: #2ecc71; }
+        .week-aula-card.remote.clickable:hover { background: rgba(46,204,113,0.14); border-left-color: #5fdc91; }
+        .week-aula-card.remote.past { border-left-color: #1a5e36; background: transparent; opacity: 0.4; }
+        .week-aula-card.remote.past .week-aula-desc { color: inherit; }
+        .week-aula-time { font-size: 0.68rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.15rem; }
+        .week-aula-card.current .week-aula-time { color: #f0c040; }
+        .week-aula-desc { font-size: 0.75rem; font-weight: 500; color: var(--text-primary); line-height: 1.3; }
+        .week-aula-uc { font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.15rem; }
+        @media (max-width: 680px) {
+            .schedule-filter { width: 140px; font-size: 0.78rem; }
+            .schedule-filter:focus { width: 160px; }
+        }
+        @media (max-width: 600px) {
+            .schedule-controls { gap: 0.4rem; }
+            .schedule-filter { width: 120px; }
+            .week-day-col { min-width: 100px; }
+        }
+
+        /* ── HOJE PANEL ── */
+        .hoje-empty {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        .hoje-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .hoje-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            padding: 0.45rem 0.65rem;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+            border-left: 3px solid var(--accent-color);
+        }
+        .hoje-item.past { border-left-color: #444; opacity: 0.45; }
+        .hoje-item.current { border-left-color: #f0c040; background: rgba(240,192,64,0.07); }
+        .hoje-item.holiday { border-left-color: var(--holiday-color); }
+        .hoje-time {
+            font-size: 0.76rem; font-weight: 700;
+            color: var(--accent-color); white-space: nowrap; padding-top: 0.1rem;
+        }
+        .hoje-item.current .hoje-time { color: #f0c040; }
+        .hoje-info { display: flex; flex-direction: column; gap: 0.1rem; }
+        .hoje-desc { font-size: 0.83rem; font-weight: 500; color: var(--text-primary); line-height: 1.3; }
+        .hoje-uc { font-size: 0.7rem; color: var(--text-secondary); }
+
+        /* ── PROGRESS BARS ── */
+        .progress-wrap {
+            height: 6px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-color);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+            box-shadow: 0 0 6px rgba(0,255,65,0.4);
+        }
+        .global-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            margin-bottom: 0.4rem;
+        }
+        .global-progress-label span:first-child { color: #fff; font-weight: 600; }
+        .global-progress-label span:last-child { color: var(--text-secondary); }
+        .progress-sub {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+            opacity: 0.7;
+        }
+        #global-progress-wrap {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* ── UC CARD PROGRESS ── */
+        .uc-progress-wrap { margin: 0.15rem 0 0.1rem; }
+        .uc-progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        .uc-progress-sched {
+            position: absolute; top: 0; left: 0; height: 100%;
+            background: rgba(0,255,65,0.22);
+            border-radius: 3px;
+        }
+        .uc-progress-done {
+            position: absolute; top: 0; left: 0; height: 100%;
+            background: var(--accent-color);
+            border-radius: 3px;
+            box-shadow: 0 0 4px rgba(0,255,65,0.35);
+        }
+        .uc-progress-label {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        /* ── AUTH GATE ───────────────────────────────────────────── */
+        #auth-gate {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg-color);
+        }
+        .auth-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 3rem 2.5rem;
+            text-align: center;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .auth-logo { font-size: 3rem; margin-bottom: 1rem; }
+        .auth-title { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; }
+        .auth-sub { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.5; }
+        .auth-btn {
+            background: #fff; color: #333;
+            border: 1px solid #ddd; border-radius: 0.5rem;
+            padding: 0.7rem 1.5rem; font-size: 0.88rem; font-weight: 600;
+            cursor: pointer; width: 100%; font-family: inherit;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s, box-shadow 0.15s;
+            margin-bottom: 0.6rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .auth-btn:hover { background: #f5f5f5; box-shadow: 0 2px 6px rgba(0,0,0,0.18); }
+        /* User chip in header */
+        .user-chip {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.78rem; color: var(--text-secondary);
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 2rem; padding: 0.3rem 0.8rem;
+            cursor: pointer; transition: border-color 0.2s;
+        }
+        .user-chip:hover { border-color: var(--accent-color); color: var(--text-primary); }
+        .user-chip-avatar { width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--accent-color); color: #000; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }

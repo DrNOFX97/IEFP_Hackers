@@ -45,22 +45,45 @@ Reference documents (PDFs, DOCX, images) live in `docs/`.
 
 ## Architecture
 
-Two-file generator:
-
-- **`gerador_dashboard.py`** (~260 lines) — Python driver: loads JSON data, injects it into the template, writes `dashboard.html`
-- **`templates/dashboard.html`** — the full HTML/CSS/JS template (real syntax, no Python escaping). Uses `__INJECT_*__` markers as placeholders:
-  - `__INJECT_UC_MAP__` — UC catalogue as a JS object
-  - `__INJECT_UC_LIST__` — UC list as a JS array
-  - `__INJECT_HORARIOS__` — monthly schedules
-  - `__INJECT_CRONOGRAMA__` — programme metadata
-  - `__INJECT_PG_EXAMPLES__` — Playground Python examples
+```
+gerador_dashboard.py       # Python driver (~310 lines): loads JSON, assembles and writes dashboard.html
+templates/
+  dashboard.html           # HTML skeleton (~405 lines): structure only, no CSS/JS
+  css/
+    variables.css          # :root variables, base reset
+    layout.css             # header, sidebar, main layout
+    components.css         # schedule, disciplines, UC detail, PDF, progress, auth
+    theme.css              # animations, responsive, mobile nav, light theme, week view
+    playground.css         # playground editor
+    nav-sidebar.css        # new nav sidebar layout
+    views.css              # view-specific styles, tablet/phone breakpoints, chat
+  js/
+    data.js                # __INJECT_*__ markers (UC_MAP, UC_LIST, HORARIOS, CRONOGRAMA, PG_EXAMPLES)
+    firebase.js            # Firebase init (db, auth, storage)
+    utils.js               # escapeHtml, shortName, calcSessionHours, etc.
+    state.js               # global state variables, DOM refs
+    views.js               # switchView(), mobile sidebar/more menu
+    horario.js             # mergeTimeSlots, renderCronograma, renderHorario, aula state
+    disciplinas.js         # renderDisciplines, UC detail, UC schedule
+    materials.js           # session materials (Firestore)
+    turma.js               # renderTurma, presence/heartbeat
+    chat.js                # full-page chat + UC inline chat
+    auth.js                # Firebase auth (Google, Microsoft sign-in)
+    dashboard.js           # dashboard view, hoje/amanhã, progress, theme toggle, clock
+    playground.js          # Python/SQL execution, CodeMirror, file management
+    pdf.js                 # PDF generation (list, weekly, UC detail)
+    convites.js            # invitation management
+    definicoes.js          # settings view
+    init.js                # DOMContentLoaded, invite token capture
+```
 
 The resulting `dashboard.html` is fully self-contained — no server needed.
 
-**Edit the template** (`templates/dashboard.html`) for any UI/JS/CSS changes.  
-**Edit the driver** (`gerador_dashboard.py`) for data loading or new injection points.
+**To edit UI/CSS/JS:** edit files in `templates/css/` or `templates/js/`, then re-run the generator.  
+**To add a new JS module:** create the file, add it to the `js_files` list in `gerador_dashboard.py`.  
+**To add a new data injection point:** add the `__INJECT_FOO__` marker in `js/data.js` and replace it in `gerador_dashboard.py`.
 
-The HTML/JS side (`templates/dashboard.html`):
+Key JS functions:
 - `mergeTimeSlots()` — merges consecutive 1-hour slots of the same UC into one card
 - `renderCronograma()` — fills the sidebar with programme-level info
 - `renderHorario(index)` — renders the selected month's day cards

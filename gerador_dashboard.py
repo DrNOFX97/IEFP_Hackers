@@ -243,16 +243,62 @@ def main():
         with open(crono_file, 'r', encoding='utf-8') as f:
             cronograma = json.load(f).get('cronograma', {})
 
-    # 4. Read template and inject data
-    template_path = os.path.join(os.path.dirname(__file__), 'templates', 'dashboard.html')
-    with open(template_path, 'r', encoding='utf-8') as f:
+    # 4. Assemble CSS and JS from source files
+    tpl_dir = os.path.join(os.path.dirname(__file__), 'templates')
+
+    css_files = [
+        'css/variables.css',
+        'css/layout.css',
+        'css/components.css',
+        'css/theme.css',
+        'css/playground.css',
+        'css/nav-sidebar.css',
+        'css/views.css',
+    ]
+    js_files = [
+        'js/data.js',
+        'js/firebase.js',
+        'js/utils.js',
+        'js/state.js',
+        'js/views.js',
+        'js/horario.js',
+        'js/disciplinas.js',
+        'js/materials.js',
+        'js/turma.js',
+        'js/chat.js',
+        'js/auth.js',
+        'js/dashboard.js',
+        'js/playground.js',
+        'js/pdf.js',
+        'js/convites.js',
+        'js/definicoes.js',
+        'js/init.js',
+    ]
+
+    def read_parts(file_list):
+        parts = []
+        for rel in file_list:
+            path = os.path.join(tpl_dir, rel)
+            with open(path, 'r', encoding='utf-8') as f:
+                parts.append(f.read())
+        return '\n'.join(parts)
+
+    css = read_parts(css_files)
+    js  = read_parts(js_files)
+
+    # 5. Read HTML skeleton and inject everything
+    with open(os.path.join(tpl_dir, 'dashboard.html'), 'r', encoding='utf-8') as f:
         html = f.read()
 
-    html = html.replace('__INJECT_UC_MAP__',     json.dumps(uc_map,           ensure_ascii=False))
-    html = html.replace('__INJECT_UC_LIST__',    json.dumps(uc_list,          ensure_ascii=False))
-    html = html.replace('__INJECT_HORARIOS__',   json.dumps(horarios,         ensure_ascii=False))
-    html = html.replace('__INJECT_CRONOGRAMA__', json.dumps(cronograma,       ensure_ascii=False))
-    html = html.replace('__INJECT_PG_EXAMPLES__',json.dumps(build_pg_examples(), ensure_ascii=False))
+    html = html.replace('__INJECT_CSS__', css)
+    html = html.replace('__INJECT_JS__',  js)
+
+    # Inject data into JS constants (markers live in js/data.js)
+    html = html.replace('__INJECT_UC_MAP__',      json.dumps(uc_map,              ensure_ascii=False))
+    html = html.replace('__INJECT_UC_LIST__',     json.dumps(uc_list,             ensure_ascii=False))
+    html = html.replace('__INJECT_HORARIOS__',    json.dumps(horarios,            ensure_ascii=False))
+    html = html.replace('__INJECT_CRONOGRAMA__',  json.dumps(cronograma,          ensure_ascii=False))
+    html = html.replace('__INJECT_PG_EXAMPLES__', json.dumps(build_pg_examples(), ensure_ascii=False))
 
     # 5. Write output
     with open('dashboard.html', 'w', encoding='utf-8') as f:

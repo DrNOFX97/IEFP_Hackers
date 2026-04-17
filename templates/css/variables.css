@@ -1,0 +1,57 @@
+:root {
+            --bg-color: #050505;
+            --surface-color: #0d0d0d;
+            --surface-color-hover: #1a1a1a;
+            --border-color: #1b3320;
+            --text-primary: #00ff41;
+            --text-secondary: #2f8c47;
+            --accent-color: #00ff41;
+            --accent-glow: rgba(0, 255, 65, 0.4);
+            --gradient-accent: linear-gradient(135deg, #008f11 0%, #00ff41 100%);
+            --holiday-color: #8957e5;
+            --glass-bg: rgba(5, 5, 5, 0.85);
+            --success-color: #3fb950;
+            --warning-color: #d29922;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Fira Code', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            background-image:
+                radial-gradient(ellipse at top left, rgba(0, 143, 17, 0.15), transparent 40%),
+                radial-gradient(ellipse at bottom right, rgba(137, 87, 229, 0.1), transparent 40%);
+            min-height: 100vh;
+            background-size: 100% 100%, 100% 100%, 100% 4px;
+            background-image: radial-gradient(ellipse at top left, rgba(0, 255, 65, 0.1), transparent 40%), radial-gradient(ellipse at bottom right, rgba(0, 143, 17, 0.1), transparent 40%), linear-gradient(to bottom, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* ── APP HEADER ── */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(5, 5, 5, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .app-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent-color) 50%, transparent 100%);

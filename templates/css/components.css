@@ -1,0 +1,689 @@
+/* ── MAIN CONTENT ── */
+        .main-content { animation: fetchInRight 0.8s ease-out; }
+
+        /* ── SCHEDULE ── */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .day-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .day-card:hover { border-color: var(--accent-color); box-shadow: 0 0 15px var(--accent-glow); transform: translateY(-2px); }
+
+        .day-header {
+            background: rgba(255,255,255,0.03);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .day-date { font-weight: 600; font-size: 1.1rem; color: #fff; }
+
+        .badge {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--accent-color);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        .badge.remote { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+
+        .day-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+
+        .aula-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 0.75rem;
+            border-left: 3px solid var(--accent-color);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        .aula-card.clickable { cursor: pointer; }
+        .aula-card.clickable:hover {
+            background: rgba(0, 255, 65, 0.08);
+            border-left-color: #50ff7a;
+            transform: translateX(2px);
+        }
+        .holiday { border-left-color: var(--holiday-color); }
+        .empty-card { border-left: 3px solid var(--border-color); opacity: 0.6; }
+        .aula-card.past { border-left-color: #444; opacity: 0.4; filter: grayscale(0.9); }
+        .aula-card.current { border-left-color: #f0c040; background: rgba(240,192,64,0.07); box-shadow: 0 0 14px rgba(240,192,64,0.3); }
+        .aula-card.current .aula-desc, .aula-card.current .aula-time { color: #f0c040; }
+        .aula-card.remote {
+            border-left-color: #2ecc71;
+            background: rgba(46,204,113,0.07);
+            border-style: dashed;
+        }
+        .aula-card.remote .aula-desc { color: #2ecc71; }
+        .aula-card.remote.clickable:hover { background: rgba(46,204,113,0.14); border-left-color: #5fdc91; }
+        .aula-card.remote.past { border-left-color: #1a5e36; background: transparent; }
+        .aula-card.remote.past .aula-desc { color: inherit; }
+
+        .aula-time { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+        .aula-info { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+        .aula-desc { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); }
+        .aula-uc.badge { align-self: flex-start; background: rgba(255,255,255,0.05); color: var(--text-secondary); margin-top: 5px; }
+
+        .open-uc-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            opacity: 0;
+        }
+        .aula-card.clickable:hover .open-uc-btn { opacity: 1; color: var(--accent-color); }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--surface-color);
+            border-radius: 12px;
+            border: 1px dashed var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        /* ── DISCIPLINES VIEW ── */
+        #view-disciplinas { display: none; }
+
+        .disciplines-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .uc-search {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            width: 220px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .uc-search:focus { border-color: var(--accent-color); }
+        .uc-search::placeholder { color: var(--text-secondary); }
+
+        .disciplines-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .uc-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .uc-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: var(--accent-color);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .uc-card:hover { border-color: var(--accent-color); box-shadow: 0 0 15px var(--accent-glow); transform: translateY(-2px); }
+        .uc-card:hover::before { opacity: 1; }
+
+        .uc-card-code {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .uc-card-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        .uc-card-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: auto;
+        }
+        .uc-meta-tag {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+        .uc-has-notes { background: rgba(63,185,80,0.15); color: var(--success-color); }
+        .uc-has-materials { background: rgba(0,255,65,0.15); color: var(--accent-color); }
+
+        /* UC section groups */
+        .uc-section { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem; }
+        .uc-section-header {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);
+        }
+        .uc-section-icon { font-size: 0.9rem; }
+        .uc-section-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-secondary); }
+        .uc-section-count {
+            margin-left: 0.35rem; background: rgba(255,255,255,0.07);
+            color: var(--text-secondary); font-size: 0.7rem; font-weight: 600;
+            padding: 0.1rem 0.45rem; border-radius: 10px;
+        }
+
+        /* ── UC DETAIL VIEW ── */
+        #view-uc-detail { display: none; }
+        #view-session-detail { display: none; }
+
+        .detail-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .back-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+        .back-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+
+        .detail-title-block { flex: 1; }
+        .detail-uc-code { font-size: 0.85rem; color: var(--accent-color); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+        .detail-uc-name { font-size: 1.4rem; font-weight: 600; color: #fff; line-height: 1.3; }
+        .detail-uc-meta { display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .detail-meta-pill {
+            background: rgba(255,255,255,0.06);
+            color: var(--text-secondary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+        }
+
+        .detail-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 1.5rem;
+        }
+
+        /* Notes */
+        .notes-panel { display: flex; flex-direction: column; gap: 1rem; }
+        .notes-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .notes-saved-indicator {
+            font-size: 0.78rem;
+            color: var(--success-color);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .notes-saved-indicator.visible { opacity: 1; }
+        .notes-textarea {
+            width: 100%;
+            min-height: 340px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .notes-textarea:focus { border-color: var(--accent-color); }
+        .notes-textarea::placeholder { color: var(--text-secondary); }
+
+        /* Materials */
+        .materials-panel { display: flex; flex-direction: column; gap: 1rem; }
+
+        .add-material-form {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .form-row { display: flex; gap: 0.5rem; }
+        .form-input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.45rem 0.75rem;
+            border-radius: 7px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: var(--accent-color); }
+        .form-input::placeholder { color: var(--text-secondary); }
+        .form-select {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.45rem 0.6rem;
+            border-radius: 7px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+        }
+        .form-select:focus { border-color: var(--accent-color); }
+
+        .btn-primary {
+            background: rgba(0,255,65,0.15);
+            border: 1px solid rgba(0,255,65,0.3);
+            color: var(--accent-color);
+            padding: 0.45rem 1rem;
+            border-radius: 7px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-primary:hover { background: rgba(0,255,65,0.25); }
+
+        .file-drop-zone {
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .file-drop-zone:hover, .file-drop-zone.drag-over {
+            border-color: var(--accent-color);
+            background: rgba(0,255,65,0.05);
+            color: var(--accent-color);
+        }
+        .file-drop-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+        }
+
+        .materials-list { display: flex; flex-direction: column; gap: 0.6rem; overflow: hidden; min-width: 0; }
+        .material-video-wrap {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+        .material-video-header {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.65rem 1rem;
+            background: rgba(0,0,0,0.3);
+            cursor: pointer;
+            user-select: none;
+        }
+        .material-video-header:hover { background: rgba(0,0,0,0.45); }
+        .material-video-toggle { font-size: 0.75rem; color: var(--text-secondary); margin-left: auto; flex-shrink:0; }
+        .material-video-player {
+            display: none;
+            width: 100%;
+            max-height: 360px;
+            background: #000;
+        }
+        .material-video-player.open { display: block; }
+        .material-video-player video {
+            width: 100%;
+            max-height: 360px;
+            display: block;
+        }
+        .material-video-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+        .material-item {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: border-color 0.2s;
+            overflow: hidden;
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .material-item:hover { border-color: rgba(0,255,65,0.4); }
+        .material-item.clickable-card { cursor: pointer; }
+        .material-item.clickable-card:hover { border-color: rgba(0,255,65,0.6); background: rgba(0,255,65,0.04); }
+        .material-icon { font-size: 1.2rem; flex-shrink: 0; }
+        .material-info { flex: 1; min-width: 0; overflow: hidden; }
+        .material-label { font-size: 0.9rem; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .material-url { font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 100%; }
+        .material-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+        .material-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.3rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+            color: var(--text-secondary);
+        }
+        .material-btn:hover { background: var(--surface-color-hover); }
+        .material-btn.delete:hover { color: #f85149; }
+        .material-btn.open:hover { color: var(--accent-color); }
+
+        /* ── PDF THUMBNAIL ── */
+        .material-item.pdf-thumb {
+            cursor: pointer;
+            flex-direction: column;
+            gap: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .material-item.pdf-thumb:hover { border-color: rgba(0,255,65,0.5); transform: translateY(-1px); }
+        .pdf-thumb-preview {
+            width: 100%;
+            height: 90px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .pdf-thumb-footer {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 0.75rem;
+            width: 100%;
+        }
+        .pdf-thumb-footer .material-info { min-width: 0; flex: 1; }
+        .pdf-thumb-meta { font-size: 0.7rem; color: var(--text-secondary); }
+
+        /* ── PDF MODAL ── */
+        .pdf-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .pdf-modal-overlay.open { display: flex; }
+        .pdf-modal-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: min(900px, 100%);
+            height: min(90vh, 800px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .pdf-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .pdf-modal-title {
+            flex: 1;
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-primary);
+        }
+        .pdf-modal-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .pdf-modal-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.82rem;
+            cursor: pointer;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: background 0.2s;
+        }
+        .pdf-modal-btn:hover { background: var(--surface-color-hover); }
+        .pdf-modal-btn.close:hover { color: #f85149; }
+        .pdf-modal-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #525659;
+        }
+
+        /* ── UC SCHEDULE SECTION ── */
+        .uc-schedule-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .uc-schedule-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .uc-schedule-header h2 {
+            margin-bottom: 0;
+            font-size: 1.1rem;
+        }
+        .uc-total-hours {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+        }
+        .schedule-month-group { margin-bottom: 1rem; }
+        .schedule-month-group:last-child { margin-bottom: 0; }
+        .schedule-month-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.5rem;
+        }
+        .session-list {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding-bottom: 0.4rem;
+            scrollbar-width: thin;
+        }
+        .session-nav-strip {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.6rem 0 0.6rem 0;
+            margin-bottom: 1rem;
+        }
+        .session-nav-strip .session-list { padding-bottom: 0; }
+        .session-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.2);
+            font-size: 0.78rem;
+            transition: border-color 0.2s, opacity 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .session-chip:hover { border-color: rgba(0,255,65,0.4); opacity: 1 !important; filter: none !important; }
+        .session-chip.past { opacity: 0.45; filter: grayscale(0.6); }
+        .session-chip.current {
+            border-color: #f0c040;
+            background: rgba(240,192,64,0.08);
+        }
+        .session-chip.active-session {
+            border-color: var(--accent-color);
+            background: rgba(0,255,65,0.08);
+        }
+        .session-chip-num { font-weight: 700; color: var(--accent-color); }
+        .session-chip.current .session-chip-num { color: #f0c040; }
+        .session-chip.active-session .session-chip-num { color: var(--accent-color); }
+        .session-chip.past .session-chip-num { color: var(--text-secondary); }
+        .session-chip-date { color: var(--text-secondary); font-size: 0.7rem; }
+        .session-chip.current .session-chip-date { color: #f0c040; }
+        .session-chip.active-session .session-chip-date { color: var(--text-primary); }
+        .no-sessions-msg {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .no-materials {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            padding: 1.5rem;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+        }
+
+        /* ── PDF DOWNLOAD BUTTON ── */
+        .btn-pdf {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(0,255,65,0.1);
+            border: 1px solid rgba(0,255,65,0.25);
+            color: var(--accent-color);
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .btn-pdf:hover {
+            background: rgba(0,255,65,0.2);
+            border-color: rgba(0,255,65,0.5);
+            box-shadow: 0 0 10px rgba(0,255,65,0.2);
+        }
+        .btn-pdf:active { transform: scale(0.97); }
+        .btn-pdf.loading { opacity: 0.6; pointer-events: none; }
+        .pdf-group { display: flex; gap: 0.3rem; }
+        .schedule-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 0 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: sticky;
+            top: -2rem;
+            margin: -2rem -2.5rem 0;
+            padding: 1.5rem 2.5rem 1rem;
+            background: var(--bg-color);
+            z-index: 50;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .schedule-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-shrink: 0;
+        }
+        .schedule-filter {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.38rem 0.75rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.84rem;
+            width: 200px;
+            outline: none;
+            transition: border-color 0.2s, width 0.3s;
+        }
+        .schedule-filter:focus { border-color: var(--accent-color); width: 240px; }
+        .schedule-filter::placeholder { color: var(--text-secondary); }
+        .view-toggle {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .view-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.38rem 0.6rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.18s;
+            line-height: 1;
+        }
+        .view-toggle-btn:hover { background: var(--surface-color-hover); color: var(--text-primary); }
+        .view-toggle-btn.active { background: rgba(0,255,65,0.15); color: var(--accent-color); }
+        .aula-card.filtered-out { opacity: 0.15; filter: grayscale(1); pointer-events: none; }

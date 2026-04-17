@@ -1,0 +1,210 @@
+opacity: 0.35;
+        }
+        .app-header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .app-header-row1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .app-header-row2 {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        /* Brand */
+        .app-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-shrink: 0;
+            text-decoration: none;
+        }
+        .app-logo {
+            width: 34px; height: 34px;
+            background: var(--gradient-accent);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 0 12px rgba(0,255,65,0.3);
+            flex-shrink: 0;
+        }
+        .app-brand-text { display: flex; flex-direction: column; gap: 0; }
+        .app-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+        }
+        .app-sub {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        /* Vertical divider */
+        .app-divider {
+            width: 1px; height: 22px;
+            background: var(--border-color);
+            flex-shrink: 0;
+        }
+
+        /* Central nav */
+        .app-nav {
+            display: flex;
+            gap: 0.2rem;
+            flex: 1;
+            justify-content: center;
+        }
+        .app-nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.45rem 1.1rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            position: relative;
+            white-space: nowrap;
+        }
+        .app-nav-btn:hover {
+            background: var(--surface-color-hover);
+            color: var(--text-primary);
+        }
+        .app-nav-btn.active {
+            background: rgba(0,255,65,0.12);
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        .app-nav-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -14px;
+            left: 50%; transform: translateX(-50%);
+            width: 20px; height: 2px;
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        /* Right controls */
+        .app-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        .month-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .month-selector label {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .month-selector select {
+            background: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.32rem 0.6rem;
+            border-radius: 7px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.82rem;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .month-selector select:focus { border-color: var(--accent-color); }
+        .app-clock {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 0.32rem 0.75rem;
+            border-radius: 7px;
+        }
+
+        /* ── GLASS PANEL ── */
+        .panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: sticky;
+            top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            animation: fetchInLeft 0.8s ease-out;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        h2::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 20px;
+            background: var(--accent-color);
+            border-radius: 4px;
+        }
+
+        .info-list { list-style: none; }
+        .info-list li {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .info-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .info-label { font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+        .info-val { font-size: 1.05rem; font-weight: 500; color: #fff; }
+
+        .resumo-table { margin-top: 1rem; font-size: 0.9rem; }
+        .resumo-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .resumo-row.highlight { color: var(--accent-color); font-weight: 600; }
+        .resumo-row div:nth-child(2), .resumo-row div:nth-child(3) { text-align: right; color: inherit; }
