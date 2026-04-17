@@ -4645,6 +4645,8 @@ async def _pg_exec_async(files, ns, tab_id):
                 }}
                 // Write user presence to Firestore for Turma panel
                 userPresenceWrite(user);
+                // Heartbeat every 2 min to keep lastSeen fresh
+                setInterval(() => userPresenceWrite(auth.currentUser), 2 * 60 * 1000);
                 // Mostrar link de admin/moderador (role já verificado em onAuthStateChanged)
                 const adminLink = document.getElementById('nav-admin-link');
                 if (adminLink && (window._userRole === 'admin' || window._userRole === 'moderador')) {{
@@ -4803,19 +4805,28 @@ async def _pg_exec_async(files, ns, tab_id):
                     return;
                 }}
                 const uid = auth.currentUser?.uid;
-                const activeDocs = snap.docs.filter(doc => (doc.data().role || 'aluno') !== 'blocked');
-                if (!activeDocs.length) {{
-                    grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Nenhum colega ainda.</span>';
+                const ONLINE_MS = 5 * 60 * 1000; // 5 minutos
+                const now = Date.now();
+                const onlineDocs = snap.docs.filter(doc => {{
+                    const d = doc.data();
+                    if ((d.role || 'aluno') === 'blocked') return false;
+                    const ls = d.lastSeen?.toDate?.();
+                    // o utilizador atual conta sempre como online
+                    if (d.uid === uid) return true;
+                    return ls && (now - ls.getTime()) < ONLINE_MS;
+                }});
+                if (!onlineDocs.length) {{
+                    grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Nenhum colega online.</span>';
                     return;
                 }}
-                grid.innerHTML = activeDocs.map(doc => {{
+                grid.innerHTML = onlineDocs.map(doc => {{
                     const m = doc.data();
                     const initials = (m.displayName || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
                     const isMe = m.uid === uid;
                     const avatarHtml = m.photoURL
                         ? `<div class="turma-chip-avatar"><img src="${{escapeHtml(m.photoURL)}}" loading="lazy"></div>`
                         : `<div class="turma-chip-avatar">${{escapeHtml(initials)}}</div>`;
-                    return `<div class="turma-chip${{isMe ? ' online' : ''}}" onclick="switchView('turma')" style="cursor:pointer;">
+                    return `<div class="turma-chip online" onclick="switchView('turma')" style="cursor:pointer;">
                         ${{avatarHtml}}
                         <span>${{escapeHtml(m.displayName?.split(' ')[0] || 'Anónimo')}}</span>
                     </div>`;
