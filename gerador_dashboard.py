@@ -2501,12 +2501,12 @@ def main():
                 <button class="nav-item" data-view="turma" onclick="switchView('turma')">
                     <span class="nav-item-icon">👥</span><span class="nav-item-label"> Turma</span>
                 </button>
-                <button class="nav-item" data-view="playground" onclick="switchView('playground')">
-                    <span class="nav-item-icon">💻</span><span class="nav-item-label"> Playground</span>
-                </button>
                 <button class="nav-item" data-view="chat" id="nav-item-chat" onclick="switchView('chat')">
                     <span class="nav-item-icon">💬</span><span class="nav-item-label"> Chat</span>
                     <span class="nav-item-badge" id="nav-chat-badge"></span>
+                </button>
+                <button class="nav-item" data-view="playground" onclick="switchView('playground')">
+                    <span class="nav-item-icon">💻</span><span class="nav-item-label"> Playground <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
                 </button>
                 <div class="nav-divider"></div>
                 <a class="nav-item" id="nav-admin-link" href="/admin.html" style="display:none;text-decoration:none;color:inherit;" title="Painel de Administração">
