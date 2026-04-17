@@ -3344,7 +3344,7 @@ def main():
                 <div class="material-item">
                     <span class="material-icon">${{getTypeIcon(m.type)}}</span>
                     <div class="material-info">
-                        <a class="material-label" href="${{escHtml(m.url)}}" target="_blank" rel="noopener">${{escHtml(m.label || m.url)}}</a>
+                        <a class="material-label" href="${{escapeHtml(m.url)}}" target="_blank" rel="noopener">${{escapeHtml(m.label || m.url)}}</a>
                     </div>
                     <button class="material-delete" onclick="deleteSessionMaterial('${{key}}',${{i}})">✕</button>
                 </div>`).join('');
