@@ -3,6 +3,8 @@
             document.getElementById('auth-gate').style.display = 'flex';
             const navInfo = document.getElementById('nav-user-info');
             if (navInfo) navInfo.style.display = 'none';
+            // Re-enable auth buttons in case they were disabled during a sign-in attempt
+            document.querySelectorAll('.auth-btn').forEach(b => { b.disabled = false; b.style.opacity = ''; });
         }
 
         function hideAuthGate() {
