@@ -1,5 +1,6 @@
-# Ficheiro gerado — recriar com: python gerador_dashboard.py
-/dashboard.html
+# Ficheiros gerados — recriar com: python gerador_dashboard.py
+# Não commitados mas precisam de existir para o firebase deploy
+# /dashboard.html   ← removido do gitignore para que firebase CLI o inclua no deploy
 
 # Dependências Node (Netlify legacy, não usado em produção Firebase)
 node_modules/

@@ -7,6 +7,7 @@
   "hosting": {
     "site": "iefp-hackers",
     "public": ".",
+    "predeploy": ["python3 gerador_dashboard.py"],
     "ignore": [
       "firebase.json", "firestore.rules", "storage.rules", ".firebaserc",
       "*.py", "*.toml", "*.md", "robots.txt",
