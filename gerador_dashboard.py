@@ -3287,17 +3287,21 @@ def main():
             // Switch view immediately — don't block on async API calls
             switchView('session-detail');
 
-            // Load notes async (after view is visible)
-            try {{
-                const res = await fetch(`${{API_URL}}/notes/${{encodeURIComponent(key)}}`, {{
-                    headers: await apiHeaders()
-                }});
-                if (res.ok) {{ const {{ note }} = await res.json(); ta.value = note || ''; }}
-            }} catch(e) {{ console.warn('Erro a carregar notas de sessão:', e); }}
+            // Load notes + materials in parallel (single token fetch)
+            const headers = await apiHeaders();
+            const [notesRes, matList] = await Promise.allSettled([
+                fetch(`${{API_URL}}/notes/${{encodeURIComponent(key)}}`, {{ headers }})
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null),
+                getSessionMaterials(key, headers)
+            ]);
 
-            // Load materials async
-            const list = await getSessionMaterials(key);
-            renderSessionMaterials(key, list);
+            if (notesRes.status === 'fulfilled' && notesRes.value?.note) {{
+                ta.value = notesRes.value.note;
+            }}
+            if (matList.status === 'fulfilled') {{
+                renderSessionMaterials(key, matList.value);
+            }}
         }}
 
         function autoSaveSessionNote(key, value) {{
@@ -3316,12 +3320,11 @@ def main():
             }}, 800);
         }}
 
-        async function getSessionMaterials(key) {{
+        async function getSessionMaterials(key, cachedHeaders) {{
             if (materialsCache[key]) return materialsCache[key];
             try {{
-                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(key)}}`, {{
-                    headers: await apiHeaders()
-                }});
+                const headers = cachedHeaders || await apiHeaders();
+                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(key)}}`, {{ headers }});
                 const list = res.ok ? await res.json() : [];
                 materialsCache[key] = list;
                 return list;
