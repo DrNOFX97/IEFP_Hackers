@@ -364,7 +364,7 @@
           <div class="user-avatar" id="sb-avatar">?</div>
           <div class="user-info">
             <div class="user-name" id="sb-name">–</div>
-            <div class="user-role">admin</div>
+            <div class="user-role" id="sb-role">admin</div>
           </div>
         </div>
         <button class="signout-btn" onclick="firebase.auth().signOut()">
@@ -682,7 +682,8 @@ const db   = firebase.firestore();
 // ── State ──────────────────────────────────────────────────────────
 let allUsers = [];
 let allLogs  = [];
-let currentAdminUid = null;
+let currentAdminUid   = null;
+let currentAdminRole  = null;  // 'admin' | 'moderador'
 
 // ── Helpers ────────────────────────────────────────────────────────
 function toast(msg, type = 'ok') {
@@ -789,7 +790,7 @@ auth.onAuthStateChanged(async user => {
     role = doc.exists ? (doc.data().role || 'aluno') : 'aluno';
   } catch(e) { /* no access yet */ }
 
-  if (role !== 'admin') {
+  if (role !== 'admin' && role !== 'moderador') {
     document.getElementById('auth-gate').style.display    = 'none';
     document.getElementById('admin-app').style.display    = 'none';
     document.getElementById('access-denied').style.display = 'flex';
@@ -801,7 +802,9 @@ auth.onAuthStateChanged(async user => {
   document.getElementById('access-denied').style.display = 'none';
   document.getElementById('admin-app').style.display    = 'flex';
 
-  currentAdminUid = user.uid;
+  currentAdminUid  = user.uid;
+  currentAdminRole = role;
+  document.getElementById('sb-role').textContent = role;
   const name = user.displayName || user.email || '–';
   document.getElementById('sb-avatar').textContent = initials(name);
   document.getElementById('sb-name').textContent   = name.split(' ')[0];
@@ -922,7 +925,10 @@ function renderUsers(users) {
     const role    = u.role || 'aluno';
     const photo   = u.photoURL ? `<img src="${escHtml(u.photoURL)}" alt="">` : initials(u.displayName || u.email);
     const isSelf  = u.id === currentAdminUid;
-    const roleOpts = ['aluno', 'moderador', 'admin', 'blocked'].map(r =>
+    const allowedRoles = currentAdminRole === 'admin'
+      ? ['aluno', 'formador', 'moderador', 'admin', 'blocked']
+      : ['aluno', 'formador', 'blocked'];
+    const roleOpts = allowedRoles.map(r =>
       `<option value="${r}" ${r === role ? 'selected' : ''}>${r}</option>`
     ).join('');
 
@@ -948,7 +954,7 @@ function renderUsers(users) {
                  onclick="toggleBlock('${u.id}','${escHtml(name)}','${role}')">
                  ${isBlocked ? '✓ Desbloquear' : '🚫 Bloquear'}
                </button>
-               ${isBlocked ? `<button class="btn" style="padding:0.2rem 0.6rem;font-size:0.78rem;border-color:#8b0000;color:#c0392b;background:rgba(139,0,0,0.12);"
+               ${isBlocked && currentAdminRole === 'admin' ? `<button class="btn" style="padding:0.2rem 0.6rem;font-size:0.78rem;border-color:#8b0000;color:#c0392b;background:rgba(139,0,0,0.12);"
                  onclick="deleteUser('${u.id}','${escHtml(name)}')">🗑️ Eliminar</button>` : ''}
              </div>`
         }
@@ -1002,6 +1008,14 @@ function filterUsers() {
 async function changeRole(uid, name, newRole, selectEl) {
   const oldRole = allUsers.find(u => u.id === uid)?.role || 'aluno';
   if (newRole === oldRole) return;
+
+  // Moderadores só podem atribuir aluno/formador/blocked
+  const restrictedRoles = ['moderador', 'admin'];
+  if (currentAdminRole !== 'admin' && restrictedRoles.includes(newRole)) {
+    toast('Sem permissões para atribuir este role.', 'error');
+    selectEl.value = oldRole;
+    return;
+  }
 
   if (!confirm(`Alterar role de "${name}" de "${oldRole}" para "${newRole}"?`)) {
     selectEl.value = oldRole;
