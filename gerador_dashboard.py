@@ -2817,20 +2817,6 @@ def main():
         const storage = firebase.storage();
         const db      = firebase.firestore();
 
-        // ── MIGRAÇÃO LAZY: API legada → Firestore ───────────────────────
-        // Lê da API legada com timeout; se tiver dados, escreve no Firestore
-        // para que a próxima leitura seja instantânea (sem API).
-        const _LEGACY = "https://ciberseg-api-315653817267.europe-west1.run.app";
-        async function _legacyGet(path, timeoutMs = 6000) {{
-            const token = await auth.currentUser?.getIdToken().catch(() => null);
-            if (!token) return null;
-            return Promise.race([
-                fetch(`${{_LEGACY}}${{path}}`, {{
-                    headers: {{ 'Authorization': `Bearer ${{token}}` }}
-                }}).then(r => r.ok ? r.json() : null).catch(() => null),
-                new Promise(resolve => setTimeout(() => resolve(null), timeoutMs))
-            ]);
-        }}
 
 
         // ── STATE ───────────────────────────────────────────────────────
@@ -3315,18 +3301,8 @@ def main():
         async function loadSessionNote(uid, key) {{
             if (!uid) return '';
             try {{
-                // 1. Firestore (dados já migrados ou novos)
                 const doc = await db.collection('notes').doc(`${{uid}}_${{key}}`).get();
-                if (doc.exists) return doc.data().content || '';
-                // 2. API legada — migrar lazy para Firestore
-                const data = await _legacyGet(`/notes/${{encodeURIComponent(key)}}`);
-                const content = data?.note || '';
-                if (content) {{
-                    db.collection('notes').doc(`${{uid}}_${{key}}`).set({{
-                        content, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), uid
-                    }}, {{ merge: true }}).catch(() => {{}});
-                }}
-                return content;
+                return doc.exists ? (doc.data().content || '') : '';
             }} catch(e) {{ return ''; }}
         }}
 
@@ -3348,34 +3324,14 @@ def main():
             }}, 800);
         }}
 
-        async function _loadMaterials(key) {{
-            // 1. Firestore
-            try {{
-                const doc = await db.collection('materials').doc(key).get();
-                if (doc.exists) return doc.data().items || [];
-            }} catch(e) {{}}
-            // 2. API legada — migrar lazy para Firestore
-            const data = await _legacyGet(`/materials/${{encodeURIComponent(key)}}`);
-            const list = Array.isArray(data) ? data : [];
-            if (list.length > 0) {{
-                // Normalizar para o schema Firestore (adicionar id se não tiver)
-                const items = list.map((m, i) => ({{
-                    id: m.id || `legacy_${{i}}_${{Date.now()}}`,
-                    type: m.type || 'link', label: m.label || m.url || '',
-                    url: m.url || '', size: m.size || '', uid: m.uid || '',
-                    createdAt: m.createdAt || Date.now()
-                }}));
-                db.collection('materials').doc(key).set({{ items }}, {{ merge: true }}).catch(() => {{}});
-                return items;
-            }}
-            return [];
-        }}
-
         async function getSessionMaterials(key) {{
             if (materialsCache[key]) return materialsCache[key];
-            const list = await _loadMaterials(key).catch(() => []);
-            materialsCache[key] = list;
-            return list;
+            try {{
+                const doc = await db.collection('materials').doc(key).get();
+                const list = doc.exists ? (doc.data().items || []) : [];
+                materialsCache[key] = list;
+                return list;
+            }} catch(e) {{ return []; }}
         }}
 
         function renderSessionMaterials(key, list) {{
@@ -3621,12 +3577,15 @@ def main():
             ucChatInit(ucCode);
         }}
 
-        // ── MATERIALS (Firestore + migração lazy da API legada) ─────────
+        // ── MATERIALS (Firestore) ───────────────────────────────────────
         async function getMaterials(key) {{
             if (materialsCache[key]) return materialsCache[key];
-            const list = await _loadMaterials(key).catch(() => []);
-            materialsCache[key] = list;
-            return list;
+            try {{
+                const doc = await db.collection('materials').doc(key).get();
+                const list = doc.exists ? (doc.data().items || []) : [];
+                materialsCache[key] = list;
+                return list;
+            }} catch(e) {{ return []; }}
         }}
 
         function getYouTubeId(url) {{
