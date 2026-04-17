@@ -2816,12 +2816,6 @@ def main():
         const auth    = firebase.auth();
         const storage = firebase.storage();
         const db      = firebase.firestore();
-        const API_URL = "https://ciberseg-api-315653817267.europe-west1.run.app";
-
-        async function apiHeaders() {{
-            const token = await auth.currentUser?.getIdToken();
-            return {{ 'Authorization': `Bearer ${{token}}`, 'Content-Type': 'application/json' }};
-        }}
 
         // ── STATE ───────────────────────────────────────────────────────
         let currentView         = 'dashboard';
@@ -3284,20 +3278,18 @@ def main():
             document.getElementById('session-materials-list').innerHTML =
                 '<div class="no-materials">⏳ A carregar...</div>';
 
-            // Switch view immediately — don't block on async API calls
+            // Switch view immediately — don't block on async Firestore calls
             switchView('session-detail');
 
-            // Load notes + materials in parallel (single token fetch)
-            const headers = await apiHeaders();
-            const [notesRes, matList] = await Promise.allSettled([
-                fetch(`${{API_URL}}/notes/${{encodeURIComponent(key)}}`, {{ headers }})
-                    .then(r => r.ok ? r.json() : null)
-                    .catch(() => null),
-                getSessionMaterials(key, headers)
+            // Load notes + materials in parallel from Firestore
+            const uid = auth.currentUser?.uid;
+            const [notesSnap, matList] = await Promise.allSettled([
+                db.collection('notes').doc(`${{uid}}_${{key}}`).get().catch(() => null),
+                getSessionMaterials(key)
             ]);
 
-            if (notesRes.status === 'fulfilled' && notesRes.value?.note) {{
-                ta.value = notesRes.value.note;
+            if (notesSnap.status === 'fulfilled' && notesSnap.value?.exists) {{
+                ta.value = notesSnap.value.data().content || '';
             }}
             if (matList.status === 'fulfilled') {{
                 renderSessionMaterials(key, matList.value);
@@ -3307,12 +3299,14 @@ def main():
         function autoSaveSessionNote(key, value) {{
             clearTimeout(sessionNotesTimer);
             sessionNotesTimer = setTimeout(async () => {{
+                const uid = auth.currentUser?.uid;
+                if (!uid) return;
                 try {{
-                    await fetch(`${{API_URL}}/notes/${{encodeURIComponent(key)}}`, {{
-                        method: 'POST',
-                        headers: await apiHeaders(),
-                        body: JSON.stringify({{ content: value }})
-                    }});
+                    await db.collection('notes').doc(`${{uid}}_${{key}}`).set({{
+                        content: value,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        uid
+                    }}, {{ merge: true }});
                 }} catch(e) {{ console.warn('Erro ao guardar notas de sessão:', e); }}
                 const ind = document.getElementById('session-notes-saved');
                 ind.classList.add('visible');
@@ -3320,12 +3314,11 @@ def main():
             }}, 800);
         }}
 
-        async function getSessionMaterials(key, cachedHeaders) {{
+        async function getSessionMaterials(key) {{
             if (materialsCache[key]) return materialsCache[key];
             try {{
-                const headers = cachedHeaders || await apiHeaders();
-                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(key)}}`, {{ headers }});
-                const list = res.ok ? await res.json() : [];
+                const doc = await db.collection('materials').doc(key).get();
+                const list = doc.exists ? (doc.data().items || []) : [];
                 materialsCache[key] = list;
                 return list;
             }} catch(e) {{ return []; }}
@@ -3353,13 +3346,17 @@ def main():
             const label = document.getElementById('session-mat-label').value.trim();
             const url   = document.getElementById('session-mat-url').value.trim();
             if (!url) {{ alert('Introduz um URL.'); return; }}
+            const uid = auth.currentUser?.uid;
+            if (!uid) return;
+            const item = {{
+                id: `${{Date.now()}}_${{Math.random().toString(36).slice(2)}}`,
+                type, label: label || url, url, uid,
+                createdAt: Date.now()
+            }};
             try {{
-                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(key)}}`, {{
-                    method: 'POST',
-                    headers: await apiHeaders(),
-                    body: JSON.stringify({{ type, label: label || url, url }})
-                }});
-                if (!res.ok) throw new Error(await res.text());
+                await db.collection('materials').doc(key).set({{
+                    items: firebase.firestore.FieldValue.arrayUnion(item)
+                }}, {{ merge: true }});
                 delete materialsCache[key];
                 document.getElementById('session-mat-label').value = '';
                 document.getElementById('session-mat-url').value   = '';
@@ -3371,9 +3368,10 @@ def main():
         async function deleteSessionMaterial(key, index) {{
             if (!confirm('Remover este material?')) return;
             try {{
-                await fetch(`${{API_URL}}/materials/${{encodeURIComponent(key)}}/${{index}}`, {{
-                    method: 'DELETE', headers: await apiHeaders()
-                }});
+                const doc = await db.collection('materials').doc(key).get();
+                const items = doc.exists ? [...(doc.data().items || [])] : [];
+                items.splice(index, 1);
+                await db.collection('materials').doc(key).set({{ items }});
                 delete materialsCache[key];
                 const list = await getSessionMaterials(key);
                 renderSessionMaterials(key, list);
@@ -3569,37 +3567,15 @@ def main():
             ucChatInit(ucCode);
         }}
 
-        function autoSaveNote(ucCode, value) {{
-            clearTimeout(notesTimer);
-            notesTimer = setTimeout(async () => {{
-                if (value.trim()) localStorage.setItem(`uc_notes_${{ucCode}}`, '1');
-                else localStorage.removeItem(`uc_notes_${{ucCode}}`);
-                try {{
-                    await fetch(`${{API_URL}}/notes/${{encodeURIComponent(ucCode)}}`, {{
-                        method: 'POST',
-                        headers: await apiHeaders(),
-                        body: JSON.stringify({{ content: value }})
-                    }});
-                }} catch (e) {{ console.warn('Erro ao guardar apontamentos:', e); }}
-                const indicator = document.getElementById('notes-saved-indicator');
-                if (indicator) {{
-                    indicator.classList.add('visible');
-                    setTimeout(() => indicator.classList.remove('visible'), 2000);
-                }}
-            }}, 800);
-        }}
-
-        // ── MATERIALS (PostgreSQL API) ──────────────────────────────────
-        async function getMaterials(ucCode) {{
-            if (materialsCache[ucCode]) return materialsCache[ucCode];
+        // ── MATERIALS (Firestore) ───────────────────────────────────────
+        async function getMaterials(key) {{
+            if (materialsCache[key]) return materialsCache[key];
             try {{
-                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(ucCode)}}`, {{
-                    headers: await apiHeaders()
-                }});
-                const list = res.ok ? await res.json() : [];
-                materialsCache[ucCode] = list;
+                const doc = await db.collection('materials').doc(key).get();
+                const list = doc.exists ? (doc.data().items || []) : [];
+                materialsCache[key] = list;
                 return list;
-            }} catch (e) {{
+            }} catch(e) {{
                 console.error('Erro ao carregar materiais:', e);
                 return [];
             }}
@@ -3751,17 +3727,19 @@ def main():
                 alert('URL inválido. Usa apenas http:// ou https://');
                 return;
             }}
-            // Auto-detect YouTube URLs regardless of selected type
             if (url && getYouTubeId(url)) type = 'video';
 
             const matKey = currentSessionKey || currentUCCode;
+            const uid = auth.currentUser?.uid;
+            if (!uid) return;
+            const item = {{
+                id: `${{Date.now()}}_${{Math.random().toString(36).slice(2)}}`,
+                type, label: label || url, url, uid, createdAt: Date.now()
+            }};
             try {{
-                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(matKey)}}`, {{
-                    method: 'POST',
-                    headers: await apiHeaders(),
-                    body: JSON.stringify({{ type, label: label || url, url }})
-                }});
-                if (!res.ok) throw new Error(await res.text());
+                await db.collection('materials').doc(matKey).set({{
+                    items: firebase.firestore.FieldValue.arrayUnion(item)
+                }}, {{ merge: true }});
                 delete materialsCache[matKey];
                 const list = await getMaterials(matKey);
                 renderMaterials(list);
@@ -3789,15 +3767,12 @@ def main():
 
         async function deleteMaterial(index) {{
             const matKey = currentSessionKey || currentUCCode;
-            const list = materialsCache[matKey] || [];
-            const item = list[index];
-            if (!item?.id) return;
+            if (!confirm('Remover este material?')) return;
             try {{
-                const res = await fetch(
-                    `${{API_URL}}/materials/${{encodeURIComponent(matKey)}}/${{encodeURIComponent(item.id)}}`,
-                    {{ method: 'DELETE', headers: await apiHeaders() }}
-                );
-                if (!res.ok) throw new Error(await res.text());
+                const doc = await db.collection('materials').doc(matKey).get();
+                const items = doc.exists ? [...(doc.data().items || [])] : [];
+                items.splice(index, 1);
+                await db.collection('materials').doc(matKey).set({{ items }});
                 delete materialsCache[matKey];
                 const updated = await getMaterials(matKey);
                 renderMaterials(updated);
@@ -3862,22 +3837,20 @@ def main():
                 const matType = typeMap[ext] || 'outro';
                 const matSize = `${{(file.size/1024).toFixed(0)}} KB`;
                 const matKey  = currentSessionKey || currentUCCode;
-                const url    = `${{API_URL}}/materials/${{encodeURIComponent(matKey)}}`;
-                const hdrs   = await apiHeaders();
-                const res = await fetch(url, {{
-                    method: 'POST',
-                    headers: hdrs,
-                    body: JSON.stringify({{ type: matType, label: file.name, url: uploadedUrl, size: matSize }})
-                }});
-                if (!res.ok) {{
-                    const detail = await res.text();
-                    throw new Error(`API ${{res.status}}: ${{detail}}`);
-                }}
+                const uid = auth.currentUser?.uid;
+                const item = {{
+                    id: `${{Date.now()}}_${{Math.random().toString(36).slice(2)}}`,
+                    type: matType, label: file.name, url: uploadedUrl, size: matSize,
+                    uid, createdAt: Date.now()
+                }};
+                await db.collection('materials').doc(matKey).set({{
+                    items: firebase.firestore.FieldValue.arrayUnion(item)
+                }}, {{ merge: true }});
                 delete materialsCache[matKey];
                 const list = await getMaterials(matKey);
                 renderMaterials(list);
             }} catch (e) {{
-                console.error('[API] register material error:', e);
+                console.error('[Firestore] register material error:', e);
                 alert(`Ficheiro enviado mas erro ao registar: ${{e.message}}`);
             }} finally {{
                 zone.innerHTML = '📂 Arrastar ficheiro ou clicar para selecionar<input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.png,.jpg,.zip" onchange="handleFileSelect(event)">';

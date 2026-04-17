@@ -59,6 +59,8 @@ service cloud.firestore {
     }
 
     // ── notes ─────────────────────────────────────────────────────────
+    // Chave: {uid}_{sessionKey} — notas pessoais por utilizador.
+    // sessionKey = ucCode (S1) ou ucCode_date (S2+).
     match /notes/{docId} {
       allow read: if isAuth() && (
         docId.matches(request.auth.uid + '_.*') || isModerador()
@@ -68,7 +70,9 @@ service cloud.firestore {
     }
 
     // ── materials ─────────────────────────────────────────────────────
-    match /materials/{ucCode} {
+    // Chave: sessionKey (ucCode ou ucCode_date) — materiais partilhados por sessão.
+    // Documento: { items: [{id, type, label, url, size, uid, createdAt}] }
+    match /materials/{key} {
       allow read:  if isAluno();
       allow write: if isAluno();
     }
