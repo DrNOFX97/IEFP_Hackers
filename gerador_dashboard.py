@@ -2699,6 +2699,10 @@ def main():
                                        oninput="if(getYouTubeId(this.value)) document.getElementById('session-mat-type').value='video'">
                                 <button class="btn-primary" onclick="addSessionMaterial()">+ Adicionar</button>
                             </div>
+                            <div class="file-drop-zone" id="file-drop-zone">
+                                📂 Arrastar ficheiro ou clicar para selecionar
+                                <input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.png,.jpg" onchange="handleFileSelect(event)">
+                            </div>
                         </div>
                         <div class="materials-list" id="session-materials-list"></div>
                     </div>
@@ -3604,7 +3608,8 @@ def main():
         }}
 
         function renderMaterials(list) {{
-            const el = document.getElementById('materials-list');
+            const el = document.getElementById('session-materials-list');
+            if (!el) return;
             if (!list || list.length === 0) {{
                 el.innerHTML = `<div class="no-materials">Sem materiais adicionados ainda.<br>Usa o formulário acima para adicionar links ou ficheiros.</div>`;
                 return;
@@ -3742,28 +3747,29 @@ def main():
             // Auto-detect YouTube URLs regardless of selected type
             if (url && getYouTubeId(url)) type = 'video';
 
+            const matKey = currentSessionKey || currentUCCode;
             try {{
-                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(currentUCCode)}}`, {{
+                const res = await fetch(`${{API_URL}}/materials/${{encodeURIComponent(matKey)}}`, {{
                     method: 'POST',
                     headers: await apiHeaders(),
                     body: JSON.stringify({{ type, label: label || url, url }})
                 }});
                 if (!res.ok) throw new Error(await res.text());
-                delete materialsCache[currentUCCode]; // invalidate cache
-                const list = await getMaterials(currentUCCode);
-                if (list.length > 0) localStorage.setItem(`uc_mat_count_${{currentUCCode}}`, list.length);
+                delete materialsCache[matKey];
+                const list = await getMaterials(matKey);
                 renderMaterials(list);
             }} catch (e) {{
                 console.error('Erro ao adicionar material:', e);
                 alert('Erro ao guardar material.');
             }}
 
-            document.getElementById('mat-label').value = '';
-            document.getElementById('mat-url').value   = '';
+            document.getElementById('mat-label') && (document.getElementById('mat-label').value = '');
+            document.getElementById('mat-url')   && (document.getElementById('mat-url').value   = '');
         }}
 
         function openMaterial(index) {{
-            const list = materialsCache[currentUCCode] || [];
+            const matKey = currentSessionKey || currentUCCode;
+            const list = materialsCache[matKey] || [];
             const item = list[index];
             if (item && item.url) {{
                 if (!isSafeUrl(item.url)) {{
@@ -3775,19 +3781,18 @@ def main():
         }}
 
         async function deleteMaterial(index) {{
-            const list = materialsCache[currentUCCode] || [];
+            const matKey = currentSessionKey || currentUCCode;
+            const list = materialsCache[matKey] || [];
             const item = list[index];
             if (!item?.id) return;
             try {{
                 const res = await fetch(
-                    `${{API_URL}}/materials/${{encodeURIComponent(currentUCCode)}}/${{encodeURIComponent(item.id)}}`,
+                    `${{API_URL}}/materials/${{encodeURIComponent(matKey)}}/${{encodeURIComponent(item.id)}}`,
                     {{ method: 'DELETE', headers: await apiHeaders() }}
                 );
                 if (!res.ok) throw new Error(await res.text());
-                delete materialsCache[currentUCCode];
-                const updated = await getMaterials(currentUCCode);
-                if (updated.length === 0) localStorage.removeItem(`uc_mat_count_${{currentUCCode}}`);
-                else localStorage.setItem(`uc_mat_count_${{currentUCCode}}`, updated.length);
+                delete materialsCache[matKey];
+                const updated = await getMaterials(matKey);
                 renderMaterials(updated);
             }} catch (e) {{
                 console.error('Erro ao apagar material:', e);
@@ -3849,10 +3854,9 @@ def main():
                                    gif:'outro', webp:'outro', txt:'doc', md:'doc', zip:'outro' }};
                 const matType = typeMap[ext] || 'outro';
                 const matSize = `${{(file.size/1024).toFixed(0)}} KB`;
-                const url    = `${{API_URL}}/materials/${{encodeURIComponent(currentUCCode)}}`;
+                const matKey  = currentSessionKey || currentUCCode;
+                const url    = `${{API_URL}}/materials/${{encodeURIComponent(matKey)}}`;
                 const hdrs   = await apiHeaders();
-                console.log('[API] POST', url);
-                console.log('[API] token prefix:', hdrs.Authorization?.slice(0, 30));
                 const res = await fetch(url, {{
                     method: 'POST',
                     headers: hdrs,
@@ -3862,9 +3866,8 @@ def main():
                     const detail = await res.text();
                     throw new Error(`API ${{res.status}}: ${{detail}}`);
                 }}
-                delete materialsCache[currentUCCode];
-                const list = await getMaterials(currentUCCode);
-                if (list.length > 0) localStorage.setItem(`uc_mat_count_${{currentUCCode}}`, list.length);
+                delete materialsCache[matKey];
+                const list = await getMaterials(matKey);
                 renderMaterials(list);
             }} catch (e) {{
                 console.error('[API] register material error:', e);
@@ -3878,6 +3881,7 @@ def main():
         // Drag and drop on file zone
         function setupFileDrop() {{
             const zone = document.getElementById('file-drop-zone');
+            if (!zone) return;
             zone.addEventListener('dragover', e => {{ e.preventDefault(); zone.classList.add('drag-over'); }});
             zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
             zone.addEventListener('drop', e => {{
