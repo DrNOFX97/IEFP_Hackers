@@ -330,6 +330,17 @@ def main():
     with open('dashboard.html', 'w', encoding='utf-8') as f:
         f.write(html)
 
+    # 8. Inject logo into admin.html (in-place)
+    admin_path = os.path.join(os.path.dirname(__file__), 'admin.html')
+    if os.path.exists(admin_path) and logo_b64:
+        with open(admin_path, 'r', encoding='utf-8') as f:
+            admin_html = f.read()
+        if '__INJECT_LOGO_B64__' in admin_html:
+            admin_html = admin_html.replace('__INJECT_LOGO_B64__', logo_b64)
+            with open(admin_path, 'w', encoding='utf-8') as f:
+                f.write(admin_html)
+            print("Logo injetado em 'admin.html'.")
+
     print(f"Dashboard gerado em 'dashboard.html' com {len(horarios)} meses e {len(uc_list)} UCs!")
     print("Para ver o resultado, abre o 'dashboard.html' num navegador.")
 

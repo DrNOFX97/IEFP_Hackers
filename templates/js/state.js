@@ -13,6 +13,7 @@
         // Chat state
         let chatUnsub    = null;   // global chat listener unsubscribe
         let ucChatUnsub  = null;   // UC chat listener unsubscribe
+        let chatWAUnsub  = null;   // WhatsApp chat listener unsubscribe
         let chatLastRead = parseInt(localStorage.getItem('chat_last_read') || '0');
 
         // ── DOM REFS ────────────────────────────────────────────────────

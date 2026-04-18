@@ -142,3 +142,63 @@
                 });
         }
 
+        // ── WHATSAPP CHAT ────────────────────────────────────────────────
+        function chatWAInit() {
+            if (chatWAUnsub) return;
+            const q = db.collection('chat_whatsapp')
+                .orderBy('timestamp', 'asc')
+                .limitToLast(80);
+            chatWAUnsub = q.onSnapshot(snap => {
+                const el  = document.getElementById('chat-wa-msgs');
+                const uid = auth.currentUser?.uid;
+                const msgs = [];
+                snap.forEach(doc => {
+                    const m = { id: doc.id, ...doc.data() };
+                    if (!m.deleted) msgs.push(m);
+                });
+                if (!el) return;
+                el.innerHTML = msgs.length === 0
+                    ? '<div class="chat-empty">Sem mensagens ainda. Escreve algo!</div>'
+                    : msgs.map(m => chatWABubbleHtml(m, uid)).join('');
+                el.scrollTop = el.scrollHeight;
+            }, err => console.warn('WA chat error:', err));
+        }
+
+        function chatWABubbleHtml(m, uid) {
+            const mine   = m.uid === uid;
+            const badge  = m.source === 'whatsapp'
+                ? '<span style="font-size:0.7em;opacity:0.6;margin-left:0.25rem;">📱</span>'
+                : '';
+            const time   = m.timestamp?.toMillis
+                ? new Date(m.timestamp.toMillis()).toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'})
+                : '';
+            return `<div class="chat-msg ${mine ? 'mine' : 'other'}">
+                ${!mine ? `<div class="chat-author">${escapeHtml(m.displayName || 'Anónimo')}${badge}</div>` : ''}
+                <div class="chat-bubble">${escapeHtml(m.text)}</div>
+                <span class="chat-msg-time">${time}</span>
+            </div>`;
+        }
+
+        function chatWAKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); chatWASend(); }
+        }
+
+        async function chatWASend() {
+            const input = document.getElementById('chat-wa-input');
+            const text  = (input?.value || '').trim().slice(0, 2000);
+            if (!text || !auth.currentUser) return;
+            input.value = '';
+            const sendBtn = document.getElementById('chat-wa-send');
+            if (sendBtn) sendBtn.disabled = true;
+            try {
+                const fn = firebase.functions().httpsCallable('whatsappSend');
+                await fn({ text });
+            } catch (err) {
+                console.error('WA send error:', err);
+                input.value = text; // restaurar texto em caso de erro
+                alert('Erro ao enviar para WhatsApp: ' + (err.message || err));
+            } finally {
+                if (sendBtn) sendBtn.disabled = false;
+            }
+        }
+

@@ -10,6 +10,7 @@
     "predeploy": ["python3 gerador_dashboard.py"],
     "ignore": [
       "firebase.json", "firestore.rules", "storage.rules", ".firebaserc",
+      "index.html",
       "*.py", "*.toml", "*.md", "robots.txt",
       "data/**", "docs/**", "_netlify/**",
       "node_modules/**", "package.json", "package-lock.json",
