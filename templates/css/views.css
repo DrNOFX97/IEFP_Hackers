@@ -245,7 +245,7 @@
             .schedule-controls { flex-wrap: wrap; gap: 0.5rem; width: 100%; justify-content: flex-start; }
             .pdf-group { display: none; }
             .day-card:hover { transform: none; }
-            .detail-layout { grid-template-columns: 1fr; }
+            .detail-layout { grid-template-columns: minmax(0, 1fr); }
             .detail-header { flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; }
             .detail-uc-name { font-size: 1.1rem; }
             .session-nav-strip { max-width: 100%; overflow: hidden; }

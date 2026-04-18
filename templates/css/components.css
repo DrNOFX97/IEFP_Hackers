@@ -399,7 +399,7 @@
         .material-item.clickable-card:hover { border-color: rgba(0,255,65,0.6); background: rgba(0,255,65,0.04); }
         .material-icon { font-size: 1.2rem; flex-shrink: 0; }
         .material-info { flex: 1; min-width: 0; overflow: hidden; }
-        .material-label { font-size: 0.9rem; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .material-label { font-size: 0.9rem; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 100%; }
         .material-url { font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 100%; }
         .material-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
         .material-btn {
