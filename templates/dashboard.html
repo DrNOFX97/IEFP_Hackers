@@ -71,8 +71,14 @@
                     <span class="nav-item-icon">💬</span><span class="nav-item-label"> Chat</span>
                     <span class="nav-item-badge" id="nav-chat-badge"></span>
                 </button>
+                <button class="nav-item" data-view="chat-wa" onclick="switchView('chat-wa')">
+                    <span class="nav-item-icon">📱</span><span class="nav-item-label"> WhatsApp <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
+                </button>
                 <button class="nav-item" data-view="playground" onclick="switchView('playground')">
                     <span class="nav-item-icon">💻</span><span class="nav-item-label"> Playground <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
+                </button>
+                <button class="nav-item" data-view="lab" onclick="switchView('lab')">
+                    <span class="nav-item-icon">🔬</span><span class="nav-item-label"> Lab <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
                 </button>
                 <div class="nav-divider"></div>
                 <a class="nav-item" id="nav-admin-link" href="/admin.html" style="display:none;text-decoration:none;color:inherit;" title="Painel de Administração">
@@ -298,6 +304,23 @@
                 </div>
             </div>
 
+            <!-- VIEW: WHATSAPP CHAT -->
+            <div id="view-chat-wa">
+                <h2 style="margin-bottom:1.25rem;">📱 WhatsApp da turma <span style="font-size:0.55em;opacity:0.6;font-weight:400;vertical-align:middle;">(beta)</span></h2>
+                <div class="chat-view-body">
+                    <div class="chat-view-msgs" id="chat-wa-msgs">
+                        <div class="chat-empty">A carregar…</div>
+                    </div>
+                    <div class="chat-view-input-row">
+                        <input class="chat-input" id="chat-wa-input" placeholder="Mensagem para o grupo WA…" onkeydown="chatWAKey(event)">
+                        <button class="chat-send" id="chat-wa-send" onclick="chatWASend()">↑</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: LAB -->
+            <div id="view-lab"></div>
+
             <!-- VIEW: DEFINIÇÕES -->
             <div id="view-definicoes">
                 <h2 style="margin-bottom:1.5rem;">⚙️ Definições</h2>
@@ -368,6 +391,9 @@ __INJECT_JS__
     <div class="mob-more-menu" id="mob-more-menu">
         <button class="mob-more-item" data-view="disciplinas" onclick="switchView('disciplinas');mobMoreClose()">
             <span class="mob-more-item-icon">📚</span> Disciplinas
+        </button>
+        <button class="mob-more-item" data-view="chat-wa" onclick="switchView('chat-wa');mobMoreClose()">
+            <span class="mob-more-item-icon">📱</span> WhatsApp (beta)
         </button>
         <button class="mob-more-item" data-view="playground" onclick="switchView('playground');mobMoreClose()">
             <span class="mob-more-item-icon">💻</span> Playground

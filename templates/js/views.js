@@ -1,5 +1,5 @@
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','lab','definicoes'];
 
         function switchView(view) {
             if (currentView === 'definicoes' && view !== 'definicoes') {
@@ -52,6 +52,10 @@
                 document.getElementById('view-chat-wa').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
                 chatWAInit();
+            } else if (view === 'lab') {
+                document.getElementById('view-lab').style.display = 'block';
+                monthSelectContainer.style.display = 'none';
+                labRender();
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';

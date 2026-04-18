@@ -256,6 +256,7 @@ def main():
         'css/playground.css',
         'css/nav-sidebar.css',
         'css/views.css',
+        'css/lab.css',
     ]
     js_files = [
         'js/data.js',
@@ -274,6 +275,7 @@ def main():
         'js/pdf.js',
         'js/convites.js',
         'js/definicoes.js',
+        'js/lab.js',
         'js/init.js',
     ]
 
