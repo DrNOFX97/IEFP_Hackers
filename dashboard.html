@@ -3468,7 +3468,7 @@ opacity: 0.35;
                     doc.setTextColor(139, 148, 158);
                     const metaParts = [];
                     if (uc.carga_horaria) metaParts.push(`${uc.carga_horaria}h total`);
-                    if (uc.formador) metaParts.push(uc.formador);
+                    if (uc.formador) metaParts.push(shortName(uc.formador));
                     if (uc.modalidade) metaParts.push(uc.modalidade.charAt(0).toUpperCase() + uc.modalidade.slice(1));
                     doc.text(metaParts.join('  ·  ') || 'CET Cibersegurança', 36, 32);
 
