@@ -242,22 +242,34 @@
             setTimeout(scrollToToday, 60);
         }
 
-        function findTodayMonthIndex() {
-            const today = new Date();
+        function findNearestMonthIndex() {
             const pad = n => String(n).padStart(2, '0');
-            const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
-            return HORARIOS.findIndex(h => h.dias.some(d => d.data === todayStr));
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+            // 1. Exact match for today
+            let idx = HORARIOS.findIndex(h => h.dias.some(d => d.data === todayStr));
+            if (idx !== -1) return idx;
+            // 2. Month with the next upcoming session day
+            idx = HORARIOS.findIndex(h => h.dias.some(d => d.data >= todayStr));
+            if (idx !== -1) return idx;
+            // 3. Last month available
+            return HORARIOS.length - 1;
         }
 
         function scrollToToday() {
-            const today = new Date();
             const pad = n => String(n).padStart(2, '0');
-            const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
             const toolbar  = document.querySelector('.schedule-toolbar');
             const offset   = (toolbar?.offsetHeight || 80) + 16;
             const content  = document.getElementById('app-content');
-            const target   = document.querySelector(`.day-card[data-date="${todayStr}"]`)
-                          || document.querySelector(`.week-day-col[data-date="${todayStr}"]`);
+
+            // Try exact today, then first upcoming day, then last rendered card
+            const allDayCards = [...document.querySelectorAll('.day-card[data-date], .week-day-col[data-date]')];
+            const target = allDayCards.find(el => el.dataset.date === todayStr)
+                        || allDayCards.find(el => el.dataset.date > todayStr)
+                        || allDayCards[allDayCards.length - 1];
+
             if (!target || !content) return;
             const targetRect  = target.getBoundingClientRect();
             const contentRect = content.getBoundingClientRect();

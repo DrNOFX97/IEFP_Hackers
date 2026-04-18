@@ -14,7 +14,7 @@
                 document.getElementById('view-horario').style.display = 'block';
                 monthSelectContainer.style.display = HORARIOS.length > 0 ? 'flex' : 'none';
                 // Saltar para o mês que contém hoje, depois fazer scroll até ao dia
-                const todayIdx = findTodayMonthIndex();
+                const todayIdx = findNearestMonthIndex();
                 if (todayIdx !== -1 && todayIdx !== currentMonthIndex) {
                     monthSelect.value = todayIdx;
                     renderHorario(todayIdx);
