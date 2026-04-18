@@ -355,9 +355,9 @@ opacity: 0.35;
         .aula-card.remote.past { border-left-color: #1a5e36; background: transparent; }
         .aula-card.remote.past .aula-desc { color: inherit; }
 
-        .aula-time { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
-        .aula-info { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
-        .aula-desc { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); }
+        .aula-time { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; }
+        .aula-info { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 0; }
+        .aula-desc { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); overflow-wrap: break-word; word-break: break-word; }
         .aula-uc.badge { align-self: flex-start; background: rgba(255,255,255,0.05); color: var(--text-secondary); margin-top: 5px; }
 
         .open-uc-btn {
@@ -1016,9 +1016,11 @@ opacity: 0.35;
             .day-header { padding: 0.75rem 1rem; }
             .day-date { font-size: 0.95rem; }
             .day-body { padding: 0.75rem; gap: 0.6rem; }
-            .aula-card { padding: 0.6rem 0.75rem; gap: 0.75rem; border-radius: 8px; }
+            .aula-card { padding: 0.65rem 0.75rem; gap: 0.4rem; border-radius: 8px; flex-direction: column; align-items: flex-start; position: relative; }
+            .aula-time { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.02em; }
             .aula-desc { font-size: 0.88rem; }
-            .aula-time { font-size: 0.78rem; }
+            .aula-info { width: 100%; }
+            .open-uc-btn { position: absolute; top: 0.5rem; right: 0.5rem; opacity: 1; }
             .resumo-row { font-size: 0.82rem; padding: 0.4rem 0; }
             .info-list li { margin-bottom: 0.75rem; padding-bottom: 0.75rem; }
             .info-val { font-size: 0.95rem; }

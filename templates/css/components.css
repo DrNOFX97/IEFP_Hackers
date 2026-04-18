@@ -71,9 +71,9 @@
         .aula-card.remote.past { border-left-color: #1a5e36; background: transparent; }
         .aula-card.remote.past .aula-desc { color: inherit; }
 
-        .aula-time { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
-        .aula-info { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
-        .aula-desc { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); }
+        .aula-time { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; }
+        .aula-info { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 0; }
+        .aula-desc { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); overflow-wrap: break-word; word-break: break-word; }
         .aula-uc.badge { align-self: flex-start; background: rgba(255,255,255,0.05); color: var(--text-secondary); margin-top: 5px; }
 
         .open-uc-btn {
