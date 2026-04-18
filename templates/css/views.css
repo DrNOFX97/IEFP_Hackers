@@ -236,7 +236,6 @@
             .app-content {
                 margin-left: 0; padding: 0.85rem;
                 padding-bottom: 70px; height: 100vh;
-                overflow-x: hidden;
             }
             .mobile-bottom-nav { display: flex; }
             #view-dashboard, #view-turma, #view-definicoes, #view-horario,
@@ -247,6 +246,9 @@
             .pdf-group { display: none; }
             .day-card:hover { transform: none; }
             .detail-layout { grid-template-columns: 1fr; }
+            .detail-header { flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; }
+            .detail-uc-name { font-size: 1.1rem; }
+            .session-nav-strip { max-width: 100%; overflow: hidden; }
             .dash-greeting h1 { font-size: 1.25rem; }
         }
 
