@@ -236,10 +236,12 @@
             .app-content {
                 margin-left: 0; padding: 0.85rem;
                 padding-bottom: 70px; height: 100vh;
+                overflow-x: hidden;
             }
             .mobile-bottom-nav { display: flex; }
             #view-dashboard, #view-turma, #view-definicoes, #view-horario,
-            #view-disciplinas, #view-playground, #view-chat { max-width: 100%; }
+            #view-disciplinas, #view-playground, #view-chat,
+            #view-session-detail, #view-uc-detail, #view-chat-wa { max-width: 100%; width: 100%; }
             .schedule-toolbar { flex-direction: column; align-items: flex-start; gap: 0.6rem; top: -0.85rem; margin: -0.85rem -0.85rem 0; padding: 0.85rem 0.85rem 0.85rem; }
             .schedule-controls { flex-wrap: wrap; gap: 0.5rem; width: 100%; justify-content: flex-start; }
             .pdf-group { display: none; }
