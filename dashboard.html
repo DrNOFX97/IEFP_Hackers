@@ -2292,6 +2292,13 @@ opacity: 0.35;
         }
         .lab-badge-icon { font-size: 0.85rem; }
 
+        /* ── Section labels ── */
+        .lab-section-label {
+            font-size: 0.7rem; font-weight: 700; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
         /* ── Module grid ── */
         .lab-modules-grid {
             display: grid;
@@ -6178,12 +6185,150 @@ async def _pg_exec_async(files, ns, tab_id):
 
         const LAB_MODULES = [
             {
+                id: 'py',
+                num: 'PY',
+                icon: '🐍',
+                name: 'Python para Cibersegurança',
+                desc: 'Python contextualizado em segurança — scripts de ataque, defesa e automação de ferramentas.',
+                tools: ['Python 3', 'socket', 'requests', 'subprocess', 'scapy'],
+                xp: 300,
+                alwaysAvailable: true,
+                ctfFlag: 'flag{py_recon_script_done}',
+                ctfTitle: 'Mini-Scanner de Reconhecimento',
+                ctfDesc: 'Constrói um script Python que aceita um domínio como argumento, resolve DNS, testa portas comuns e gera um relatório `.txt`.',
+                ctfObjective: 'Submete a flag gerada pelo script ao correr: `python3 scanner.py pentestlab.local`',
+                ctfHint: 'Usa `socket.getaddrinfo()` para DNS, `socket.connect_ex()` para portas e `requests.get()` para headers HTTP.',
+                theory: {
+                    concepts: [
+                        'Python para segurança — porquê e como',
+                        'Variáveis, tipos, condições, ciclos, funções',
+                        'Módulo `os` e `subprocess` — executar comandos',
+                        'Módulo `socket` — TCP/UDP e port scanning',
+                        'Módulo `requests` — pedidos HTTP e análise de respostas',
+                        'Módulo `scapy` — manipulação de pacotes de rede',
+                    ],
+                    resources: [
+                        'Python Docs — socket module',
+                        'Automate the Boring Stuff with Python',
+                        'Black Hat Python (Justin Seitz)',
+                        'realpython.com — Sockets in Python',
+                    ],
+                },
+                steps: [
+                    {
+                        title: 'Unidade 1 — Primeiros passos',
+                        desc: 'Variáveis, tipos, condições, ciclos e funções. Script que lê um IP e diz se é privado ou público.',
+                        cmd: 'import ipaddress\nip = input("IP: ")\nobj = ipaddress.ip_address(ip)\nprint("Privado" if obj.is_private else "Público")',
+                        xp: 40,
+                    },
+                    {
+                        title: 'Unidade 2 — Ficheiros e strings',
+                        desc: 'Ler ficheiros, manipular strings com regex. Parsear output do Nmap e extrair portas abertas.',
+                        cmd: 'import re\nwith open("nmap_output.txt") as f:\n    for line in f:\n        m = re.search(r\'(\\d+)/tcp\\s+open\', line)\n        if m: print(f"Porta aberta: {m.group(1)}")',
+                        xp: 50,
+                    },
+                    {
+                        title: 'Unidade 3 — Módulos essenciais',
+                        desc: 'os, subprocess, sys, requests. Script que faz GET a uma lista de URLs e reporta status codes.',
+                        cmd: 'import requests\nurls = ["http://example.com", "http://httpbin.org/status/404"]\nfor url in urls:\n    r = requests.get(url, timeout=5)\n    print(f"{url} → {r.status_code}")',
+                        xp: 50,
+                    },
+                    {
+                        title: 'Unidade 4 — Redes com Python',
+                        desc: 'Sockets TCP/UDP. Port scanner simples, depois com threading.',
+                        cmd: 'import socket\ndef scan(host, port):\n    s = socket.socket()\n    s.settimeout(0.5)\n    return s.connect_ex((host, port)) == 0\nfor p in [21,22,80,443,3306]:\n    if scan("192.168.1.1", p): print(f"{p}/tcp open")',
+                        xp: 60,
+                    },
+                    {
+                        title: 'Unidade 5 — Automação de segurança',
+                        desc: 'Automatizar Nmap, parsear XML, escrever relatório .txt.',
+                        cmd: 'import subprocess, xml.etree.ElementTree as ET\nresult = subprocess.run(["nmap","-oX","out.xml","192.168.1.1"], capture_output=True)\ntree = ET.parse("out.xml")\nfor port in tree.findall(".//port[@protocol=\'tcp\']"):\n    print(port.get("portid"), port.find("state").get("state"))',
+                        xp: 60,
+                    },
+                    {
+                        title: 'Unidade 6 — Projecto final Python',
+                        desc: 'Mini-scanner: DNS, port scan, HTTP headers, relatório .txt. Aceita domínio como argumento.',
+                        cmd: 'python3 scanner.py target.com\n# Output: DNS records, open ports, HTTP headers → report.txt',
+                        xp: 50,
+                    },
+                ],
+            },
+            {
+                id: 'sql',
+                num: 'SQL',
+                icon: '🗄️',
+                name: 'SQL para Cibersegurança',
+                desc: 'SQL em contexto de segurança — perceber bases de dados para explorar e defender contra SQLi.',
+                tools: ['MySQL', 'PostgreSQL', 'DVWA', 'pgAdmin', 'Supabase'],
+                xp: 250,
+                alwaysAvailable: true,
+                ctfFlag: 'flag{sql_vuln_schema_done}',
+                ctfTitle: 'Schema de Gestão de Vulnerabilidades',
+                ctfDesc: 'Constrói o schema SQL completo de uma app de gestão de vulnerabilidades com 5 tabelas e escreve queries de análise.',
+                ctfObjective: 'Cria as tabelas, insere dados de teste e executa a query de CVEs críticos dos últimos 30 dias.',
+                ctfHint: 'Usa `WHERE severidade = \'critical\' AND criado_em >= NOW() - INTERVAL 30 DAY` na tabela `vulnerabilidades`.',
+                theory: {
+                    concepts: [
+                        'Bases de dados relacionais — tabelas, colunas, tipos',
+                        'SELECT, FROM, WHERE, ORDER BY, LIMIT',
+                        'INSERT, UPDATE, DELETE, CREATE TABLE, DROP TABLE',
+                        'JOINs (INNER, LEFT, RIGHT) e subqueries',
+                        'GROUP BY, HAVING e funções de agregação',
+                        'SQL Injection — como funciona e como prevenir',
+                    ],
+                    resources: [
+                        'SQLZoo — aprender SQL interactivo',
+                        'OWASP SQL Injection Prevention Cheat Sheet',
+                        'PostgreSQL Documentation',
+                        'HackTricks — SQL Injection',
+                    ],
+                },
+                steps: [
+                    {
+                        title: 'Unidade 1 — Fundamentos',
+                        desc: 'SELECT, WHERE, ORDER BY, LIMIT. Consultar base de dados de utilizadores fictícia.',
+                        cmd: 'SELECT username, email FROM users\nWHERE role = \'admin\'\nORDER BY created_at DESC\nLIMIT 10;',
+                        xp: 30,
+                    },
+                    {
+                        title: 'Unidade 2 — Manipulação de dados',
+                        desc: 'INSERT, UPDATE, DELETE, CREATE TABLE. Criar tabela de logs de acesso.',
+                        cmd: 'CREATE TABLE access_logs (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  ip VARCHAR(45),\n  username VARCHAR(100),\n  success BOOLEAN,\n  timestamp DATETIME DEFAULT NOW()\n);\nINSERT INTO access_logs (ip, username, success)\nVALUES (\'192.168.1.100\', \'admin\', FALSE);',
+                        xp: 40,
+                    },
+                    {
+                        title: 'Unidade 3 — Queries avançadas',
+                        desc: 'JOINs, agregação, GROUP BY. Relatório de vendas por produto — ou no nosso caso, CVEs por target.',
+                        cmd: 'SELECT t.dominio, COUNT(v.id) as total_vulns,\n       SUM(CASE WHEN v.severidade=\'critical\' THEN 1 ELSE 0 END) as criticos\nFROM targets t\nJOIN scans s ON s.target_id = t.id\nJOIN vulnerabilidades v ON v.scan_id = s.id\nGROUP BY t.dominio\nORDER BY criticos DESC;',
+                        xp: 50,
+                    },
+                    {
+                        title: 'Unidade 4 — SQL em contexto de segurança',
+                        desc: 'Como SQLi funciona. Payloads básicos no DVWA e como prepared statements previnem.',
+                        cmd: "-- Payload vulnerável:\nSELECT * FROM users WHERE username='$input';\n-- Com input: ' OR '1'='1\n-- Resultado: devolve todos os utilizadores\n\n-- Versão segura (prepared statement):\nSELECT * FROM users WHERE username = ?;",
+                        xp: 50,
+                    },
+                    {
+                        title: 'Unidade 5 — Análise de logs com SQL',
+                        desc: 'Detectar brute force por SQL: IPs repetidos, logins falhados, horários anómalos.',
+                        cmd: 'SELECT ip, COUNT(*) as tentativas,\n       MIN(timestamp) as primeira,\n       MAX(timestamp) as ultima\nFROM access_logs\nWHERE success = FALSE\n  AND timestamp >= NOW() - INTERVAL 1 HOUR\nGROUP BY ip\nHAVING tentativas > 10\nORDER BY tentativas DESC;',
+                        xp: 50,
+                    },
+                    {
+                        title: 'Unidade 6 — Projecto final SQL',
+                        desc: 'Schema completo de gestão de vulnerabilidades: 5 tabelas + queries de relatório.',
+                        cmd: '-- targets, scans, vulnerabilidades, utilizadores, relatorios\nCREATE TABLE vulnerabilidades (\n  id INT PRIMARY KEY AUTO_INCREMENT,\n  scan_id INT, cve VARCHAR(20),\n  severidade ENUM(\'info\',\'low\',\'medium\',\'high\',\'critical\'),\n  descricao TEXT, remediacao TEXT\n);',
+                        xp: 30,
+                    },
+                ],
+            },
+            {
                 id: 'recon',
                 num: '01',
                 icon: '🔍',
                 name: 'Reconhecimento',
                 desc: 'OSINT, DNS enumeration, subdomain discovery e footprinting activo e passivo.',
-                tools: ['Nmap', 'theHarvester', 'Shodan', 'amass', 'dnsx', 'Google Dorks'],
+                tools: ['Nmap', 'theHarvester', 'Shodan', 'amass', 'dnsx', 'reNgine', 'Google Dorks'],
                 xp: 200,
                 ctfFlag: 'flag{recon_hidden_sub_found}',
                 ctfTitle: 'Subdomain Hunter',
@@ -6237,6 +6382,12 @@ async def _pg_exec_async(files, ns, tab_id):
                         cmd: 'exiftool documento.pdf\nmetagoofil -d target.com -t pdf,docx -o output/',
                         xp: 30,
                     },
+                    {
+                        title: 'reNgine — Pipeline automatizado',
+                        desc: 'Corre um pipeline completo de reconhecimento web com reNgine: subdomain enum, port scan, screenshot, vulnerability scan.',
+                        cmd: '# reNgine (self-hosted)\n# 1. Cria um alvo em /targets/\n# 2. Escolhe um scan engine: "Full Scan"\n# 3. Agenda ou corre imediatamente\n# Resultados: subdomínios, endpoints, tecnologias, CVEs',
+                        xp: 40,
+                    },
                 ],
             },
             {
@@ -6245,7 +6396,7 @@ async def _pg_exec_async(files, ns, tab_id):
                 icon: '🌐',
                 name: 'Web Application',
                 desc: 'Vulnerabilidades web baseadas no OWASP Top 10.',
-                tools: ['Burp Suite', 'SQLmap', 'DVWA', 'WebGoat', 'OWASP ZAP'],
+                tools: ['Burp Suite', 'SQLmap', 'DVWA', 'WebGoat', 'CyberChef', 'OWASP ZAP'],
                 xp: 250,
                 ctfFlag: 'flag{dvwa_compromised_admin}',
                 ctfTitle: 'DVWA Full Compromise',
@@ -6298,6 +6449,12 @@ async def _pg_exec_async(files, ns, tab_id):
                         desc: 'Acede a recursos de outros utilizadores manipulando IDs.',
                         cmd: 'GET /user/profile?id=2  →  id=1, id=0, id=admin',
                         xp: 40,
+                    },
+                    {
+                        title: 'CyberChef — Decode & Analyse',
+                        desc: 'Usa CyberChef para descodificar tokens JWT, cookies Base64, payloads ofuscados e hashes.',
+                        cmd: '# Receitas úteis em CyberChef:\n# "From Base64" → descodifica cookies\n# "JWT Decode" → lê claims sem verificar assinatura\n# "URL Decode" → desofusca query strings\n# "Magic" → detecta automaticamente o encoding',
+                        xp: 30,
                     },
                 ],
             },
@@ -6584,9 +6741,12 @@ async def _pg_exec_async(files, ns, tab_id):
             const pct = labCalcModulePct(mod);
             if (pct === 100) return 'done';
             if (pct > 0) return 'progress';
-            if (idx === 0) return 'available';
-            const prevMod = LAB_MODULES[idx - 1];
-            if (labCalcModulePct(prevMod) >= 50) return 'available';
+            if (mod.alwaysAvailable) return 'available';
+            const pentest = LAB_MODULES.filter(m => !m.alwaysAvailable);
+            const pentestIdx = pentest.indexOf(mod);
+            if (pentestIdx === 0) return 'available';
+            const prevMod = pentest[pentestIdx - 1];
+            if (prevMod && labCalcModulePct(prevMod) >= 50) return 'available';
             return 'locked';
         }
 
@@ -6606,13 +6766,16 @@ async def _pg_exec_async(files, ns, tab_id):
                 return acc + (p.ctfSolved ? 1 : 0);
             }, 0);
 
+            const byId = id => LAB_MODULES.find(m => m.id === id);
             const badges = [
-                { icon: '🔍', label: 'OSINT Pro', earned: labCalcModulePct(LAB_MODULES[0]) === 100 },
-                { icon: '🌐', label: 'Web Hacker', earned: labCalcModulePct(LAB_MODULES[1]) === 100 },
-                { icon: '🕸️', label: 'Network Op', earned: labCalcModulePct(LAB_MODULES[2]) === 100 },
-                { icon: '🔓', label: 'Privesc Master', earned: labCalcModulePct(LAB_MODULES[3]) === 100 },
-                { icon: '📋', label: 'Repórter', earned: labCalcModulePct(LAB_MODULES[4]) === 100 },
-                { icon: '🏴', label: 'CTF Finisher', earned: labCalcModulePct(LAB_MODULES[5]) === 100 },
+                { icon: '🐍', label: 'Pythonista', earned: labCalcModulePct(byId('py')) === 100 },
+                { icon: '🗄️', label: 'SQL Ninja', earned: labCalcModulePct(byId('sql')) === 100 },
+                { icon: '🔍', label: 'OSINT Pro', earned: labCalcModulePct(byId('recon')) === 100 },
+                { icon: '🌐', label: 'Web Hacker', earned: labCalcModulePct(byId('webapp')) === 100 },
+                { icon: '🕸️', label: 'Network Op', earned: labCalcModulePct(byId('network')) === 100 },
+                { icon: '🔓', label: 'Privesc Master', earned: labCalcModulePct(byId('postexploit')) === 100 },
+                { icon: '📋', label: 'Repórter', earned: labCalcModulePct(byId('report')) === 100 },
+                { icon: '🏴', label: 'CTF Finisher', earned: labCalcModulePct(byId('ctf-arena')) === 100 },
             ];
 
             el.innerHTML = `
@@ -6655,8 +6818,14 @@ async def _pg_exec_async(files, ns, tab_id):
 
 <div id="lab-detail-container"></div>
 
+<div class="lab-section-label">// Fundamentos</div>
 <div class="lab-modules-grid">
-  ${LAB_MODULES.map((mod, idx) => labRenderModuleCard(mod, idx)).join('')}
+  ${LAB_MODULES.filter(m => m.alwaysAvailable).map((mod, idx) => labRenderModuleCard(mod, idx)).join('')}
+</div>
+
+<div class="lab-section-label" style="margin-top:1.5rem;">// Pentesting</div>
+<div class="lab-modules-grid">
+  ${LAB_MODULES.filter(m => !m.alwaysAvailable).map((mod, idx) => labRenderModuleCard(mod, LAB_MODULES.indexOf(mod))).join('')}
 </div>
             `;
 

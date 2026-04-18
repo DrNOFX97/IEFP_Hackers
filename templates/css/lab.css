@@ -57,6 +57,13 @@
         }
         .lab-badge-icon { font-size: 0.85rem; }
 
+        /* ── Section labels ── */
+        .lab-section-label {
+            font-size: 0.7rem; font-weight: 700; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
         /* ── Module grid ── */
         .lab-modules-grid {
             display: grid;
