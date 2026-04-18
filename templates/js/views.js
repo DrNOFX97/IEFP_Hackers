@@ -1,5 +1,5 @@
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','definicoes'];
 
         function switchView(view) {
             ALL_VIEWS.forEach(v => {
@@ -19,7 +19,7 @@
                     monthSelect.value = todayIdx;
                     renderHorario(todayIdx);
                 } else {
-                    setTimeout(scrollToToday, 80);
+                    setTimeout(scrollToToday, 100);
                 }
             } else if (view === 'disciplinas') {
                 document.getElementById('view-disciplinas').style.display = 'block';
@@ -45,6 +45,10 @@
                 monthSelectContainer.style.display = 'none';
                 chatViewInit();
                 chatMarkRead();
+            } else if (view === 'chat-wa') {
+                document.getElementById('view-chat-wa').style.display = 'flex';
+                monthSelectContainer.style.display = 'none';
+                chatWAInit();
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';

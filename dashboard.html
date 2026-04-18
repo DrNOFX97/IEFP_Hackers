@@ -2276,6 +2276,9 @@ opacity: 0.35;
                     <span class="nav-item-icon">💬</span><span class="nav-item-label"> Chat</span>
                     <span class="nav-item-badge" id="nav-chat-badge"></span>
                 </button>
+                <button class="nav-item" data-view="chat-wa" onclick="switchView('chat-wa')">
+                    <span class="nav-item-icon">📱</span><span class="nav-item-label"> WhatsApp <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
+                </button>
                 <button class="nav-item" data-view="playground" onclick="switchView('playground')">
                     <span class="nav-item-icon">💻</span><span class="nav-item-label"> Playground <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
                 </button>
@@ -2503,6 +2506,20 @@ opacity: 0.35;
                 </div>
             </div>
 
+            <!-- VIEW: WHATSAPP CHAT -->
+            <div id="view-chat-wa">
+                <h2 style="margin-bottom:1.25rem;">📱 WhatsApp da turma <span style="font-size:0.55em;opacity:0.6;font-weight:400;vertical-align:middle;">(beta)</span></h2>
+                <div class="chat-view-body">
+                    <div class="chat-view-msgs" id="chat-wa-msgs">
+                        <div class="chat-empty">A carregar…</div>
+                    </div>
+                    <div class="chat-view-input-row">
+                        <input class="chat-input" id="chat-wa-input" placeholder="Mensagem para o grupo WA…" onkeydown="chatWAKey(event)">
+                        <button class="chat-send" id="chat-wa-send" onclick="chatWASend()">↑</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- VIEW: DEFINIÇÕES -->
             <div id="view-definicoes">
                 <h2 style="margin-bottom:1.5rem;">⚙️ Definições</h2>
@@ -2609,6 +2626,7 @@ opacity: 0.35;
         // Chat state
         let chatUnsub    = null;   // global chat listener unsubscribe
         let ucChatUnsub  = null;   // UC chat listener unsubscribe
+        let chatWAUnsub  = null;   // WhatsApp chat listener unsubscribe
         let chatLastRead = parseInt(localStorage.getItem('chat_last_read') || '0');
 
         // ── DOM REFS ────────────────────────────────────────────────────
@@ -2641,7 +2659,7 @@ opacity: 0.35;
 
 
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','definicoes'];
 
         function switchView(view) {
             ALL_VIEWS.forEach(v => {
@@ -2661,7 +2679,7 @@ opacity: 0.35;
                     monthSelect.value = todayIdx;
                     renderHorario(todayIdx);
                 } else {
-                    setTimeout(scrollToToday, 80);
+                    setTimeout(scrollToToday, 100);
                 }
             } else if (view === 'disciplinas') {
                 document.getElementById('view-disciplinas').style.display = 'block';
@@ -2687,6 +2705,10 @@ opacity: 0.35;
                 monthSelectContainer.style.display = 'none';
                 chatViewInit();
                 chatMarkRead();
+            } else if (view === 'chat-wa') {
+                document.getElementById('view-chat-wa').style.display = 'flex';
+                monthSelectContainer.style.display = 'none';
+                chatWAInit();
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -3019,7 +3041,9 @@ opacity: 0.35;
             const target   = document.querySelector(`.day-card[data-date="${todayStr}"]`)
                           || document.querySelector(`.week-day-col[data-date="${todayStr}"]`);
             if (!target || !content) return;
-            content.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' });
+            const targetRect  = target.getBoundingClientRect();
+            const contentRect = content.getBoundingClientRect();
+            content.scrollTo({ top: content.scrollTop + targetRect.top - contentRect.top - offset, behavior: 'smooth' });
         }
 
         function openUCFromSchedule(ucCode) {
@@ -3177,13 +3201,15 @@ opacity: 0.35;
             switchView('horario');
 
             const doScroll = () => {
-                const pad = n => String(n).padStart(2, '0');
                 const toolbar = document.querySelector('.schedule-toolbar');
                 const offset  = (toolbar?.offsetHeight || 80) + 16;
                 const content = document.getElementById('app-content');
                 const target  = document.querySelector(`.day-card[data-date="${dateStr}"]`)
                               || document.querySelector(`.week-day-col[data-date="${dateStr}"]`);
-                if (target && content) content.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' });
+                if (!target || !content) return;
+                const targetRect  = target.getBoundingClientRect();
+                const contentRect = content.getBoundingClientRect();
+                content.scrollTo({ top: content.scrollTop + targetRect.top - contentRect.top - offset, behavior: 'smooth' });
             };
 
             if (targetIdx !== currentMonthIndex) {
@@ -4072,6 +4098,66 @@ opacity: 0.35;
                     timestamp:   firebase.firestore.FieldValue.serverTimestamp(),
                     deleted:     false
                 });
+        }
+
+        // ── WHATSAPP CHAT ────────────────────────────────────────────────
+        function chatWAInit() {
+            if (chatWAUnsub) return;
+            const q = db.collection('chat_whatsapp')
+                .orderBy('timestamp', 'asc')
+                .limitToLast(80);
+            chatWAUnsub = q.onSnapshot(snap => {
+                const el  = document.getElementById('chat-wa-msgs');
+                const uid = auth.currentUser?.uid;
+                const msgs = [];
+                snap.forEach(doc => {
+                    const m = { id: doc.id, ...doc.data() };
+                    if (!m.deleted) msgs.push(m);
+                });
+                if (!el) return;
+                el.innerHTML = msgs.length === 0
+                    ? '<div class="chat-empty">Sem mensagens ainda. Escreve algo!</div>'
+                    : msgs.map(m => chatWABubbleHtml(m, uid)).join('');
+                el.scrollTop = el.scrollHeight;
+            }, err => console.warn('WA chat error:', err));
+        }
+
+        function chatWABubbleHtml(m, uid) {
+            const mine   = m.uid === uid;
+            const badge  = m.source === 'whatsapp'
+                ? '<span style="font-size:0.7em;opacity:0.6;margin-left:0.25rem;">📱</span>'
+                : '';
+            const time   = m.timestamp?.toMillis
+                ? new Date(m.timestamp.toMillis()).toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'})
+                : '';
+            return `<div class="chat-msg ${mine ? 'mine' : 'other'}">
+                ${!mine ? `<div class="chat-author">${escapeHtml(m.displayName || 'Anónimo')}${badge}</div>` : ''}
+                <div class="chat-bubble">${escapeHtml(m.text)}</div>
+                <span class="chat-msg-time">${time}</span>
+            </div>`;
+        }
+
+        function chatWAKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); chatWASend(); }
+        }
+
+        async function chatWASend() {
+            const input = document.getElementById('chat-wa-input');
+            const text  = (input?.value || '').trim().slice(0, 2000);
+            if (!text || !auth.currentUser) return;
+            input.value = '';
+            const sendBtn = document.getElementById('chat-wa-send');
+            if (sendBtn) sendBtn.disabled = true;
+            try {
+                const fn = firebase.functions().httpsCallable('whatsappSend');
+                await fn({ text });
+            } catch (err) {
+                console.error('WA send error:', err);
+                input.value = text; // restaurar texto em caso de erro
+                alert('Erro ao enviar para WhatsApp: ' + (err.message || err));
+            } finally {
+                if (sendBtn) sendBtn.disabled = false;
+            }
         }
 
 
@@ -5702,6 +5788,9 @@ async def _pg_exec_async(files, ns, tab_id):
     <div class="mob-more-menu" id="mob-more-menu">
         <button class="mob-more-item" data-view="disciplinas" onclick="switchView('disciplinas');mobMoreClose()">
             <span class="mob-more-item-icon">📚</span> Disciplinas
+        </button>
+        <button class="mob-more-item" data-view="chat-wa" onclick="switchView('chat-wa');mobMoreClose()">
+            <span class="mob-more-item-icon">📱</span> WhatsApp (beta)
         </button>
         <button class="mob-more-item" data-view="playground" onclick="switchView('playground');mobMoreClose()">
             <span class="mob-more-item-icon">💻</span> Playground

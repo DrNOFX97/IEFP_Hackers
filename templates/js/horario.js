@@ -259,7 +259,9 @@
             const target   = document.querySelector(`.day-card[data-date="${todayStr}"]`)
                           || document.querySelector(`.week-day-col[data-date="${todayStr}"]`);
             if (!target || !content) return;
-            content.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' });
+            const targetRect  = target.getBoundingClientRect();
+            const contentRect = content.getBoundingClientRect();
+            content.scrollTo({ top: content.scrollTop + targetRect.top - contentRect.top - offset, behavior: 'smooth' });
         }
 
         function openUCFromSchedule(ucCode) {
@@ -417,13 +419,15 @@
             switchView('horario');
 
             const doScroll = () => {
-                const pad = n => String(n).padStart(2, '0');
                 const toolbar = document.querySelector('.schedule-toolbar');
                 const offset  = (toolbar?.offsetHeight || 80) + 16;
                 const content = document.getElementById('app-content');
                 const target  = document.querySelector(`.day-card[data-date="${dateStr}"]`)
                               || document.querySelector(`.week-day-col[data-date="${dateStr}"]`);
-                if (target && content) content.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' });
+                if (!target || !content) return;
+                const targetRect  = target.getBoundingClientRect();
+                const contentRect = content.getBoundingClientRect();
+                content.scrollTo({ top: content.scrollTop + targetRect.top - contentRect.top - offset, behavior: 'smooth' });
             };
 
             if (targetIdx !== currentMonthIndex) {
