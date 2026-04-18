@@ -1,6 +1,8 @@
 import json
 import os
 import glob
+import base64
+import io
 
 
 def get_latest_file(pattern):
@@ -300,7 +302,29 @@ def main():
     html = html.replace('__INJECT_CRONOGRAMA__',  json.dumps(cronograma,          ensure_ascii=False))
     html = html.replace('__INJECT_PG_EXAMPLES__', json.dumps(build_pg_examples(), ensure_ascii=False))
 
-    # 5. Write output
+    # 6. Inject logo (resize to sidebar width, keep transparency)
+    logo_b64 = ''
+    logo_path = os.path.join(os.path.dirname(__file__), 'logo_02.png')
+    if os.path.exists(logo_path):
+        try:
+            from PIL import Image
+            img = Image.open(logo_path).convert('RGBA')
+            bbox = img.getbbox()
+            if bbox:
+                img = img.crop(bbox)
+            max_w = 192
+            ratio = max_w / img.width
+            img = img.resize((max_w, int(img.height * ratio)), Image.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, 'PNG', optimize=True)
+            logo_b64 = base64.b64encode(buf.getvalue()).decode()
+        except ImportError:
+            # PIL not available — embed original as-is
+            with open(logo_path, 'rb') as f:
+                logo_b64 = base64.b64encode(f.read()).decode()
+    html = html.replace('__INJECT_LOGO_B64__', logo_b64)
+
+    # 7. Write output
     with open('dashboard.html', 'w', encoding='utf-8') as f:
         f.write(html)
 
