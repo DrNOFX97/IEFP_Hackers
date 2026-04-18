@@ -108,7 +108,7 @@
                     {
                         title: 'XSS Reflected & Stored',
                         desc: 'Injeta scripts em campos de formulário e vê a execução.',
-                        cmd: '<script>alert(document.cookie)</script>\n<img src=x onerror=alert(1)>',
+                        cmd: '<script>alert(document.cookie)<\\/script>\n<img src=x onerror=alert(1)>',
                         xp: 40,
                     },
                     {
