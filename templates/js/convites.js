@@ -26,7 +26,6 @@
                     active:         true,
                 });
                 toast(isIndividual ? 'Convite individual criado (7 dias)' : 'Link de turma criado');
-                loadInvites();
             } catch(e) {
                 toast('Erro ao criar convite: ' + e.message, 'error');
             }
@@ -37,7 +36,6 @@
             try {
                 await db.collection('invites').doc(token).update({ active: false });
                 toast('Convite revogado');
-                loadInvites();
             } catch(e) {
                 toast('Erro: ' + e.message, 'error');
             }
@@ -48,38 +46,51 @@
             try {
                 await db.collection('invites').doc(token).delete();
                 toast('Convite apagado');
-                loadInvites();
             } catch(e) {
                 toast('Erro: ' + e.message, 'error');
             }
         }
 
-        async function loadInvites() {
+        function loadInvites() {
             const list = document.getElementById('invite-list');
             if (!list) return;
+            const uid = auth.currentUser?.uid;
+            if (!uid) return;
+
+            if (window._invitesUnsub) {
+                window._invitesUnsub();
+                window._invitesUnsub = null;
+            }
+
             list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">A carregar…</span>';
-            try {
-                const uid  = auth.currentUser?.uid;
-                const snap = await db.collection('invites')
-                    .where('createdBy', '==', uid)
-                    .get({ source: 'server' });
-                if (snap.empty) {
-                    list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Nenhum convite criado ainda.</span>';
-                    return;
-                }
-                list.innerHTML = '';
-                const docs = snap.docs.sort((a, b) => {
-                    const ta = a.data().createdAt?.toMillis?.() || 0;
-                    const tb = b.data().createdAt?.toMillis?.() || 0;
-                    return tb - ta;
+
+            window._invitesUnsub = db.collection('invites')
+                .where('createdBy', '==', uid)
+                .onSnapshot(snap => {
+                    if (snap.empty) {
+                        list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Nenhum convite criado ainda.</span>';
+                        return;
+                    }
+                    list.innerHTML = '';
+                    const docs = snap.docs.slice().sort((a, b) => {
+                        const ta = a.data().createdAt?.toMillis?.() || 0;
+                        const tb = b.data().createdAt?.toMillis?.() || 0;
+                        return tb - ta;
+                    });
+                    docs.forEach(doc => {
+                        const inv  = doc.data();
+                        const card = renderInviteCard(doc.id, inv);
+                        list.appendChild(card);
+                    });
+                }, () => {
+                    list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Erro ao carregar convites.</span>';
                 });
-                docs.forEach(doc => {
-                    const inv  = doc.data();
-                    const card = renderInviteCard(doc.id, inv);
-                    list.appendChild(card);
-                });
-            } catch(e) {
-                list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Erro ao carregar convites.</span>';
+        }
+
+        function unsubscribeInvites() {
+            if (window._invitesUnsub) {
+                window._invitesUnsub();
+                window._invitesUnsub = null;
             }
         }
 

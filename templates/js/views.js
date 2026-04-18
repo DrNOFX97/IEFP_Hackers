@@ -2,6 +2,9 @@
         const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','definicoes'];
 
         function switchView(view) {
+            if (currentView === 'definicoes' && view !== 'definicoes') {
+                if (typeof unsubscribeInvites === 'function') unsubscribeInvites();
+            }
             ALL_VIEWS.forEach(v => {
                 const el = document.getElementById('view-' + v);
                 if (el) el.style.display = 'none';
