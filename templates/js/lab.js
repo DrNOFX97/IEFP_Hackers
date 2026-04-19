@@ -13,7 +13,7 @@
                 ctfFlag: 'flag{py_recon_script_done}',
                 ctfTitle: 'Mini-Scanner de Reconhecimento',
                 ctfDesc: 'Constrói um script Python que aceita um domínio como argumento, resolve DNS, testa portas comuns e gera um relatório `.txt`.',
-                ctfObjective: 'Implementa o scanner completo (DNS + port scan + relatório .txt) e submete a flag de conclusão: `flag{py_recon_script_done}`',
+                ctfObjective: 'Abre o Playground → exemplo **🔍 Mini-Scanner (CTF)**, corre o script e submete a flag que aparece no output.',
                 ctfHint: 'Usa `socket.getaddrinfo()` para DNS, `socket.connect_ex()` para portas e `requests.get()` para headers HTTP.',
                 theory: {
                     concepts: [
