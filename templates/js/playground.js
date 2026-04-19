@@ -13,12 +13,7 @@
             cmSQLReady: false,
         };
 
-        function pgToggleMenu(e) {
-            e.stopPropagation();
-            document.getElementById('pg-add-menu').classList.toggle('open');
-        }
         document.addEventListener('click', () => {
-            document.getElementById('pg-add-menu')?.classList.remove('open');
             document.querySelectorAll('.pg-examples-menu').forEach(m => m.classList.remove('open'));
         });
 
@@ -700,7 +695,7 @@ async def _pg_exec_async(files, ns, tab_id):
             if (type === 'prompt') {
                 div.innerHTML = `<span class="pg-repl-prompt">sqlite&gt; </span><span>${escapeHtml(text)}</span>`;
             } else if (type === 'table') {
-                div.innerHTML = `<span class="pg-repl-tbl">${text}</span>`;
+                div.innerHTML = text;
             } else if (type === 'err') {
                 div.innerHTML = `<span class="pg-repl-err">ERRO: ${escapeHtml(text)}</span>`;
             } else if (type === 'info') {
@@ -715,21 +710,13 @@ async def _pg_exec_async(files, ns, tab_id):
         function pgFormatTable(result) {
             const cols = result.columns;
             const rows = result.values;
-            const widths = cols.map((c, i) => Math.max(
-                c.length,
-                ...rows.map(r => String(r[i] ?? 'NULL').length)
-            ));
-            const pad = (s, w) => String(s ?? 'NULL').padEnd(w);
-            const sep = widths.map(w => '─'.repeat(w + 2)).join('┼');
-            const header = '│ ' + cols.map((c, i) => pad(c, widths[i])).join(' │ ') + ' │';
-            const divider = '├─' + sep + '─┤';
-            const top     = '┌─' + widths.map(w => '─'.repeat(w + 2)).join('┬─') + '─┐';
-            const bottom  = '└─' + widths.map(w => '─'.repeat(w + 2)).join('┴─') + '─┘';
-            const dataRows = rows.map(r =>
-                '│ ' + r.map((v, i) => pad(v, widths[i])).join(' │ ') + ' │'
-            );
-            const lines = [top, header, divider, ...dataRows, bottom];
-            return lines.join('\\n') + '\\n(' + rows.length + ' ' + (rows.length === 1 ? 'linha' : 'linhas') + ')';
+            const esc = s => escapeHtml(String(s ?? 'NULL'));
+            const rowCount = rows.length + ' ' + (rows.length === 1 ? 'linha' : 'linhas');
+            const thead = `<tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr>`;
+            const tbody = rows.map((r, i) =>
+                `<tr class="${i % 2 === 1 ? 'pg-tbl-alt' : ''}">${r.map(v => `<td>${esc(v)}</td>`).join('')}</tr>`
+            ).join('');
+            return `<div class="pg-sql-table-wrap"><table class="pg-sql-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table><div class="pg-sql-row-count">${rowCount}</div></div>`;
         }
 
         function pgLoadScript(url) {

@@ -75,43 +75,48 @@
             border-radius: 3px;
         }
         .pg-tab-close:hover { color: #f85149; background: rgba(248,81,73,0.15); }
-        .pg-add-wrap { position: relative; padding: 0 0.5rem; flex-shrink: 0; }
-        .pg-add-btn {
-            background: none;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            color: #8b949e;
-            font-size: 0.85rem;
-            padding: 0.3rem 0.6rem;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .pg-add-btn:hover { color: #e6edf3; background: #1c2128; }
-        .pg-add-menu {
-            display: none;
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 0;
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            overflow: hidden;
-            z-index: 100;
-            min-width: 180px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-        }
-        .pg-add-menu.open { display: block; }
-        .pg-add-item {
+        .pg-lang-btns {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
-            padding: 0.6rem 1rem;
-            font-size: 0.85rem;
-            color: #e6edf3;
-            cursor: pointer;
-            transition: background 0.15s;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            flex-shrink: 0;
+            border-right: 1px solid #30363d;
         }
-        .pg-add-item:hover { background: #1c2128; }
+        .pg-lang-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .pg-lang-python {
+            background: rgba(57, 211, 83, 0.08);
+            color: #3fb950;
+            border-color: rgba(57, 211, 83, 0.3);
+        }
+        .pg-lang-python:hover {
+            background: rgba(57, 211, 83, 0.2);
+            border-color: #3fb950;
+            box-shadow: 0 0 8px rgba(57, 211, 83, 0.2);
+        }
+        .pg-lang-sql {
+            background: rgba(88, 166, 255, 0.08);
+            color: #58a6ff;
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        .pg-lang-sql:hover {
+            background: rgba(88, 166, 255, 0.2);
+            border-color: #58a6ff;
+            box-shadow: 0 0 8px rgba(88, 166, 255, 0.2);
+        }
         /* Panels */
         .pg-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
         .pg-panel.active { display: flex; }
@@ -366,14 +371,56 @@
             color: #e6edf3;
             font-size: 0.88rem;
             line-height: 1.6;
-            white-space: pre-wrap;
-            word-break: break-word;
         }
-        .pg-repl-entry { margin-bottom: 0.5rem; }
+        .pg-repl-entry { margin-bottom: 0.75rem; white-space: pre-wrap; word-break: break-word; }
+        .pg-repl-entry:has(.pg-sql-table-wrap) { white-space: normal; }
         .pg-repl-prompt { color: #58a6ff; }
         .pg-repl-out { color: #3fb950; }
         .pg-repl-err { color: #f85149; }
-        .pg-repl-tbl { color: #e6edf3; font-size: 0.84rem; }
+        /* SQL table — spreadsheet style */
+        .pg-sql-table-wrap {
+            overflow-x: auto;
+            margin: 0.25rem 0;
+        }
+        .pg-sql-table {
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+            white-space: nowrap;
+            min-width: max-content;
+        }
+        .pg-sql-table thead tr {
+            background: #1e3a5f;
+        }
+        .pg-sql-table th {
+            padding: 0.3rem 0.75rem;
+            border: 1px solid #30363d;
+            color: #79c0ff;
+            font-weight: 700;
+            text-align: left;
+            letter-spacing: 0.03em;
+            position: sticky;
+            top: 0;
+            background: #1e3a5f;
+        }
+        .pg-sql-table td {
+            padding: 0.25rem 0.75rem;
+            border: 1px solid #21262d;
+            color: #e6edf3;
+            background: #0d1117;
+        }
+        .pg-sql-table tr.pg-tbl-alt td {
+            background: #161b22;
+        }
+        .pg-sql-table tbody tr:hover td {
+            background: #1c2840;
+        }
+        .pg-sql-row-count {
+            font-size: 0.75rem;
+            color: #484f58;
+            margin-top: 0.25rem;
+            padding-left: 2px;
+        }
         /* legacy single-line input (kept for fallback) */
         .pg-repl-inputrow {
             display: none;
