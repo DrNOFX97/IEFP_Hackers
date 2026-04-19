@@ -399,7 +399,7 @@ SELECT * FROM utilizadores;
                             <div class="pg-repl-history-pane">
                                 <div class="pg-repl-history-header">Resultado</div>
                                 <div class="pg-repl-history" id="${tab.id}-history">
-                                    <div class="pg-repl-entry"><span class="pg-info">SQLite 3 — escreve SQL e clica Correr</span></div>
+                                    <div class="pg-repl-entry"><span class="pg-info">Escreve SQL acima e clica Correr</span></div>
                                 </div>
                             </div>
                         </div>
@@ -409,7 +409,7 @@ SELECT * FROM utilizadores;
                     const host = document.getElementById(tab.id + '-cm-host');
                     if (!host || pg.editors[tab.id]) return;
                     const cm = CodeMirror(host, {
-                        value: _SQL_DEFAULT,
+                        value: '',
                         mode: 'text/x-sql',
                         theme: 'dracula',
                         lineNumbers: true,
