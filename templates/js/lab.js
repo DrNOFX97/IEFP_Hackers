@@ -13,7 +13,7 @@
                 ctfFlag: 'flag{py_recon_script_done}',
                 ctfTitle: 'Mini-Scanner de Reconhecimento',
                 ctfDesc: 'Constrói um script Python que aceita um domínio como argumento, resolve DNS, testa portas comuns e gera um relatório `.txt`.',
-                ctfObjective: 'Submete a flag gerada pelo script ao correr: `python3 scanner.py pentestlab.local`',
+                ctfObjective: 'Implementa o scanner completo (DNS + port scan + relatório .txt) e submete a flag de conclusão: `flag{py_recon_script_done}`',
                 ctfHint: 'Usa `socket.getaddrinfo()` para DNS, `socket.connect_ex()` para portas e `requests.get()` para headers HTTP.',
                 theory: {
                     concepts: [
