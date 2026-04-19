@@ -5208,7 +5208,6 @@ SELECT * FROM utilizadores;
         };
 
         async function pgNewTab(type) {
-            document.getElementById('pg-add-menu').classList.remove('open');
             if (pg.tabs.length >= 6) { alert('Máximo de 6 sessões abertas.'); return; }
             pg.counter[type]++;
             const id   = `pg-${type}-${pg.counter[type]}`;
