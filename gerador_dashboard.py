@@ -311,6 +311,7 @@ def main():
         'js/definicoes.js',
         'js/lab.js',
         'js/cheatsheets.js',
+        'js/links.js',
         'js/init.js',
     ]
 

@@ -83,6 +83,9 @@
                 <button class="nav-item" data-view="cheatsheets" onclick="switchView('cheatsheets')">
                     <span class="nav-item-icon">📋</span><span class="nav-item-label"> Cheatsheets</span>
                 </button>
+                <button class="nav-item" data-view="links" onclick="switchView('links')">
+                    <span class="nav-item-icon">🔗</span><span class="nav-item-label"> Links Úteis</span>
+                </button>
                 <div class="nav-divider"></div>
                 <a class="nav-item" id="nav-admin-link" href="/admin.html" style="display:none;text-decoration:none;color:inherit;" title="Painel de Administração">
                     <span class="nav-item-icon">🔐</span><span class="nav-item-label"> Admin</span>
@@ -333,6 +336,12 @@
                     <a id="cs-open-link" href="cheatsheet_python.html" target="_blank" style="margin-left:auto;padding:0.5rem 1rem;border-radius:6px;border:1px solid var(--border);color:var(--text-muted);font-size:0.8rem;text-decoration:none;display:flex;align-items:center;gap:0.4rem;">↗ abrir em separador</a>
                 </div>
                 <div id="cs-host" style="border-radius:8px;overflow:hidden;min-height:80vh;"></div>
+            </div>
+
+            <!-- VIEW: LINKS ÚTEIS -->
+            <div id="view-links" style="display:none;">
+                <h2 style="margin-bottom:1.5rem;">🔗 Links Úteis</h2>
+                <div id="links-grid"></div>
             </div>
 
             <!-- VIEW: DEFINIÇÕES -->

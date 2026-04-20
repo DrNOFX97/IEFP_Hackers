@@ -1,5 +1,5 @@
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','lab','cheatsheets','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','lab','cheatsheets','links','definicoes'];
 
         function switchView(view) {
             if (currentView === 'definicoes' && view !== 'definicoes') {
@@ -60,6 +60,10 @@
                 document.getElementById('view-cheatsheets').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
                 if (!_csShadow) csSwitch('python');
+            } else if (view === 'links') {
+                document.getElementById('view-links').style.display = 'block';
+                monthSelectContainer.style.display = 'none';
+                linksRender();
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';

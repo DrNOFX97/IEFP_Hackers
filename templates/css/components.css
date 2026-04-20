@@ -687,3 +687,47 @@
         .view-toggle-btn:hover { background: var(--surface-color-hover); color: var(--text-primary); }
         .view-toggle-btn.active { background: rgba(0,255,65,0.15); color: var(--accent-color); }
         .aula-card.filtered-out { opacity: 0.15; filter: grayscale(1); pointer-events: none; }
+
+        /* ── LINKS ÚTEIS ── */
+        .links-group { margin-bottom: 2rem; }
+        .links-group-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 0.85rem;
+        }
+        .links-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 0.85rem;
+        }
+        .link-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 1rem 1.2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--text);
+            transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+        }
+        .link-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--glow);
+            transform: translateY(-2px);
+        }
+        .link-card-label { font-weight: 600; font-size: 0.95rem; }
+        .link-card-desc { font-size: 0.78rem; color: var(--text-secondary); }
+        .link-card-arrow {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.85rem;
+            font-size: 0.85rem;
+            color: var(--accent);
+            opacity: 0.7;
+        }
