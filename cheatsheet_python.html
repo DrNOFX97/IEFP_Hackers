@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d47;
+    --accent: #f7c948;
+    --accent2: #3b82f6;
+    --accent3: #34d399;
+    --accent4: #ef4444;
+    --accent5: #a855f7;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .page {
+    width: 297mm;
+    min-height: 210mm;
+    padding: 8mm 10mm;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(247,201,72,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(247,201,72,0.025) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6mm;
+    padding-bottom: 4mm;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-left { display: flex; align-items: center; gap: 10px; }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 15px;
+    color: #0a0e1a;
+    flex-shrink: 0;
+  }
+
+  .header-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: white;
+  }
+  .header-title span { color: var(--accent); }
+
+  .header-sub {
+    font-size: 9px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+  }
+
+  .header-right { display: flex; gap: 6px; align-items: center; }
+
+  .phase-badge {
+    font-size: 8px;
+    font-family: var(--mono);
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .p-syntax   { background: rgba(247,201,72,0.15);  color: #f7c948; border: 1px solid rgba(247,201,72,0.3); }
+  .p-ds       { background: rgba(59,130,246,0.15);   color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .p-func     { background: rgba(52,211,153,0.15);   color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+  .p-oop      { background: rgba(168,85,247,0.15);   color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+  .p-stdlib   { background: rgba(236,72,153,0.15);   color: #f472b6; border: 1px solid rgba(236,72,153,0.3); }
+  .p-error    { background: rgba(239,68,68,0.15);    color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .p-file     { background: rgba(245,158,11,0.15);   color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .p-ai       { background: rgba(0,212,170,0.15);    color: #00d4aa; border: 1px solid rgba(0,212,170,0.3); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 7px;
+    break-inside: avoid;
+  }
+
+  .section.wide { grid-column: span 2; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 7px;
+    font-family: var(--mono);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .i-y  { background: rgba(247,201,72,0.2);  color: #f7c948; }
+  .i-b  { background: rgba(59,130,246,0.2);  color: #60a5fa; }
+  .i-g  { background: rgba(52,211,153,0.2);  color: #34d399; }
+  .i-p  { background: rgba(168,85,247,0.2);  color: #c084fc; }
+  .i-pk { background: rgba(236,72,153,0.2);  color: #f472b6; }
+  .i-r  { background: rgba(239,68,68,0.2);   color: #f87171; }
+  .i-o  { background: rgba(245,158,11,0.2);  color: #fbbf24; }
+  .i-t  { background: rgba(0,212,170,0.2);   color: #00d4aa; }
+
+  .section-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: white;
+    flex: 1;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  tr { border-bottom: 1px solid rgba(30,45,71,0.5); }
+  tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 1.5px 0;
+    vertical-align: top;
+    font-size: 8.5px;
+  }
+
+  td:first-child {
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+    padding-right: 6px;
+    width: 52%;
+  }
+
+  td:last-child {
+    color: var(--text-dim);
+    line-height: 1.3;
+  }
+
+  .kw  { color: #c084fc; font-family: var(--mono); }
+  .fn  { color: #60a5fa; font-family: var(--mono); }
+  .st  { color: #34d399; font-family: var(--mono); }
+  .nm  { color: #f87171; font-family: var(--mono); }
+  .cm  { color: #64748b; font-family: var(--mono); font-style: italic; }
+
+  .note {
+    font-size: 7.5px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-top: 3px;
+    padding: 2px 4px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 3px;
+    border-left: 2px solid var(--accent);
+  }
+
+  .footer {
+    margin-top: 5mm;
+    padding-top: 3mm;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-text {
+    font-size: 7.5px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+  .footer-text span { color: var(--accent); }
+
+  .legend { display: flex; gap: 8px; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 3px; font-size: 7px; color: var(--text-muted); font-family: var(--mono); }
+  .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  @media print {
+    body { background: var(--bg) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { width: 297mm; padding: 8mm 10mm; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-icon">Py</div>
+      <div>
+        <div class="header-title"><span>Python</span> Cheatsheet</div>
+        <div class="header-sub">SINTAXE · ESTRUTURAS DE DADOS · OOP · STDLIB · CYBERSEC · v1.0</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="phase-badge p-syntax">Sintaxe</span>
+      <span class="phase-badge p-ds">Dados</span>
+      <span class="phase-badge p-func">Funções</span>
+      <span class="phase-badge p-oop">OOP</span>
+      <span class="phase-badge p-stdlib">Stdlib</span>
+      <span class="phase-badge p-error">Erros</span>
+      <span class="phase-badge p-file">Ficheiros</span>
+      <span class="phase-badge p-ai">Cybersec</span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- TIPOS E VARIÁVEIS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-y">TY</div>
+        <span class="section-title">Tipos & Variáveis</span>
+        <span class="phase-badge p-syntax">Sintaxe</span>
+      </div>
+      <table>
+        <tr><td>x = <nm>42</nm></td><td>int</td></tr>
+        <tr><td>x = <nm>3.14</nm></td><td>float</td></tr>
+        <tr><td>x = <st>"olá"</st></td><td>string</td></tr>
+        <tr><td>x = <kw>True</kw> / <kw>False</kw></td><td>boolean</td></tr>
+        <tr><td>x = <kw>None</kw></td><td>null (NoneType)</td></tr>
+        <tr><td><fn>type</fn>(x)</td><td>Ver tipo de variável</td></tr>
+        <tr><td><fn>isinstance</fn>(x, <fn>int</fn>)</td><td>Verificar tipo</td></tr>
+        <tr><td>x: <fn>int</fn> = <nm>5</nm></td><td>Type hint (Python 3.5+)</td></tr>
+      </table>
+    </div>
+
+    <!-- STRINGS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-g">ST</div>
+        <span class="section-title">Strings</span>
+        <span class="phase-badge p-syntax">Sintaxe</span>
+      </div>
+      <table>
+        <tr><td>f<st>"Olá {nome}"</st></td><td>f-string (Python 3.6+)</td></tr>
+        <tr><td>s.<fn>upper</fn>() / .<fn>lower</fn>()</td><td>Maiúsculas / minúsculas</td></tr>
+        <tr><td>s.<fn>strip</fn>()</td><td>Remover espaços</td></tr>
+        <tr><td>s.<fn>split</fn>(<st>","</st>)</td><td>Dividir em lista</td></tr>
+        <tr><td><st>","</st>.<fn>join</fn>(lista)</td><td>Unir lista em string</td></tr>
+        <tr><td>s.<fn>replace</fn>(<st>"a"</st>, <st>"b"</st>)</td><td>Substituir</td></tr>
+        <tr><td>s[<nm>0</nm>:<nm>5</nm>]</td><td>Slice (início:fim)</td></tr>
+        <tr><td>s[<nm>-1</nm>]</td><td>Último caractere</td></tr>
+      </table>
+    </div>
+
+    <!-- LISTAS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-b">LS</div>
+        <span class="section-title">Listas</span>
+        <span class="phase-badge p-ds">Dados</span>
+      </div>
+      <table>
+        <tr><td>l = [<nm>1</nm>, <nm>2</nm>, <nm>3</nm>]</td><td>Criar lista</td></tr>
+        <tr><td>l.<fn>append</fn>(x)</td><td>Adicionar no fim</td></tr>
+        <tr><td>l.<fn>insert</fn>(<nm>0</nm>, x)</td><td>Inserir na posição</td></tr>
+        <tr><td>l.<fn>remove</fn>(x)</td><td>Remover por valor</td></tr>
+        <tr><td>l.<fn>pop</fn>()</td><td>Remover e retornar último</td></tr>
+        <tr><td>l.<fn>sort</fn>()</td><td>Ordenar in-place</td></tr>
+        <tr><td><fn>sorted</fn>(l)</td><td>Retornar nova lista ordenada</td></tr>
+        <tr><td>[x*<nm>2</nm> <kw>for</kw> x <kw>in</kw> l]</td><td>List comprehension</td></tr>
+      </table>
+    </div>
+
+    <!-- DICIONÁRIOS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-o">DC</div>
+        <span class="section-title">Dicionários</span>
+        <span class="phase-badge p-ds">Dados</span>
+      </div>
+      <table>
+        <tr><td>d = {<st>"a"</st>: <nm>1</nm>}</td><td>Criar dict</td></tr>
+        <tr><td>d[<st>"key"</st>]</td><td>Aceder valor (KeyError se não existe)</td></tr>
+        <tr><td>d.<fn>get</fn>(<st>"key"</st>, <nm>0</nm>)</td><td>Aceder com default seguro</td></tr>
+        <tr><td>d.<fn>keys</fn>() / .<fn>values</fn>()</td><td>Chaves / valores</td></tr>
+        <tr><td>d.<fn>items</fn>()</td><td>Pares (chave, valor)</td></tr>
+        <tr><td><st>"key"</st> <kw>in</kw> d</td><td>Verificar existência</td></tr>
+        <tr><td>d.<fn>update</fn>({<st>"b"</st>: <nm>2</nm>})</td><td>Adicionar/actualizar</td></tr>
+        <tr><td>{k: v <kw>for</kw> k,v <kw>in</kw> d.<fn>items</fn>()}</td><td>Dict comprehension</td></tr>
+      </table>
+    </div>
+
+    <!-- SETS E TUPLES -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-pk">ST</div>
+        <span class="section-title">Sets & Tuples</span>
+        <span class="phase-badge p-ds">Dados</span>
+      </div>
+      <table>
+        <tr><td>t = (<nm>1</nm>, <nm>2</nm>, <nm>3</nm>)</td><td>Tuple (imutável)</td></tr>
+        <tr><td>a, b, c = t</td><td>Unpacking</td></tr>
+        <tr><td>s = {<nm>1</nm>, <nm>2</nm>, <nm>3</nm>}</td><td>Set (sem duplicados)</td></tr>
+        <tr><td>s.<fn>add</fn>(x)</td><td>Adicionar elemento</td></tr>
+        <tr><td>s1 & s2</td><td>Intersecção</td></tr>
+        <tr><td>s1 | s2</td><td>União</td></tr>
+        <tr><td>s1 - s2</td><td>Diferença</td></tr>
+        <tr><td><fn>set</fn>(lista)</td><td>Remover duplicados de lista</td></tr>
+      </table>
+    </div>
+
+    <!-- CONDICIONAIS E LOOPS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-y">CF</div>
+        <span class="section-title">Condicionais & Loops</span>
+        <span class="phase-badge p-syntax">Sintaxe</span>
+      </div>
+      <table>
+        <tr><td><kw>if</kw> x > <nm>0</nm>: ...</td><td>Condicional básico</td></tr>
+        <tr><td><kw>elif</kw> / <kw>else</kw></td><td>Senão se / senão</td></tr>
+        <tr><td>x <kw>if</kw> cond <kw>else</kw> y</td><td>Ternário inline</td></tr>
+        <tr><td><kw>for</kw> i <kw>in</kw> <fn>range</fn>(<nm>10</nm>):</td><td>Loop numérico</td></tr>
+        <tr><td><kw>for</kw> i, v <kw>in</kw> <fn>enumerate</fn>(l):</td><td>Com índice</td></tr>
+        <tr><td><kw>for</kw> a, b <kw>in</kw> <fn>zip</fn>(l1, l2):</td><td>Loop em paralelo</td></tr>
+        <tr><td><kw>while</kw> cond: ...</td><td>Loop condicional</td></tr>
+        <tr><td><kw>break</kw> / <kw>continue</kw></td><td>Sair / saltar iteração</td></tr>
+      </table>
+    </div>
+
+    <!-- FUNÇÕES -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-g">FN</div>
+        <span class="section-title">Funções</span>
+        <span class="phase-badge p-func">Funções</span>
+      </div>
+      <table>
+        <tr><td><kw>def</kw> <fn>soma</fn>(a, b=<nm>0</nm>):</td><td>Com valor padrão</td></tr>
+        <tr><td><kw>def</kw> <fn>f</fn>(*args):</td><td>Args posicionais variáveis</td></tr>
+        <tr><td><kw>def</kw> <fn>f</fn>(**kwargs):</td><td>Args nomeados variáveis</td></tr>
+        <tr><td><kw>return</kw> a, b</td><td>Retornar múltiplos valores</td></tr>
+        <tr><td><fn>lambda</fn> x: x * <nm>2</nm></td><td>Função anónima</td></tr>
+        <tr><td><fn>map</fn>(<fn>fn</fn>, lista)</td><td>Aplicar fn a cada item</td></tr>
+        <tr><td><fn>filter</fn>(<fn>fn</fn>, lista)</td><td>Filtrar com fn</td></tr>
+        <tr><td><kw>from</kw> functools <kw>import</kw> <fn>reduce</fn></td><td>Reduzir lista a valor</td></tr>
+      </table>
+    </div>
+
+    <!-- CLASSES / OOP -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-p">OOP</div>
+        <span class="section-title">Classes & OOP</span>
+        <span class="phase-badge p-oop">OOP</span>
+      </div>
+      <table>
+        <tr><td><kw>class</kw> <fn>Animal</fn>:</td><td>Definir classe</td></tr>
+        <tr><td><kw>def</kw> <fn>__init__</fn>(<kw>self</kw>, n):</td><td>Construtor</td></tr>
+        <tr><td><kw>self</kw>.nome = n</td><td>Atributo de instância</td></tr>
+        <tr><td><kw>class</kw> <fn>Cão</fn>(<fn>Animal</fn>):</td><td>Herança</td></tr>
+        <tr><td><fn>super</fn>().<fn>__init__</fn>(n)</td><td>Chamar construtor pai</td></tr>
+        <tr><td>@<fn>staticmethod</fn></td><td>Método sem self</td></tr>
+        <tr><td>@<fn>classmethod</fn></td><td>Método de classe (cls)</td></tr>
+        <tr><td>@<fn>property</fn></td><td>Atributo como getter</td></tr>
+      </table>
+    </div>
+
+    <!-- TRATAMENTO DE ERROS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-r">ERR</div>
+        <span class="section-title">Erros & Exceções</span>
+        <span class="phase-badge p-error">Erros</span>
+      </div>
+      <table>
+        <tr><td><kw>try</kw>: ... <kw>except</kw>:</td><td>Bloco básico</td></tr>
+        <tr><td><kw>except</kw> <fn>ValueError</fn> <kw>as</kw> e:</td><td>Capturar tipo específico</td></tr>
+        <tr><td><kw>except</kw> (<fn>A</fn>, <fn>B</fn>):</td><td>Múltiplas excepções</td></tr>
+        <tr><td><kw>finally</kw>:</td><td>Sempre executar (cleanup)</td></tr>
+        <tr><td><kw>raise</kw> <fn>ValueError</fn>(<st>"msg"</st>)</td><td>Lançar excepção</td></tr>
+        <tr><td><kw>raise</kw> <fn>Exception</fn> <kw>from</kw> e</td><td>Encadear excepções</td></tr>
+        <tr><td><kw>assert</kw> x > <nm>0</nm>, <st>"msg"</st></td><td>Assert com mensagem</td></tr>
+      </table>
+      <div class="note">⚡ Nunca usar bare except: — esconde bugs silenciosamente</div>
+    </div>
+
+    <!-- FICHEIROS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-o">IO</div>
+        <span class="section-title">Ficheiros & I/O</span>
+        <span class="phase-badge p-file">Ficheiros</span>
+      </div>
+      <table>
+        <tr><td><kw>with</kw> <fn>open</fn>(<st>"f.txt"</st>) <kw>as</kw> f:</td><td>Abrir (context manager)</td></tr>
+        <tr><td>f.<fn>read</fn>()</td><td>Ler tudo como string</td></tr>
+        <tr><td>f.<fn>readlines</fn>()</td><td>Ler como lista de linhas</td></tr>
+        <tr><td><fn>open</fn>(<st>"f"</st>, <st>"w"</st>)</td><td>Escrever (apaga existente)</td></tr>
+        <tr><td><fn>open</fn>(<st>"f"</st>, <st>"a"</st>)</td><td>Acrescentar ao ficheiro</td></tr>
+        <tr><td><kw>import</kw> json; json.<fn>load</fn>(f)</td><td>Ler JSON</td></tr>
+        <tr><td>json.<fn>dump</fn>(data, f, indent=<nm>2</nm>)</td><td>Escrever JSON formatado</td></tr>
+        <tr><td><kw>import</kw> csv; csv.<fn>reader</fn>(f)</td><td>Ler CSV</td></tr>
+      </table>
+    </div>
+
+    <!-- STDLIB ESSENCIAL -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-pk">OS</div>
+        <span class="section-title">os / sys / pathlib</span>
+        <span class="phase-badge p-stdlib">Stdlib</span>
+      </div>
+      <table>
+        <tr><td>os.<fn>getcwd</fn>()</td><td>Directório actual</td></tr>
+        <tr><td>os.<fn>listdir</fn>(<st>"."</st>)</td><td>Listar ficheiros</td></tr>
+        <tr><td>os.<fn>makedirs</fn>(path, exist_ok=<kw>True</kw>)</td><td>Criar directórios</td></tr>
+        <tr><td>os.path.<fn>join</fn>(a, b)</td><td>Construir path</td></tr>
+        <tr><td>os.path.<fn>exists</fn>(p)</td><td>Verificar existência</td></tr>
+        <tr><td><fn>Path</fn>(<st>"dir"</st>) / <st>"file.txt"</st></td><td>pathlib — path fluente</td></tr>
+        <tr><td>sys.<fn>argv</fn></td><td>Argumentos da linha de cmd</td></tr>
+        <tr><td>sys.<fn>exit</fn>(<nm>0</nm>)</td><td>Sair do script</td></tr>
+      </table>
+    </div>
+
+    <!-- DATETIME -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-b">DT</div>
+        <span class="section-title">datetime & time</span>
+        <span class="phase-badge p-stdlib">Stdlib</span>
+      </div>
+      <table>
+        <tr><td>datetime.<fn>now</fn>()</td><td>Data e hora actuais</td></tr>
+        <tr><td>datetime.<fn>now</fn>().<fn>strftime</fn>(<st>"%Y-%m-%d"</st>)</td><td>Formatar data</td></tr>
+        <tr><td>datetime.<fn>strptime</fn>(<st>"2025-01-01"</st>, <st>"%Y-%m-%d"</st>)</td><td>Parsear string</td></tr>
+        <tr><td>timedelta(days=<nm>7</nm>)</td><td>Diferença de tempo</td></tr>
+        <tr><td>time.<fn>time</fn>()</td><td>Unix timestamp</td></tr>
+        <tr><td>time.<fn>sleep</fn>(<nm>1</nm>)</td><td>Pausa 1 segundo</td></tr>
+      </table>
+    </div>
+
+    <!-- REGEX -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-r">RE</div>
+        <span class="section-title">Regex (re)</span>
+        <span class="phase-badge p-stdlib">Stdlib</span>
+      </div>
+      <table>
+        <tr><td>re.<fn>search</fn>(padrão, texto)</td><td>Procurar padrão</td></tr>
+        <tr><td>re.<fn>match</fn>(padrão, texto)</td><td>Só início da string</td></tr>
+        <tr><td>re.<fn>findall</fn>(padrão, texto)</td><td>Todas as correspondências</td></tr>
+        <tr><td>re.<fn>sub</fn>(padrão, sub, texto)</td><td>Substituir com regex</td></tr>
+        <tr><td>re.<fn>compile</fn>(padrão)</td><td>Pré-compilar (performance)</td></tr>
+        <tr><td><st>r"\d+"</st></td><td>Um ou mais dígitos</td></tr>
+        <tr><td><st>r"[a-z]+"</st></td><td>Letras minúsculas</td></tr>
+        <tr><td><st>r"^texto$"</st></td><td>Início e fim da string</td></tr>
+      </table>
+    </div>
+
+    <!-- REQUESTS / HTTP -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-t">HTTP</div>
+        <span class="section-title">requests & HTTP</span>
+        <span class="phase-badge p-stdlib">Stdlib</span>
+      </div>
+      <table>
+        <tr><td>requests.<fn>get</fn>(url)</td><td>GET request</td></tr>
+        <tr><td>requests.<fn>post</fn>(url, json=data)</td><td>POST com JSON</td></tr>
+        <tr><td>r.<fn>status_code</fn></td><td>Código HTTP (200, 404...)</td></tr>
+        <tr><td>r.<fn>json</fn>()</td><td>Parse da resposta JSON</td></tr>
+        <tr><td>r.<fn>text</fn></td><td>Resposta como string</td></tr>
+        <tr><td>headers={<st>"Auth"</st>: <st>"Bearer TOKEN"</st>}</td><td>Headers custom</td></tr>
+        <tr><td>requests.<fn>get</fn>(url, timeout=<nm>5</nm>)</td><td>Timeout em segundos</td></tr>
+        <tr><td>r.<fn>raise_for_status</fn>()</td><td>Levantar erro em 4xx/5xx</td></tr>
+      </table>
+    </div>
+
+    <!-- DECORADORES + GENERATORS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-p">ADV</div>
+        <span class="section-title">Decoradores & Generators</span>
+        <span class="phase-badge p-func">Funções</span>
+      </div>
+      <table>
+        <tr><td>@<fn>decorator</fn></td><td>Aplicar decorador</td></tr>
+        <tr><td><kw>def</kw> <fn>dec</fn>(fn): <kw>return</kw> <fn>wrapper</fn></td><td>Estrutura básica</td></tr>
+        <tr><td><kw>from</kw> functools <kw>import</kw> <fn>wraps</fn></td><td>Preservar metadata</td></tr>
+        <tr><td><kw>yield</kw> valor</td><td>Generator — pausa e retorna</td></tr>
+        <tr><td>(x <kw>for</kw> x <kw>in</kw> l)</td><td>Generator expression</td></tr>
+        <tr><td><fn>next</fn>(gen)</td><td>Próximo valor do generator</td></tr>
+        <tr><td><kw>yield from</kw> iterável</td><td>Delegar a sub-generator</td></tr>
+      </table>
+      <div class="note">⚡ Generators poupam memória em datasets grandes</div>
+    </div>
+
+    <!-- PYTHON PARA CYBERSEC -->
+    <div class="section wide">
+      <div class="section-header">
+        <div class="section-icon i-r">SEC</div>
+        <span class="section-title">Python para Cibersegurança</span>
+        <span class="phase-badge p-error">Exploit</span>
+      </div>
+      <table>
+        <tr>
+          <td><kw>import</kw> socket; s = socket.<fn>socket</fn>()</td>
+          <td>Criar socket TCP</td>
+        </tr>
+        <tr>
+          <td>s.<fn>connect</fn>((<st>"IP"</st>, <nm>80</nm>)); s.<fn>send</fn>(b<st>"GET / HTTP/1.0\r\n\r\n"</st>)</td>
+          <td>Ligar e enviar dados raw</td>
+        </tr>
+        <tr>
+          <td>s.<fn>bind</fn>((<st>""</st>, <nm>4444</nm>)); s.<fn>listen</fn>(<nm>1</nm>); conn, addr = s.<fn>accept</fn>()</td>
+          <td>Listener (bind shell)</td>
+        </tr>
+        <tr>
+          <td><kw>import</kw> subprocess; subprocess.<fn>run</fn>([<st>"ls"</st>, <st>"-la"</st>], capture_output=<kw>True</kw>)</td>
+          <td>Executar comandos do sistema</td>
+        </tr>
+        <tr>
+          <td><kw>from</kw> scapy.all <kw>import</kw> *; IP(dst=<st>"IP"</st>)/TCP(dport=<nm>80</nm>)</td>
+          <td>Construir pacotes com Scapy</td>
+        </tr>
+        <tr>
+          <td><fn>send</fn>(IP(dst=<st>"IP"</st>)/ICMP()); <fn>sr1</fn>(pkt, timeout=<nm>1</nm>)</td>
+          <td>Enviar / enviar e receber pacote</td>
+        </tr>
+        <tr>
+          <td><fn>sniff</fn>(iface=<st>"eth0"</st>, count=<nm>10</nm>, prn=<kw>lambda</kw> p: p.<fn>summary</fn>())</td>
+          <td>Capturar pacotes em tempo real</td>
+        </tr>
+        <tr>
+          <td><kw>import</kw> hashlib; hashlib.<fn>md5</fn>(b<st>"texto"</st>).<fn>hexdigest</fn>()</td>
+          <td>Hash MD5 de string</td>
+        </tr>
+        <tr>
+          <td>hashlib.<fn>sha256</fn>(<fn>open</fn>(<st>"f"</st>,<st>"rb"</st>).<fn>read</fn>()).<fn>hexdigest</fn>()</td>
+          <td>Hash SHA256 de ficheiro</td>
+        </tr>
+        <tr>
+          <td><kw>from</kw> cryptography.fernet <kw>import</kw> <fn>Fernet</fn>; k = Fernet.<fn>generate_key</fn>()</td>
+          <td>Gerar chave de encriptação</td>
+        </tr>
+        <tr>
+          <td>Fernet(k).<fn>encrypt</fn>(b<st>"dado"</st>); Fernet(k).<fn>decrypt</fn>(token)</td>
+          <td>Encriptar / desencriptar</td>
+        </tr>
+        <tr>
+          <td><kw>import</kw> paramiko; ssh = paramiko.<fn>SSHClient</fn>(); ssh.<fn>connect</fn>(<st>"IP"</st>)</td>
+          <td>SSH programático com Paramiko</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- VENV + PIP -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-g">ENV</div>
+        <span class="section-title">venv & pip</span>
+        <span class="phase-badge p-stdlib">Stdlib</span>
+      </div>
+      <table>
+        <tr><td>python -m venv venv</td><td>Criar ambiente virtual</td></tr>
+        <tr><td>source venv/bin/activate</td><td>Activar (Linux/Mac)</td></tr>
+        <tr><td>venv\Scripts\activate</td><td>Activar (Windows)</td></tr>
+        <tr><td>pip install pacote</td><td>Instalar pacote</td></tr>
+        <tr><td>pip freeze > requirements.txt</td><td>Guardar dependências</td></tr>
+        <tr><td>pip install -r requirements.txt</td><td>Instalar de ficheiro</td></tr>
+        <tr><td>pip list --outdated</td><td>Pacotes desactualizados</td></tr>
+      </table>
+    </div>
+
+    <!-- ASYNC -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon i-t">ASY</div>
+        <span class="section-title">Async / Await</span>
+        <span class="phase-badge p-func">Funções</span>
+      </div>
+      <table>
+        <tr><td><kw>async def</kw> <fn>tarefa</fn>():</td><td>Definir coroutine</td></tr>
+        <tr><td><kw>await</kw> <fn>chamada</fn>()</td><td>Aguardar resultado async</td></tr>
+        <tr><td>asyncio.<fn>run</fn>(<fn>main</fn>())</td><td>Entrypoint async</td></tr>
+        <tr><td>asyncio.<fn>gather</fn>(*tasks)</td><td>Correr em paralelo</td></tr>
+        <tr><td>asyncio.<fn>sleep</fn>(<nm>1</nm>)</td><td>Pausa não-bloqueante</td></tr>
+        <tr><td><kw>async with</kw> aiohttp.<fn>ClientSession</fn>() <kw>as</kw> s:</td><td>HTTP async</td></tr>
+        <tr><td><kw>async for</kw> item <kw>in</kw> stream:</td><td>Iterar stream async</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      <span>Python Cheatsheet</span> · Uso educacional · Python 3.10+
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#f7c948"></div>Sintaxe</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Dados</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Funções</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>OOP</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f472b6"></div>Stdlib</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>Erros</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Ficheiros</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#00d4aa"></div>Cybersec</div>
+    </div>
+    <div class="footer-text">v1.0 · 2025 · <span>A4 Landscape</span></div>
+  </div>
+
+</div>
+</body>
+</html>

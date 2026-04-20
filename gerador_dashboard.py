@@ -310,6 +310,7 @@ def main():
         'js/convites.js',
         'js/definicoes.js',
         'js/lab.js',
+        'js/cheatsheets.js',
         'js/init.js',
     ]
 

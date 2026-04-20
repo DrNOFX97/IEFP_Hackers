@@ -1,5 +1,5 @@
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','lab','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','lab','cheatsheets','definicoes'];
 
         function switchView(view) {
             if (currentView === 'definicoes' && view !== 'definicoes') {
@@ -56,6 +56,9 @@
                 document.getElementById('view-lab').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
                 labRender();
+            } else if (view === 'cheatsheets') {
+                document.getElementById('view-cheatsheets').style.display = 'flex';
+                monthSelectContainer.style.display = 'none';
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';

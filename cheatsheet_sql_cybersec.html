@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>SQL Cheatsheet — Curso Cibersegurança</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#15202f;
+    --border:#1e2d47; --border2:#263550;
+    --accent:#e879f9;
+    --text:#e2e8f0; --dim:#94a3b8; --muted:#64748b;
+    --mono:'JetBrains Mono',monospace;
+    --sans:'Space Grotesk',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:10px;line-height:1.4;}
+  .page{width:297mm;min-height:210mm;padding:7mm 9mm;background:var(--bg);position:relative;overflow:hidden;}
+  .page::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(232,121,249,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(232,121,249,.02) 1px,transparent 1px);background-size:18px 18px;pointer-events:none;}
+
+  /* HEADER */
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5mm;padding-bottom:3mm;border-bottom:1px solid var(--border);}
+  .header-left{display:flex;align-items:center;gap:10px;}
+  .logo{width:30px;height:30px;background:var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:11px;color:#0a0e1a;}
+  .h-title{font-size:17px;font-weight:700;letter-spacing:-.5px;color:#fff;}
+  .h-title span{color:var(--accent);}
+  .h-sub{font-size:8.5px;color:var(--muted);font-family:var(--mono);}
+  .badge{font-size:7.5px;font-family:var(--mono);padding:2px 6px;border-radius:3px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;}
+  .header-right{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:52%;}
+
+  /* CATEGORY COLOURS */
+  .c-ddl  {background:rgba(232,121,249,.13);color:#e879f9;border:1px solid rgba(232,121,249,.3);}
+  .c-dml  {background:rgba(59,130,246,.13); color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+  .c-dql  {background:rgba(52,211,153,.13); color:#34d399;border:1px solid rgba(52,211,153,.3);}
+  .c-dcl  {background:rgba(245,158,11,.13); color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+  .c-tcl  {background:rgba(168,85,247,.13); color:#c084fc;border:1px solid rgba(168,85,247,.3);}
+  .c-key  {background:rgba(239,68,68,.13);  color:#f87171;border:1px solid rgba(239,68,68,.3);}
+  .c-type {background:rgba(0,212,170,.13);  color:#00d4aa;border:1px solid rgba(0,212,170,.3);}
+  .c-rel  {background:rgba(236,72,153,.13); color:#f472b6;border:1px solid rgba(236,72,153,.3);}
+
+  /* GRID */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
+  .s1{grid-column:span 1;}
+  .s2{grid-column:span 2;}
+  .s4{grid-column:span 4;}
+
+  /* SECTION */
+  .sec{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:4px 6px;}
+  .sec-hd{display:flex;align-items:center;gap:4px;margin-bottom:3px;padding-bottom:2px;border-bottom:1px solid var(--border);}
+  .ico{width:13px;height:13px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:6.5px;font-family:var(--mono);font-weight:700;flex-shrink:0;}
+  .sec-title{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#fff;flex:1;}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;}
+  tr{border-bottom:1px solid rgba(30,45,71,.5);}
+  tr:last-child{border-bottom:none;}
+  td{padding:1.2px 0;vertical-align:top;font-size:8px;}
+  td:first-child{font-family:var(--mono);font-weight:500;color:var(--accent);white-space:nowrap;padding-right:5px;}
+  td:last-child{color:var(--dim);line-height:1.35;}
+
+  /* SYNTAX COLOURS */
+  .kw{color:#60a5fa;font-family:var(--mono);}
+  .fn{color:#e879f9;font-family:var(--mono);}
+  .st{color:#34d399;font-family:var(--mono);}
+  .nm{color:#f87171;font-family:var(--mono);}
+  .cm{color:#475569;font-family:var(--mono);font-style:italic;}
+  .pay{color:#fbbf24;font-family:var(--mono);}
+  .ok{color:#00d4aa;}
+  .warn{color:#f87171;}
+
+  /* NOTE */
+  .note{font-size:7px;font-family:var(--mono);margin-top:2px;padding:2px 4px;background:rgba(255,255,255,.02);border-radius:2px;border-left:2px solid var(--accent);color:var(--muted);}
+  .note.warn{border-left-color:#f87171;color:#f87171;}
+  .note.ok{border-left-color:#00d4aa;color:#00d4aa;}
+
+  /* DIVIDER */
+  .div{grid-column:span 4;display:flex;align-items:center;gap:7px;padding:2px 0 1px;}
+  .div-line{flex:1;height:1px;background:var(--border);}
+  .div-lbl{font-size:7.5px;font-family:var(--mono);font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:1px 7px;border-radius:2px;}
+
+  /* CAT STRIP */
+  .cat-strip{grid-column:span 4;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-bottom:1px;}
+  .cat-card{border-radius:4px;padding:4px 6px;}
+  .cat-abbr{font-family:var(--mono);font-weight:700;font-size:10px;margin-bottom:1px;}
+  .cat-full{font-size:7px;color:var(--dim);margin-bottom:2px;}
+  .cat-cmds{font-family:var(--mono);font-size:7.5px;color:var(--text);}
+  .cat-desc{font-size:7px;color:var(--muted);font-style:italic;margin-top:1px;}
+
+  /* RELATIONS DIAGRAM */
+  .rel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:2px;}
+  .rel-card{border-radius:3px;padding:3px 5px;text-align:center;}
+  .rel-type{font-family:var(--mono);font-size:10px;font-weight:700;margin-bottom:1px;}
+  .rel-name{font-size:7.5px;color:var(--dim);margin-bottom:2px;}
+  .rel-ex{font-size:7px;color:var(--muted);font-style:italic;}
+
+  /* TYPES TABLE */
+  .types-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:2px;}
+  .type-group{}
+  .type-lbl{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px;font-family:var(--mono);}
+  .type-item{font-family:var(--mono);font-size:7.5px;color:var(--accent);display:block;line-height:1.6;}
+  .type-desc{font-size:7px;color:var(--dim);}
+
+  /* FOOTER */
+  .footer{margin-top:4mm;padding-top:2mm;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .footer-txt{font-size:7px;color:var(--muted);font-family:var(--mono);}
+  .footer-txt span{color:var(--accent);}
+  .legend{display:flex;gap:7px;}
+  .leg{display:flex;align-items:center;gap:3px;font-size:6.5px;color:var(--muted);font-family:var(--mono);}
+  .leg-dot{width:5px;height:5px;border-radius:50%;}
+
+  @media print{body{background:var(--bg)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{width:297mm;padding:7mm 9mm;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">SQL</div>
+      <div>
+        <div class="h-title"><span>SQL</span> — Bases de Dados Relacionais</div>
+        <div class="h-sub">ESTRUTURA · TIPOS DE DADOS · CHAVES · RELAÇÕES · DDL · DML · DQL · DCL · TCL · CONSTRAINTS</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="badge c-ddl">DDL</span>
+      <span class="badge c-dml">DML</span>
+      <span class="badge c-dql">DQL</span>
+      <span class="badge c-dcl">DCL</span>
+      <span class="badge c-tcl">TCL</span>
+      <span class="badge c-key">Chaves</span>
+      <span class="badge c-type">Tipos</span>
+      <span class="badge c-rel">Relações</span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- CATEGORIAS DE COMANDOS SQL -->
+    <div class="cat-strip">
+      <div class="cat-card" style="background:rgba(232,121,249,.07);border:1px solid rgba(232,121,249,.2);">
+        <div class="cat-abbr" style="color:#e879f9;">DDL</div>
+        <div class="cat-full">Data Definition Language</div>
+        <div class="cat-cmds">CREATE, ALTER, DROP, TRUNCATE</div>
+        <div class="cat-desc">Define e modifica estruturas</div>
+      </div>
+      <div class="cat-card" style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);">
+        <div class="cat-abbr" style="color:#60a5fa;">DML</div>
+        <div class="cat-full">Data Manipulation Language</div>
+        <div class="cat-cmds">INSERT, UPDATE, DELETE</div>
+        <div class="cat-desc">Manipula registos existentes</div>
+      </div>
+      <div class="cat-card" style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);">
+        <div class="cat-abbr" style="color:#34d399;">DQL</div>
+        <div class="cat-full">Data Query Language</div>
+        <div class="cat-cmds">SELECT</div>
+        <div class="cat-desc">Consulta e filtra dados</div>
+      </div>
+      <div class="cat-card" style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);">
+        <div class="cat-abbr" style="color:#fbbf24;">DCL</div>
+        <div class="cat-full">Data Control Language</div>
+        <div class="cat-cmds">GRANT, REVOKE</div>
+        <div class="cat-desc">Controla acessos e permissões</div>
+      </div>
+      <div class="cat-card" style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.2);">
+        <div class="cat-abbr" style="color:#c084fc;">TCL</div>
+        <div class="cat-full">Transaction Control Language</div>
+        <div class="cat-cmds">COMMIT, ROLLBACK, SAVEPOINT</div>
+        <div class="cat-desc">Gere transações e consistência</div>
+      </div>
+    </div>
+
+    <!-- ═══ TIPOS DE DADOS ═══ -->
+    <div class="sec s4">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(0,212,170,.2);color:#00d4aa;">TY</div>
+        <span class="sec-title">Tipos de Dados</span>
+        <span class="badge c-type">Tipos</span>
+      </div>
+      <div class="types-grid">
+        <div class="type-group">
+          <div class="type-lbl">Numéricos</div>
+          <span class="type-item">INT<span class="type-desc"> — inteiro (−2B a 2B)</span></span>
+          <span class="type-item">SMALLINT<span class="type-desc"> — inteiro pequeno</span></span>
+          <span class="type-item">BIGINT<span class="type-desc"> — inteiro grande</span></span>
+          <span class="type-item">DECIMAL(p,s)<span class="type-desc"> — exacto (dinheiro)</span></span>
+          <span class="type-item">FLOAT / DOUBLE<span class="type-desc"> — vírgula flutuante</span></span>
+        </div>
+        <div class="type-group">
+          <div class="type-lbl">Texto (String)</div>
+          <span class="type-item">CHAR(n)<span class="type-desc"> — tamanho fixo</span></span>
+          <span class="type-item">VARCHAR(n)<span class="type-desc"> — tamanho variável</span></span>
+          <span class="type-item">TEXT<span class="type-desc"> — texto longo</span></span>
+          <span class="type-item">ENUM('a','b')<span class="type-desc"> — lista de valores</span></span>
+        </div>
+        <div class="type-group">
+          <div class="type-lbl">Data e Hora</div>
+          <span class="type-item">DATE<span class="type-desc"> — YYYY-MM-DD</span></span>
+          <span class="type-item">TIME<span class="type-desc"> — HH:MM:SS</span></span>
+          <span class="type-item">DATETIME<span class="type-desc"> — data + hora</span></span>
+          <span class="type-item">TIMESTAMP<span class="type-desc"> — auto-actualiza</span></span>
+          <span class="type-item">YEAR<span class="type-desc"> — só o ano</span></span>
+        </div>
+        <div class="type-group">
+          <div class="type-lbl">Outros</div>
+          <span class="type-item">BOOLEAN<span class="type-desc"> — TRUE / FALSE</span></span>
+          <span class="type-item">BLOB<span class="type-desc"> — dados binários</span></span>
+          <span class="type-item">JSON<span class="type-desc"> — dados estruturados</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAVES PRIMÁRIAS -->
+    <div class="sec s2">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(239,68,68,.2);color:#f87171;">PK</div>
+        <span class="sec-title">Chave Primária (PK)</span>
+        <span class="badge c-key">Chaves</span>
+      </div>
+      <table>
+        <tr><td>PRIMARY KEY</td><td>Identifica cada linha de forma única</td></tr>
+        <tr><td class="ok">✔ Única</td><td>Dois registos nunca podem ter o mesmo PK</td></tr>
+        <tr><td class="ok">✔ NOT NULL</td><td>Nunca pode ser vazia ou nula</td></tr>
+        <tr><td class="ok">✔ Imutável</td><td>Não deve mudar após inserção</td></tr>
+        <tr><td class="ok">✔ Simples</td><td>Idealmente um único campo (não composta)</td></tr>
+        <tr><td>AUTO_INCREMENT</td><td>MySQL gera PK automático: 1, 2, 3...</td></tr>
+        <tr><td>id INT PRIMARY KEY AUTO_INCREMENT</td><td>Declaração mais comum em CREATE TABLE</td></tr>
+      </table>
+    </div>
+
+    <!-- CHAVES ESTRANGEIRAS -->
+    <div class="sec s2">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(236,72,153,.2);color:#f472b6;">FK</div>
+        <span class="sec-title">Chave Estrangeira (FK)</span>
+        <span class="badge c-key">Chaves</span>
+      </div>
+      <table>
+        <tr><td>FOREIGN KEY</td><td>Liga duas tabelas por referência</td></tr>
+        <tr><td>REFERENCES tabela(col)</td><td>Indica a PK da tabela pai</td></tr>
+        <tr><td>ON DELETE CASCADE</td><td>Apaga filhos se pai for apagado</td></tr>
+        <tr><td>ON DELETE SET NULL</td><td>FK fica NULL se pai for apagado</td></tr>
+        <tr><td>ON UPDATE CASCADE</td><td>Actualiza FK se PK pai mudar</td></tr>
+        <tr><td>FOREIGN KEY (user_id) REFERENCES users(id)</td><td>Exemplo completo de FK</td></tr>
+        <tr><td>Integridade referencial</td><td>FK não pode apontar para PK inexistente</td></tr>
+      </table>
+    </div>
+
+    <!-- RELAÇÕES -->
+    <div class="sec s2">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(236,72,153,.2);color:#f472b6;">REL</div>
+        <span class="sec-title">Tipos de Relações</span>
+        <span class="badge c-rel">Relações</span>
+      </div>
+      <div class="rel-grid">
+        <div class="rel-card" style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);">
+          <div class="rel-type" style="color:#60a5fa;">1 : 1</div>
+          <div class="rel-name">Um para Um</div>
+          <div class="rel-ex">Pessoa ↔ Passaporte</div>
+        </div>
+        <div class="rel-card" style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);">
+          <div class="rel-type" style="color:#34d399;">1 : N</div>
+          <div class="rel-name">Um para Muitos ★ mais comum</div>
+          <div class="rel-ex">Cliente → Encomendas</div>
+        </div>
+        <div class="rel-card" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);">
+          <div class="rel-type" style="color:#f87171;">N : N</div>
+          <div class="rel-name">Muitos para Muitos</div>
+          <div class="rel-ex">Alunos ↔ Disciplinas</div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:3px;">N:N requer tabela intermédia (ex: aluno_disciplina com FK para ambos)</div>
+    </div>
+
+    <!-- CONSTRAINTS -->
+    <div class="sec s2">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(0,212,170,.2);color:#00d4aa;">CON</div>
+        <span class="sec-title">Constraints (Restrições)</span>
+        <span class="badge c-type">Tipos</span>
+      </div>
+      <table>
+        <tr><td>NOT NULL</td><td>Campo obrigatório — não aceita vazio</td></tr>
+        <tr><td>UNIQUE</td><td>Valor único na coluna (≠ de PK, pode ser NULL)</td></tr>
+        <tr><td>DEFAULT <nm>'valor'</nm></td><td>Valor usado se não for fornecido</td></tr>
+        <tr><td>AUTO_INCREMENT</td><td>Incremento automático (só inteiros)</td></tr>
+        <tr><td>CHECK (idade >= <nm>18</nm>)</td><td>Validar condição antes de inserir</td></tr>
+        <tr><td>PRIMARY KEY</td><td>NOT NULL + UNIQUE juntos</td></tr>
+        <tr><td>FOREIGN KEY</td><td>Integridade referencial entre tabelas</td></tr>
+      </table>
+    </div>
+
+    <!-- ═══ DDL ═══ -->
+    <div class="div">
+      <div class="div-line"></div>
+      <span class="div-lbl" style="color:#e879f9;background:rgba(232,121,249,.08);border:1px solid rgba(232,121,249,.2);">DDL — Data Definition Language</span>
+      <div class="div-line"></div>
+    </div>
+
+    <!-- CREATE TABLE -->
+    <div class="sec s2">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(232,121,249,.2);color:#e879f9;">CR</div>
+        <span class="sec-title">CREATE TABLE</span>
+        <span class="badge c-ddl">DDL</span>
+      </div>
+      <table>
+        <tr><td><kw>CREATE DATABASE</kw> loja</td><td>Criar base de dados</td></tr>
+        <tr><td><kw>USE</kw> loja</td><td>Seleccionar BD activa</td></tr>
+        <tr><td><kw>CREATE TABLE</kw> users (</td><td>Iniciar criação de tabela</td></tr>
+        <tr><td>&nbsp;&nbsp;id <fn>INT PRIMARY KEY AUTO_INCREMENT</fn>,</td><td>PK auto-incremental</td></tr>
+        <tr><td>&nbsp;&nbsp;nome <fn>VARCHAR</fn>(<nm>100</nm>) <kw>NOT NULL</kw>,</td><td>String obrigatória</td></tr>
+        <tr><td>&nbsp;&nbsp;email <fn>VARCHAR</fn>(<nm>255</nm>) <kw>UNIQUE</kw>,</td><td>Valor único na coluna</td></tr>
+        <tr><td>&nbsp;&nbsp;ativo <fn>BOOLEAN DEFAULT TRUE</fn>,</td><td>Boolean com padrão</td></tr>
+        <tr><td>&nbsp;&nbsp;criado <fn>TIMESTAMP DEFAULT NOW</fn>()</td><td>Data auto-preenchida</td></tr>
+        <tr><td>&nbsp;&nbsp;<kw>FOREIGN KEY</kw> (dep_id) <kw>REFERENCES</kw> deps(id)</td><td>FK inline na tabela</td></tr>
+        <tr><td>)</td><td>Fechar CREATE TABLE</td></tr>
+      </table>
+    </div>
+
+    <!-- ALTER + DROP -->
+    <div class="sec s2">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(232,121,249,.2);color:#e879f9;">AL</div>
+        <span class="sec-title">ALTER TABLE &amp; DROP</span>
+        <span class="badge c-ddl">DDL</span>
+      </div>
+      <table>
+        <tr><td><kw>ALTER TABLE</kw> t <kw>ADD</kw> col <fn>INT</fn></td><td>Adicionar coluna</td></tr>
+        <tr><td><kw>ALTER TABLE</kw> t <kw>DROP COLUMN</kw> col</td><td>Remover coluna</td></tr>
+        <tr><td><kw>ALTER TABLE</kw> t <kw>MODIFY</kw> col <fn>VARCHAR</fn>(<nm>200</nm>)</td><td>Alterar tipo de coluna</td></tr>
+        <tr><td><kw>ALTER TABLE</kw> t <kw>RENAME TO</kw> novo_nome</td><td>Renomear tabela</td></tr>
+        <tr><td><kw>ALTER TABLE</kw> t <kw>ADD CONSTRAINT</kw> fk <kw>FOREIGN KEY</kw> (col) <kw>REFERENCES</kw> t2(id)</td><td>Adicionar FK depois</td></tr>
+        <tr><td><kw>DROP TABLE IF EXISTS</kw> t</td><td>Apagar tabela (sem erro)</td></tr>
+        <tr><td><kw>TRUNCATE TABLE</kw> t</td><td>Esvaziar tabela (mantém estrutura)</td></tr>
+        <tr><td><kw>DROP DATABASE</kw> mydb</td><td>⚠ Apagar BD inteira</td></tr>
+      </table>
+      <div class="note warn">⚠ DROP e TRUNCATE são irreversíveis sem backup</div>
+    </div>
+
+    <!-- ═══ DML + DQL ═══ -->
+    <div class="div">
+      <div class="div-line"></div>
+      <span class="div-lbl" style="color:#60a5fa;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);">DML — Manipulação &amp; DQL — Consulta</span>
+      <div class="div-line"></div>
+    </div>
+
+    <!-- INSERT -->
+    <div class="sec s1">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(59,130,246,.2);color:#60a5fa;">INS</div>
+        <span class="sec-title">INSERT</span>
+        <span class="badge c-dml">DML</span>
+      </div>
+      <table>
+        <tr><td><kw>INSERT INTO</kw> users (nome, email)</td><td>Especificar colunas</td></tr>
+        <tr><td><kw>VALUES</kw> (<st>'Ana'</st>, <st>'ana@x.com'</st>)</td><td>Valores a inserir</td></tr>
+        <tr><td><kw>INSERT INTO</kw> t <kw>VALUES</kw> (<kw>NULL</kw>, <st>'x'</st>)</td><td>NULL = auto para PK</td></tr>
+        <tr><td><kw>INSERT INTO</kw> t2 <kw>SELECT</kw> * <kw>FROM</kw> t1</td><td>Copiar de outra tabela</td></tr>
+      </table>
+    </div>
+
+    <!-- UPDATE + DELETE -->
+    <div class="sec s1">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(59,130,246,.2);color:#60a5fa;">UPD</div>
+        <span class="sec-title">UPDATE / DELETE</span>
+        <span class="badge c-dml">DML</span>
+      </div>
+      <table>
+        <tr><td><kw>UPDATE</kw> t <kw>SET</kw> col=v <kw>WHERE</kw> id=<nm>1</nm></td><td>Actualizar registo</td></tr>
+        <tr><td><kw>UPDATE</kw> t <kw>SET</kw> col=v</td><td>⚠ Actualiza TUDO</td></tr>
+        <tr><td><kw>DELETE FROM</kw> t <kw>WHERE</kw> id=<nm>1</nm></td><td>Apagar registo</td></tr>
+        <tr><td><kw>DELETE FROM</kw> t</td><td>⚠ Apaga TODAS as linhas</td></tr>
+      </table>
+      <div class="note warn">⚠ Sempre usar WHERE em UPDATE e DELETE</div>
+    </div>
+
+    <!-- SELECT -->
+    <div class="sec s2">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(52,211,153,.2);color:#34d399;">SEL</div>
+        <span class="sec-title">SELECT — DQL</span>
+        <span class="badge c-dql">DQL</span>
+      </div>
+      <table>
+        <tr><td><kw>SELECT</kw> * <kw>FROM</kw> users</td><td>Todas as colunas</td></tr>
+        <tr><td><kw>SELECT</kw> nome, email <kw>FROM</kw> users</td><td>Colunas específicas</td></tr>
+        <tr><td><kw>SELECT DISTINCT</kw> pais <kw>FROM</kw> users</td><td>Sem duplicados</td></tr>
+        <tr><td><kw>WHERE</kw> id = <nm>1</nm> <kw>AND</kw> ativo = <kw>TRUE</kw></td><td>Filtrar com condições</td></tr>
+        <tr><td><kw>WHERE</kw> nome <kw>LIKE</kw> <st>'%silva%'</st></td><td>% = qualquer texto</td></tr>
+        <tr><td><kw>WHERE</kw> id <kw>IN</kw> (<nm>1</nm>,<nm>2</nm>,<nm>3</nm>)</td><td>Numa lista de valores</td></tr>
+        <tr><td><kw>WHERE</kw> id <kw>BETWEEN</kw> <nm>10</nm> <kw>AND</kw> <nm>20</nm></td><td>Intervalo inclusivo</td></tr>
+        <tr><td><kw>ORDER BY</kw> nome <kw>ASC</kw> / <kw>DESC</kw></td><td>Ordenar resultado</td></tr>
+        <tr><td><kw>LIMIT</kw> <nm>10</nm> <kw>OFFSET</kw> <nm>20</nm></td><td>Paginar (saltar 20, mostrar 10)</td></tr>
+        <tr><td><kw>SELECT</kw> nome <kw>AS</kw> utilizador</td><td>Alias de coluna</td></tr>
+      </table>
+    </div>
+
+    <!-- FUNÇÕES AGREGAÇÃO -->
+    <div class="sec s1">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(52,211,153,.2);color:#34d399;">AGG</div>
+        <span class="sec-title">Agregação</span>
+        <span class="badge c-dql">DQL</span>
+      </div>
+      <table>
+        <tr><td><fn>COUNT</fn>(*)</td><td>Contar linhas</td></tr>
+        <tr><td><fn>COUNT</fn>(<kw>DISTINCT</kw> email)</td><td>Únicos</td></tr>
+        <tr><td><fn>SUM</fn>(preco)</td><td>Soma</td></tr>
+        <tr><td><fn>AVG</fn>(salario)</td><td>Média</td></tr>
+        <tr><td><fn>MAX</fn>(val) / <fn>MIN</fn>(val)</td><td>Máx / mín</td></tr>
+        <tr><td><kw>GROUP BY</kw> pais</td><td>Agrupar por coluna</td></tr>
+        <tr><td><kw>HAVING</kw> <fn>COUNT</fn>(*) > <nm>5</nm></td><td>Filtrar grupos</td></tr>
+      </table>
+    </div>
+
+    <!-- JOINS -->
+    <div class="sec s3" style="grid-column:span 3;">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(236,72,153,.2);color:#f472b6;">JOI</div>
+        <span class="sec-title">JOINs — Juntar Tabelas</span>
+        <span class="badge c-dql">DQL</span>
+      </div>
+      <table>
+        <tr>
+          <td><kw>SELECT</kw> u.nome, p.titulo <kw>FROM</kw> users u <kw>INNER JOIN</kw> posts p <kw>ON</kw> u.id = p.user_id</td>
+          <td>INNER JOIN — só linhas com match nas duas tabelas</td>
+        </tr>
+        <tr>
+          <td><kw>SELECT</kw> u.nome, p.titulo <kw>FROM</kw> users u <kw>LEFT JOIN</kw> posts p <kw>ON</kw> u.id = p.user_id</td>
+          <td>LEFT JOIN — todos os users, NULL onde não há post</td>
+        </tr>
+        <tr>
+          <td><kw>SELECT</kw> * <kw>FROM</kw> users <kw>WHERE</kw> id <kw>IN</kw> (<kw>SELECT</kw> user_id <kw>FROM</kw> posts)</td>
+          <td>Subquery — users que têm posts (alternativa ao JOIN)</td>
+        </tr>
+        <tr>
+          <td><kw>SELECT</kw> a.nome <kw>AS</kw> chefe, b.nome <kw>AS</kw> emp <kw>FROM</kw> users a <kw>JOIN</kw> users b <kw>ON</kw> b.manager_id = a.id</td>
+          <td>SELF JOIN — tabela ligada a si própria (hierarquias)</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- ═══ DCL + TCL ═══ -->
+    <div class="div">
+      <div class="div-line"></div>
+      <span class="div-lbl" style="color:#fbbf24;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);">DCL — Controlo de Acessos &amp; TCL — Transações</span>
+      <div class="div-line"></div>
+    </div>
+
+    <!-- DCL -->
+    <div class="sec s2">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(245,158,11,.2);color:#fbbf24;">DCL</div>
+        <span class="sec-title">DCL — GRANT &amp; REVOKE</span>
+        <span class="badge c-dcl">DCL</span>
+      </div>
+      <table>
+        <tr><td><kw>CREATE USER</kw> <st>'app'@'localhost'</st> <kw>IDENTIFIED BY</kw> <st>'pass'</st></td><td>Criar utilizador</td></tr>
+        <tr><td><kw>GRANT SELECT</kw> <kw>ON</kw> loja.* <kw>TO</kw> <st>'app'@'localhost'</st></td><td>Dar permissão de leitura</td></tr>
+        <tr><td><kw>GRANT ALL PRIVILEGES ON</kw> *.* <kw>TO</kw> <st>'admin'@'%'</st></td><td>Todos os privilégios</td></tr>
+        <tr><td><kw>REVOKE SELECT ON</kw> loja.* <kw>FROM</kw> <st>'app'@'localhost'</st></td><td>Remover permissão</td></tr>
+        <tr><td><kw>SHOW GRANTS FOR</kw> <st>'app'@'localhost'</st></td><td>Ver permissões actuais</td></tr>
+        <tr><td><kw>DROP USER</kw> <st>'app'@'localhost'</st></td><td>Remover utilizador</td></tr>
+        <tr><td><kw>FLUSH PRIVILEGES</kw></td><td>Aplicar alterações</td></tr>
+      </table>
+      <div class="note ok">✔ Boas práticas: mínimo privilégio — app user só deve ter SELECT/INSERT/UPDATE</div>
+    </div>
+
+    <!-- TCL -->
+    <div class="sec s2">
+      <div class="sec-hd">
+        <div class="ico" style="background:rgba(168,85,247,.2);color:#c084fc;">TCL</div>
+        <span class="sec-title">TCL — Transações</span>
+        <span class="badge c-tcl">TCL</span>
+      </div>
+      <table>
+        <tr><td><kw>START TRANSACTION</kw></td><td>Iniciar transação (ou BEGIN)</td></tr>
+        <tr><td><kw>COMMIT</kw></td><td>Confirmar e guardar todas as alterações</td></tr>
+        <tr><td><kw>ROLLBACK</kw></td><td>Cancelar e reverter tudo desde START</td></tr>
+        <tr><td><kw>SAVEPOINT</kw> sp1</td><td>Marcar ponto intermédio reversível</td></tr>
+        <tr><td><kw>ROLLBACK TO SAVEPOINT</kw> sp1</td><td>Reverter apenas até ao savepoint</td></tr>
+        <tr><td><kw>RELEASE SAVEPOINT</kw> sp1</td><td>Remover savepoint da sessão</td></tr>
+        <tr><td><kw>SET autocommit</kw> = <nm>0</nm></td><td>Desactivar commit automático</td></tr>
+      </table>
+      <div class="note">⚡ Transações garantem que operações são tudo-ou-nada (atomicidade ACID)</div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-txt"><span>SQL — Bases de Dados Relacionais</span> · Cibersegurança Nível 5 · v2.0</div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:#e879f9;"></div>DDL</div>
+      <div class="leg"><div class="leg-dot" style="background:#60a5fa;"></div>DML</div>
+      <div class="leg"><div class="leg-dot" style="background:#34d399;"></div>DQL</div>
+      <div class="leg"><div class="leg-dot" style="background:#fbbf24;"></div>DCL</div>
+      <div class="leg"><div class="leg-dot" style="background:#c084fc;"></div>TCL</div>
+      <div class="leg"><div class="leg-dot" style="background:#f87171;"></div>Chaves</div>
+      <div class="leg"><div class="leg-dot" style="background:#00d4aa;"></div>Tipos</div>
+      <div class="leg"><div class="leg-dot" style="background:#f472b6;"></div>Relações</div>
+    </div>
+    <div class="footer-txt">v2.0 · 2025 · <span>A4 Landscape</span></div>
+  </div>
+
+</div>
+</body>
+</html>

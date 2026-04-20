@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Cibersegurança</title>
+    <title>IEFP Hackers</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -2760,6 +2760,9 @@ opacity: 0.35;
                 <button class="nav-item" data-view="lab" onclick="switchView('lab')">
                     <span class="nav-item-icon">🔬</span><span class="nav-item-label"> Lab <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
                 </button>
+                <button class="nav-item" data-view="cheatsheets" onclick="switchView('cheatsheets')">
+                    <span class="nav-item-icon">📋</span><span class="nav-item-label"> Cheatsheets</span>
+                </button>
                 <div class="nav-divider"></div>
                 <a class="nav-item" id="nav-admin-link" href="/admin.html" style="display:none;text-decoration:none;color:inherit;" title="Painel de Administração">
                     <span class="nav-item-icon">🔐</span><span class="nav-item-label"> Admin</span>
@@ -2998,6 +3001,22 @@ opacity: 0.35;
             <!-- VIEW: LAB -->
             <div id="view-lab"></div>
 
+            <!-- VIEW: CHEATSHEETS -->
+            <div id="view-cheatsheets" style="display:none;flex-direction:column;gap:1.5rem;padding:1.5rem 0;">
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.5rem;">
+                    <h2 style="margin:0;">📋 Cheatsheets</h2>
+                </div>
+                <div id="cs-tab-bar" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <button class="cs-tab active" onclick="csSwitch('cybersec')" style="padding:0.5rem 1.2rem;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#0a0e1a;font-weight:600;cursor:pointer;font-size:0.85rem;">🛡️ CyberSec</button>
+                    <button class="cs-tab" onclick="csSwitch('python')" style="padding:0.5rem 1.2rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;cursor:pointer;font-size:0.85rem;">🐍 Python</button>
+                    <button class="cs-tab" onclick="csSwitch('sql')" style="padding:0.5rem 1.2rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;cursor:pointer;font-size:0.85rem;">🗄️ SQL</button>
+                    <a id="cs-open-link" href="cheatsheet_cybersec.html" target="_blank" style="margin-left:auto;padding:0.5rem 1rem;border-radius:6px;border:1px solid var(--border);color:var(--text-muted);font-size:0.8rem;text-decoration:none;display:flex;align-items:center;gap:0.4rem;">↗ abrir em separador</a>
+                </div>
+                <iframe id="cs-frame-cybersec" src="cheatsheet_cybersec.html" style="width:100%;height:80vh;border:none;border-radius:8px;"></iframe>
+                <iframe id="cs-frame-python"   src="cheatsheet_python.html"   style="width:100%;height:80vh;border:none;border-radius:8px;display:none;"></iframe>
+                <iframe id="cs-frame-sql"      src="cheatsheet_sql_cybersec.html" style="width:100%;height:80vh;border:none;border-radius:8px;display:none;"></iframe>
+            </div>
+
             <!-- VIEW: DEFINIÇÕES -->
             <div id="view-definicoes">
                 <h2 style="margin-bottom:1.5rem;">⚙️ Definições</h2>
@@ -3137,7 +3156,7 @@ opacity: 0.35;
 
 
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','lab','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','lab','cheatsheets','definicoes'];
 
         function switchView(view) {
             if (currentView === 'definicoes' && view !== 'definicoes') {
@@ -3194,6 +3213,9 @@ opacity: 0.35;
                 document.getElementById('view-lab').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
                 labRender();
+            } else if (view === 'cheatsheets') {
+                document.getElementById('view-cheatsheets').style.display = 'flex';
+                monthSelectContainer.style.display = 'none';
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -7213,6 +7235,25 @@ async def _pg_exec_async(files, ns, tab_id):
             requestAnimationFrame(() => { t.classList.add('show'); });
             clearTimeout(_labToastTimer);
             _labToastTimer = setTimeout(() => { t.classList.remove('show'); }, 3000);
+        }
+
+        // ── CHEATSHEETS ─────────────────────────────────────────────────
+        const CS_TABS = { cybersec: 'cheatsheet_cybersec.html', python: 'cheatsheet_python.html', sql: 'cheatsheet_sql_cybersec.html' };
+
+        function csSwitch(key) {
+            Object.keys(CS_TABS).forEach(k => {
+                const frame = document.getElementById('cs-frame-' + k);
+                if (frame) frame.style.display = k === key ? 'block' : 'none';
+            });
+            document.querySelectorAll('.cs-tab').forEach((btn, i) => {
+                const k = Object.keys(CS_TABS)[i];
+                const isActive = k === key;
+                btn.style.background = isActive ? 'var(--accent)' : 'transparent';
+                btn.style.color = isActive ? '#0a0e1a' : 'var(--text)';
+                btn.style.borderColor = isActive ? 'var(--accent)' : 'var(--border)';
+            });
+            const link = document.getElementById('cs-open-link');
+            if (link) link.href = CS_TABS[key];
         }
 
         // ── CAPTURAR TOKEN DE CONVITE NO URL ────────────────────────────
