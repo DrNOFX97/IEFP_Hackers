@@ -330,8 +330,12 @@ def main():
     with open(os.path.join(tpl_dir, 'dashboard.html'), 'r', encoding='utf-8') as f:
         html = f.read()
 
+    import time as _time
+    build_ts = str(int(_time.time()))
+
     html = html.replace('__INJECT_CSS__', css)
     html = html.replace('__INJECT_JS__',  js)
+    html = html.replace('__INJECT_BUILD_TS__', build_ts)
 
     # Inject data into JS constants (markers live in js/data.js)
     html = html.replace('__INJECT_UC_MAP__',      json.dumps(uc_map,              ensure_ascii=False))

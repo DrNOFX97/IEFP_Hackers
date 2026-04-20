@@ -1,3 +1,25 @@
+        // ── CACHE BUST ON NEW BUILD ──────────────────────────────────────
+        (function bustStaleCache() {
+            try {
+                const stored = localStorage.getItem('_appv');
+                if (stored !== BUILD_TS) {
+                    // Clear stale derived-cache keys; preserve user data
+                    const keep = new Set(['pending_invite', 'dashboard_theme', 'chat_last_read', 'lab_progress']);
+                    const toRemove = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const k = localStorage.key(i);
+                        if (!keep.has(k) && !k.startsWith('uc_notes_')) toRemove.push(k);
+                    }
+                    toRemove.forEach(k => localStorage.removeItem(k));
+                    localStorage.setItem('_appv', BUILD_TS);
+                    // Clear any browser/PWA caches
+                    if ('caches' in window) {
+                        caches.keys().then(names => names.forEach(n => caches.delete(n)));
+                    }
+                }
+            } catch(e) { /* silencioso */ }
+        })();
+
         // ── CAPTURAR TOKEN DE CONVITE NO URL ────────────────────────────
         (function captureInviteToken() {
             try {
