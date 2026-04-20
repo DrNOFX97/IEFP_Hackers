@@ -1,5 +1,5 @@
         // ── CHEATSHEETS ─────────────────────────────────────────────────
-        const CS_TABS = { cybersec: 'cheatsheet_cybersec.html', python: 'cheatsheet_python.html', sql: 'cheatsheet_sql_cybersec.html' };
+        const CS_TABS = { python: 'cheatsheet_python.html', sql: 'cheatsheet_sql_cybersec.html', cybersec: 'cheatsheet_cybersec.html' };
 
         function csSwitch(key) {
             Object.keys(CS_TABS).forEach(k => {
