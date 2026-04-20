@@ -105,17 +105,19 @@
 
             const div = document.createElement('div');
             div.className = `invite-card${status === 'revoked' ? ' revoked' : ''}`;
+            const safeType   = escapeHtml(inv.type || '');
+            const safeExpiry = escapeHtml(expiry);
             div.innerHTML = `
                 <div class="invite-card-header">
                     <div style="display:flex;gap:0.4rem;align-items:center;">
-                        <span class="invite-type-badge ${inv.type}">${inv.type === 'individual' ? '👤 Individual' : '👥 Turma'}</span>
-                        <span class="invite-status-badge ${status}">${statusLabel}</span>
+                        <span class="invite-type-badge ${safeType}">${safeType === 'individual' ? '👤 Individual' : '👥 Turma'}</span>
+                        <span class="invite-status-badge ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>
                     </div>
                     <span style="font-size:0.68rem;color:var(--text-secondary);">${inv.uses || 0} uso${inv.uses !== 1 ? 's' : ''}</span>
                 </div>
                 <div class="invite-meta">
-                    Expira: ${expiry}
-                    ${inv.createdAt?.toDate ? ' · criado ' + inv.createdAt.toDate().toLocaleDateString('pt-PT') : ''}
+                    Expira: ${safeExpiry}
+                    ${inv.createdAt?.toDate ? ' · criado ' + escapeHtml(inv.createdAt.toDate().toLocaleDateString('pt-PT')) : ''}
                 </div>
                 <div class="invite-actions">
                     <button class="invite-action-btn" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Link copiado!'))">📋 Copiar link</button>

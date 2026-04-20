@@ -35,18 +35,18 @@
                 return;
             }
             cronoGeralEl.innerHTML = `
-                ${CRONOGRAMA.designacao ? `<li><span class="info-label">Curso</span><span class="info-val">${CRONOGRAMA.designacao}</span></li>` : ''}
-                ${CRONOGRAMA.instituicao ? `<li><span class="info-label">Instituição</span><span class="info-val">${CRONOGRAMA.instituicao}</span></li>` : ''}
-                ${CRONOGRAMA.responsavel_acao ? `<li><span class="info-label">Responsável</span><span class="info-val">${CRONOGRAMA.responsavel_acao}</span></li>` : ''}
-                <li><span class="info-label">Período</span><span class="info-val">${CRONOGRAMA.data_inicio} a ${CRONOGRAMA.data_fim}</span></li>
-                <li><span class="info-label">Local</span><span class="info-val">${CRONOGRAMA.local} • Sala ${CRONOGRAMA.sala}</span></li>
-                <li><span class="info-label">Horário Base</span><span class="info-val">${CRONOGRAMA.horario}</span></li>
+                ${CRONOGRAMA.designacao ? `<li><span class="info-label">Curso</span><span class="info-val">${escapeHtml(CRONOGRAMA.designacao)}</span></li>` : ''}
+                ${CRONOGRAMA.instituicao ? `<li><span class="info-label">Instituição</span><span class="info-val">${escapeHtml(CRONOGRAMA.instituicao)}</span></li>` : ''}
+                ${CRONOGRAMA.responsavel_acao ? `<li><span class="info-label">Responsável</span><span class="info-val">${escapeHtml(CRONOGRAMA.responsavel_acao)}</span></li>` : ''}
+                <li><span class="info-label">Período</span><span class="info-val">${escapeHtml(CRONOGRAMA.data_inicio)} a ${escapeHtml(CRONOGRAMA.data_fim)}</span></li>
+                <li><span class="info-label">Local</span><span class="info-val">${escapeHtml(CRONOGRAMA.local)} • Sala ${escapeHtml(CRONOGRAMA.sala)}</span></li>
+                <li><span class="info-label">Horário Base</span><span class="info-val">${escapeHtml(CRONOGRAMA.horario)}</span></li>
                 <li><span class="info-label">Carga Horária</span><span class="info-val">${CRONOGRAMA.carga_horaria.total}h Total (FCT: ${CRONOGRAMA.carga_horaria.fct}h)</span></li>
             `;
             if (CRONOGRAMA.resumo_mensal && cronoResumoEl) {
                 cronoResumoEl.innerHTML = CRONOGRAMA.resumo_mensal.map(r => `
                     <div class="resumo-row">
-                        <div>${r.mes}</div>
+                        <div>${escapeHtml(r.mes)}</div>
                         <div>${r.dias} dias</div>
                         <div>${r.horas_mes}h / ${r.horas_totais}h</div>
                     </div>

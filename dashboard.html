@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IEFP Hackers</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" integrity="sha384-fCAW/rDWORTbQXSiB7mOg0QtQ5c+r0f544y6XoKjuVva0nMBlCpNUjiFeG5iMdS3" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" integrity="sha384-sEVIly94UBRLKWdkYoPpSG7GD/e79YHMrxVyZaOk712Ga7+EAw6w1EFi+xBzBdd+" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" integrity="sha384-EkqK+ezBWJuvO3hfrSx2iVqr3YQbhmnzn8kPhOpBZ+0GMVU5oGSgptwIu8D84HjE" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js" integrity="sha384-6I0gWsz4FIAr30c0TxIxJnPQuJiZ1FfILdZrgJdjxTH3R8dgPGTvexbyqTvReV6Z" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" integrity="sha384-M481iNZJtbpypKgvlvZ+78Giq0BsewFLk5r2k+MOcGXlwKCc27DQRZ+WCV/zpmpC" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js" integrity="sha384-3IYu+dnH2y9gX1s6p9F4D55XbEmZBfJ3D1Ylh8J6bfdqnJCOmDVSRTq1yhJsBY1H" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
     <style>:root {
             --bg-color: #050505;
             --surface-color: #0d0d0d;
@@ -1851,6 +1851,15 @@ opacity: 0.35;
             font-size: 0.9rem;
         }
         .pg-empty-hint { font-size: 0.8rem; color: #30363d; }
+        .pg-sandbox-warning {
+            background: rgba(255,170,0,0.1);
+            border: 1px solid rgba(255,170,0,0.35);
+            border-radius: 6px;
+            color: #e3a600;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.85rem;
+            margin-bottom: 0.5rem;
+        }
 
 /* ── NEW LAYOUT: NAV SIDEBAR ── */
         body { overflow: hidden; }
@@ -3116,7 +3125,7 @@ opacity: 0.35;
 
     <script>
         // ── DATA ────────────────────────────────────────────────────────
-        const BUILD_TS   = '1776720157';
+        const BUILD_TS   = '1776721045';
         const UC_MAP     = {"FPCT": {"descricao": "Formação em Contexto de Trabalho", "formador": "", "carga_horaria": 500, "modalidade": ""}, "UC00034": {"descricao": "Colaborar e Trabalhar em Equipa", "formador": "", "carga_horaria": null, "modalidade": ""}, "UC00245": {"descricao": "Desenvolver Algoritmos", "formador": "Iolanda Aquino Serro", "carga_horaria": 50, "modalidade": ""}, "UC00598": {"descricao": "Efetuar Operações e Cálculos Matemáticos Aplicados a Projetos da Área de Informática", "formador": "Jose Gabriel Fernandes Chaveca", "carga_horaria": 25, "modalidade": ""}, "UC00599": {"descricao": "Interagir em Inglês nas Atividades do Setor da Informática", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC00602": {"descricao": "Modelar Bases de Dados Relacionais", "formador": "Paulo Ricardo Costa Ramalho", "carga_horaria": 50, "modalidade": "remoto"}, "UC00606": {"descricao": "Desenvolver Programas em Linguagem Estruturada", "formador": "Iolanda Aquino Serro", "carga_horaria": 25, "modalidade": ""}, "UC00616": {"descricao": "Implementar as Normas de Segurança e Saúde no Trabalho no Setor de Informática", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC00631": {"descricao": "Planear e Instalar a Infraestrutura de Redes Locais", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 25, "modalidade": ""}, "UC00633": {"descricao": "Instalar e Parametrizar Sistemas Operativos de Servidor (Plataforma Proprietária)", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 50, "modalidade": ""}, "UC00634": {"descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 50, "modalidade": ""}, "UC00635": {"descricao": "Configurar Serviços de Rede", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 25, "modalidade": ""}, "UC01476": {"descricao": "Implementar a Legislação Relativa à Cibersegurança", "formador": "Luis Manuel Ferreira De Melo E Horta", "carga_horaria": 25, "modalidade": ""}, "UC01477": {"descricao": "Aplicar Métodos Estatísticos", "formador": "Jose Gabriel Fernandes Chaveca", "carga_horaria": 25, "modalidade": ""}, "UC01478": {"descricao": "Configurar Redes de Computadores", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01479": {"descricao": "Implementar Mecanismos de Proteção Contra Ameaças Cibernéticas", "formador": "", "carga_horaria": 25, "modalidade": ""}, "UC01480": {"descricao": "Analisar Evidências de Ataques Cibernéticos", "formador": "Paulo Ricardo Costa Ramalho", "carga_horaria": 25, "modalidade": ""}, "UC01481": {"descricao": "Desenvolver Scripts Aplicados à Cibersegurança", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01482": {"descricao": "Programar Scripts de Normalização e Filtragem de Logs", "formador": "", "carga_horaria": 25, "modalidade": ""}, "UC01483": {"descricao": "Detetar e Analisar Vulnerabilidades em Soluções Web", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01484": {"descricao": "Detetar e Analisar Vulnerabilidades em Sistemas de Rede", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01485": {"descricao": "Instalar e Configurar Ferramentas de Análise e Recolha de Logs e Evidências", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01486": {"descricao": "Gerir Sistemas de Deteção de Intrusos (IDS)", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01487": {"descricao": "Simular Cenários de Cibersegurança e Ciberdefesa (Wargaming)", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 50, "modalidade": ""}, "UC01489": {"descricao": "Implementar Procedimentos de Recolha e Análise Forense Digital", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01491": {"descricao": "Projetar e Administrar Sistemas de Bases de Dados", "formador": "Paulo Ricardo Costa Ramalho", "carga_horaria": 50, "modalidade": ""}};
         const UC_LIST    = [{"codigo": "FPCT", "descricao": "Formação em Contexto de Trabalho", "carga_horaria": 500, "formador": ""}, {"codigo": "UC00034", "descricao": "Colaborar e Trabalhar em Equipa", "carga_horaria": null, "formador": ""}, {"codigo": "UC00245", "descricao": "Desenvolver Algoritmos", "carga_horaria": 50, "formador": "Iolanda Aquino Serro"}, {"codigo": "UC00598", "descricao": "Efetuar Operações e Cálculos Matemáticos Aplicados a Projetos da Área de Informática", "carga_horaria": 25, "formador": "Jose Gabriel Fernandes Chaveca"}, {"codigo": "UC00599", "descricao": "Interagir em Inglês nas Atividades do Setor da Informática", "carga_horaria": 50, "formador": ""}, {"codigo": "UC00602", "descricao": "Modelar Bases de Dados Relacionais", "carga_horaria": 50, "formador": "Paulo Ricardo Costa Ramalho", "modalidade": "remoto"}, {"codigo": "UC00606", "descricao": "Desenvolver Programas em Linguagem Estruturada", "carga_horaria": 25, "formador": "Iolanda Aquino Serro"}, {"codigo": "UC00616", "descricao": "Implementar as Normas de Segurança e Saúde no Trabalho no Setor de Informática", "carga_horaria": 50, "formador": ""}, {"codigo": "UC00631", "descricao": "Planear e Instalar a Infraestrutura de Redes Locais", "carga_horaria": 25, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC00633", "descricao": "Instalar e Parametrizar Sistemas Operativos de Servidor (Plataforma Proprietária)", "carga_horaria": 50, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC00634", "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente", "carga_horaria": 50, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC00635", "descricao": "Configurar Serviços de Rede", "carga_horaria": 25, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC01476", "descricao": "Implementar a Legislação Relativa à Cibersegurança", "carga_horaria": 25, "formador": "Luis Manuel Ferreira De Melo E Horta"}, {"codigo": "UC01477", "descricao": "Aplicar Métodos Estatísticos", "carga_horaria": 25, "formador": "Jose Gabriel Fernandes Chaveca"}, {"codigo": "UC01478", "descricao": "Configurar Redes de Computadores", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01479", "descricao": "Implementar Mecanismos de Proteção Contra Ameaças Cibernéticas", "carga_horaria": 25, "formador": ""}, {"codigo": "UC01480", "descricao": "Analisar Evidências de Ataques Cibernéticos", "carga_horaria": 25, "formador": "Paulo Ricardo Costa Ramalho"}, {"codigo": "UC01481", "descricao": "Desenvolver Scripts Aplicados à Cibersegurança", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01482", "descricao": "Programar Scripts de Normalização e Filtragem de Logs", "carga_horaria": 25, "formador": ""}, {"codigo": "UC01483", "descricao": "Detetar e Analisar Vulnerabilidades em Soluções Web", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01484", "descricao": "Detetar e Analisar Vulnerabilidades em Sistemas de Rede", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01485", "descricao": "Instalar e Configurar Ferramentas de Análise e Recolha de Logs e Evidências", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01486", "descricao": "Gerir Sistemas de Deteção de Intrusos (IDS)", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01487", "descricao": "Simular Cenários de Cibersegurança e Ciberdefesa (Wargaming)", "carga_horaria": 50, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC01489", "descricao": "Implementar Procedimentos de Recolha e Análise Forense Digital", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01491", "descricao": "Projetar e Administrar Sistemas de Bases de Dados", "carga_horaria": 50, "formador": "Paulo Ricardo Costa Ramalho"}];
         const HORARIOS   = [{"instituicao": "Centro de Emprego e Formação Profissional de Faro", "modalidade": "Cursos de Especialização Tecnológica - CET", "designacao": "Técnico/a Especialista em Cibersegurança", "codigo_financeiro": "4,8111E+12", "codigo_administrativo": "11650885", "nivel": 5, "mes_ano": "abril 2026", "horario_diario": "09:00-17:00", "dias": [{"data": "2026-04-09", "dia_semana": "QUI", "aulas": [{"hora": "14:00-15:00", "uc": "UC00631"}, {"hora": "15:00-16:00", "uc": "UC00631"}, {"hora": "16:00-17:00", "uc": "UC00631"}]}, {"data": "2026-04-10", "dia_semana": "SEX", "aulas": [{"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-13", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01476"}, {"hora": "10:00-11:00", "uc": "UC01476"}, {"hora": "11:00-12:00", "uc": "UC01476"}, {"hora": "12:00-13:00", "uc": "UC01476"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-14", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-15", "dia_semana": "QUA", "aulas": []}, {"data": "2026-04-16", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00245"}, {"hora": "10:00-11:00", "uc": "UC00245"}, {"hora": "11:00-12:00", "uc": "UC00245"}, {"hora": "12:00-13:00", "uc": "UC00245"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-17", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00245"}, {"hora": "10:00-11:00", "uc": "UC00245"}, {"hora": "11:00-12:00", "uc": "UC00245"}, {"hora": "12:00-13:00", "uc": "UC00245"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-20", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01476"}, {"hora": "10:00-11:00", "uc": "UC01476"}, {"hora": "11:00-12:00", "uc": "UC01476"}, {"hora": "12:00-13:00", "uc": "UC01476"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-21", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-22", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}]}, {"data": "2026-04-23", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-24", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00634"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-27", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01477"}, {"hora": "10:00-11:00", "uc": "UC01477"}, {"hora": "11:00-12:00", "uc": "UC01477"}, {"hora": "12:00-13:00", "uc": "UC01477"}, {"hora": "14:00-15:00", "uc": "UC01476"}, {"hora": "15:00-16:00", "uc": "UC01476"}, {"hora": "16:00-17:00", "uc": "UC01476"}]}, {"data": "2026-04-28", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-29", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00634"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-30", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00634"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-05-01", "dia_semana": "SEX", "aulas": [], "nota": "Feriado - Dia do Trabalhador"}], "ucs_identificadas": ["UC00245", "UC00599", "UC00602", "UC00631", "UC00634", "UC01476", "UC01477"]}];
@@ -3381,18 +3390,18 @@ opacity: 0.35;
                 return;
             }
             cronoGeralEl.innerHTML = `
-                ${CRONOGRAMA.designacao ? `<li><span class="info-label">Curso</span><span class="info-val">${CRONOGRAMA.designacao}</span></li>` : ''}
-                ${CRONOGRAMA.instituicao ? `<li><span class="info-label">Instituição</span><span class="info-val">${CRONOGRAMA.instituicao}</span></li>` : ''}
-                ${CRONOGRAMA.responsavel_acao ? `<li><span class="info-label">Responsável</span><span class="info-val">${CRONOGRAMA.responsavel_acao}</span></li>` : ''}
-                <li><span class="info-label">Período</span><span class="info-val">${CRONOGRAMA.data_inicio} a ${CRONOGRAMA.data_fim}</span></li>
-                <li><span class="info-label">Local</span><span class="info-val">${CRONOGRAMA.local} • Sala ${CRONOGRAMA.sala}</span></li>
-                <li><span class="info-label">Horário Base</span><span class="info-val">${CRONOGRAMA.horario}</span></li>
+                ${CRONOGRAMA.designacao ? `<li><span class="info-label">Curso</span><span class="info-val">${escapeHtml(CRONOGRAMA.designacao)}</span></li>` : ''}
+                ${CRONOGRAMA.instituicao ? `<li><span class="info-label">Instituição</span><span class="info-val">${escapeHtml(CRONOGRAMA.instituicao)}</span></li>` : ''}
+                ${CRONOGRAMA.responsavel_acao ? `<li><span class="info-label">Responsável</span><span class="info-val">${escapeHtml(CRONOGRAMA.responsavel_acao)}</span></li>` : ''}
+                <li><span class="info-label">Período</span><span class="info-val">${escapeHtml(CRONOGRAMA.data_inicio)} a ${escapeHtml(CRONOGRAMA.data_fim)}</span></li>
+                <li><span class="info-label">Local</span><span class="info-val">${escapeHtml(CRONOGRAMA.local)} • Sala ${escapeHtml(CRONOGRAMA.sala)}</span></li>
+                <li><span class="info-label">Horário Base</span><span class="info-val">${escapeHtml(CRONOGRAMA.horario)}</span></li>
                 <li><span class="info-label">Carga Horária</span><span class="info-val">${CRONOGRAMA.carga_horaria.total}h Total (FCT: ${CRONOGRAMA.carga_horaria.fct}h)</span></li>
             `;
             if (CRONOGRAMA.resumo_mensal && cronoResumoEl) {
                 cronoResumoEl.innerHTML = CRONOGRAMA.resumo_mensal.map(r => `
                     <div class="resumo-row">
-                        <div>${r.mes}</div>
+                        <div>${escapeHtml(r.mes)}</div>
                         <div>${r.dias} dias</div>
                         <div>${r.horas_mes}h / ${r.horas_totais}h</div>
                     </div>
@@ -5112,6 +5121,16 @@ opacity: 0.35;
 
 
         // ── PLAYGROUND ──────────────────────────────────────────────────
+        // SRI hashes para scripts CDN carregados dinamicamente
+        const _PG_SRI = {
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js`]:               'sha384-ZYmwuq4n2gOcNxMSiJ6jyTj+BbIrilr7p6dlq6q5nmSWKmsH9UU4K1qqjycMkfmR',
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js`]:       'sha384-Xy+2exU6lBoT4OpUOtnQb+cUpn+nlJQEHvRobWVtwz6wIsw4oNoO7xyd/l8rYgMy',
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js`]: 'sha384-69mJoUoPPF/C7qPs6lLjvXvrt6w225+rmxWqGO3a1glVjITdnnwPQOtG9FRTd2Ni',
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js`]: 'sha384-LjCI3E8qhhxXZvu7+FCvqx9eZYSowFvuJ7z54KsgI/BDPGKEuysqCg/vYiKHvC4Y',
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js`]:            'sha384-HxXmA1hLc56V6Ja4yfcCwAprmbnS4tuvKYS0qKG3t6oxOFMflcnYq5fOnt6wVCda',
+            [`https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-asm.js`]:                              'sha384-ur9WCykw0SZNZ8drFEOH/m9+bB+wzKinbF63kpF2yRb4AYvAFbrGvvEC/RfCK8Wp',
+        };
+
         const pg = {
             tabs: [],
             active: null,
@@ -5204,6 +5223,7 @@ SELECT * FROM utilizadores;
             const loadJs = src => new Promise((res, rej) => {
                 if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
                 const s = document.createElement('script'); s.src = src;
+                if (_PG_SRI[src]) { s.integrity = _PG_SRI[src]; s.crossOrigin = 'anonymous'; }
                 s.onload = res; s.onerror = rej;
                 document.head.appendChild(s);
             });
@@ -5441,6 +5461,7 @@ SELECT * FROM utilizadores;
             div.id = tab.id + '-panel';
             if (tab.type === 'python') {
                 div.innerHTML = `
+                    <div class="pg-sandbox-warning">⚠️ Executa apenas código de fontes confiáveis. O código corre no teu browser.</div>
                     <div class="pg-editor-wrap">
                         <div class="pg-toolbar">
                             <button class="pg-run-btn" id="${tab.id}-run" onclick="pgRunPython('${tab.id}')">▶ Correr</button>
@@ -5836,6 +5857,7 @@ async def _pg_exec_async(files, ns, tab_id):
                 if (document.querySelector(`script[src="${url}"]`)) { resolve(); return; }
                 const s = document.createElement('script');
                 s.src = url;
+                if (_PG_SRI[url]) { s.integrity = _PG_SRI[url]; s.crossOrigin = 'anonymous'; }
                 s.onload = resolve;
                 s.onerror = () => reject(new Error('Falha ao carregar: ' + url));
                 document.head.appendChild(s);
@@ -6243,17 +6265,19 @@ async def _pg_exec_async(files, ns, tab_id):
 
             const div = document.createElement('div');
             div.className = `invite-card${status === 'revoked' ? ' revoked' : ''}`;
+            const safeType   = escapeHtml(inv.type || '');
+            const safeExpiry = escapeHtml(expiry);
             div.innerHTML = `
                 <div class="invite-card-header">
                     <div style="display:flex;gap:0.4rem;align-items:center;">
-                        <span class="invite-type-badge ${inv.type}">${inv.type === 'individual' ? '👤 Individual' : '👥 Turma'}</span>
-                        <span class="invite-status-badge ${status}">${statusLabel}</span>
+                        <span class="invite-type-badge ${safeType}">${safeType === 'individual' ? '👤 Individual' : '👥 Turma'}</span>
+                        <span class="invite-status-badge ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>
                     </div>
                     <span style="font-size:0.68rem;color:var(--text-secondary);">${inv.uses || 0} uso${inv.uses !== 1 ? 's' : ''}</span>
                 </div>
                 <div class="invite-meta">
-                    Expira: ${expiry}
-                    ${inv.createdAt?.toDate ? ' · criado ' + inv.createdAt.toDate().toLocaleDateString('pt-PT') : ''}
+                    Expira: ${safeExpiry}
+                    ${inv.createdAt?.toDate ? ' · criado ' + escapeHtml(inv.createdAt.toDate().toLocaleDateString('pt-PT')) : ''}
                 </div>
                 <div class="invite-actions">
                     <button class="invite-action-btn" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Link copiado!'))">📋 Copiar link</button>

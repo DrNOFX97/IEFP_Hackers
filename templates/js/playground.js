@@ -1,4 +1,14 @@
         // ── PLAYGROUND ──────────────────────────────────────────────────
+        // SRI hashes para scripts CDN carregados dinamicamente
+        const _PG_SRI = {
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js`]:               'sha384-ZYmwuq4n2gOcNxMSiJ6jyTj+BbIrilr7p6dlq6q5nmSWKmsH9UU4K1qqjycMkfmR',
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js`]:       'sha384-Xy+2exU6lBoT4OpUOtnQb+cUpn+nlJQEHvRobWVtwz6wIsw4oNoO7xyd/l8rYgMy',
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js`]: 'sha384-69mJoUoPPF/C7qPs6lLjvXvrt6w225+rmxWqGO3a1glVjITdnnwPQOtG9FRTd2Ni',
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js`]: 'sha384-LjCI3E8qhhxXZvu7+FCvqx9eZYSowFvuJ7z54KsgI/BDPGKEuysqCg/vYiKHvC4Y',
+            [`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js`]:            'sha384-HxXmA1hLc56V6Ja4yfcCwAprmbnS4tuvKYS0qKG3t6oxOFMflcnYq5fOnt6wVCda',
+            [`https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-asm.js`]:                              'sha384-ur9WCykw0SZNZ8drFEOH/m9+bB+wzKinbF63kpF2yRb4AYvAFbrGvvEC/RfCK8Wp',
+        };
+
         const pg = {
             tabs: [],
             active: null,
@@ -91,6 +101,7 @@ SELECT * FROM utilizadores;
             const loadJs = src => new Promise((res, rej) => {
                 if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
                 const s = document.createElement('script'); s.src = src;
+                if (_PG_SRI[src]) { s.integrity = _PG_SRI[src]; s.crossOrigin = 'anonymous'; }
                 s.onload = res; s.onerror = rej;
                 document.head.appendChild(s);
             });
@@ -328,6 +339,7 @@ SELECT * FROM utilizadores;
             div.id = tab.id + '-panel';
             if (tab.type === 'python') {
                 div.innerHTML = `
+                    <div class="pg-sandbox-warning">⚠️ Executa apenas código de fontes confiáveis. O código corre no teu browser.</div>
                     <div class="pg-editor-wrap">
                         <div class="pg-toolbar">
                             <button class="pg-run-btn" id="${tab.id}-run" onclick="pgRunPython('${tab.id}')">▶ Correr</button>
@@ -723,6 +735,7 @@ async def _pg_exec_async(files, ns, tab_id):
                 if (document.querySelector(`script[src="${url}"]`)) { resolve(); return; }
                 const s = document.createElement('script');
                 s.src = url;
+                if (_PG_SRI[url]) { s.integrity = _PG_SRI[url]; s.crossOrigin = 'anonymous'; }
                 s.onload = resolve;
                 s.onerror = () => reject(new Error('Falha ao carregar: ' + url));
                 document.head.appendChild(s);

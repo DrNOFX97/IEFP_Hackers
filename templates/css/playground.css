@@ -453,3 +453,12 @@
             font-size: 0.9rem;
         }
         .pg-empty-hint { font-size: 0.8rem; color: #30363d; }
+        .pg-sandbox-warning {
+            background: rgba(255,170,0,0.1);
+            border: 1px solid rgba(255,170,0,0.35);
+            border-radius: 6px;
+            color: #e3a600;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.85rem;
+            margin-bottom: 0.5rem;
+        }

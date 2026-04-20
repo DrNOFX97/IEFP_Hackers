@@ -3,6 +3,8 @@ import os
 import glob
 import base64
 import io
+import hashlib
+import re as _re
 
 
 def get_latest_file(pattern):
@@ -366,7 +368,47 @@ def main():
                 logo_b64 = base64.b64encode(f.read()).decode()
     html = html.replace('__INJECT_LOGO_B64__', logo_b64)
 
-    # 7. Write output
+    # 7. Compute SHA-384 of inline script block → update CSP in firebase.json
+    #    This removes 'unsafe-inline' from script-src and replaces with the exact hash,
+    #    so only this specific bundle is allowed to execute inline.
+    script_start = html.rfind('<script>')
+    script_end   = html.rfind('</script>')
+    if script_start != -1 and script_end != -1:
+        inline_js_content = html[script_start + len('<script>'):script_end]
+        raw_hash  = hashlib.sha384(inline_js_content.encode('utf-8')).digest()
+        b64_hash  = base64.b64encode(raw_hash).decode('ascii')
+        new_token = f"'sha384-{b64_hash}'"
+
+        fb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'firebase.json')
+        with open(fb_path, 'r', encoding='utf-8') as f_fb:
+            fb_data = json.load(f_fb)
+
+        def _patch_csp(csp_val):
+            parts = csp_val.split(';')
+            patched = []
+            for part in parts:
+                stripped = part.strip()
+                if stripped.startswith('script-src'):
+                    # Remove 'unsafe-inline' or any existing sha384 token; insert new hash
+                    part = _re.sub(r"'unsafe-inline'", '', part)
+                    part = _re.sub(r"'sha384-[A-Za-z0-9+/=]+'", '', part)
+                    # Insert new hash after 'self'
+                    part = _re.sub(r"('self')", r"\1 " + new_token, part)
+                    # Collapse multiple spaces
+                    part = _re.sub(r' {2,}', ' ', part)
+                patched.append(part)
+            return ';'.join(patched)
+
+        for hdr_block in fb_data.get('hosting', {}).get('headers', []):
+            if hdr_block.get('source') == '**':
+                for hdr in hdr_block.get('headers', []):
+                    if hdr.get('key') == 'Content-Security-Policy':
+                        hdr['value'] = _patch_csp(hdr['value'])
+
+        with open(fb_path, 'w', encoding='utf-8') as f_fb:
+            json.dump(fb_data, f_fb, indent=2, ensure_ascii=False)
+
+    # 8. Write output
     with open('dashboard.html', 'w', encoding='utf-8') as f:
         f.write(html)
 
