@@ -79,7 +79,7 @@
             auth.onAuthStateChanged(async user => {
                 if (user) {
                     // 1. Verificar se há convite pendente e resgatar via Cloud Function
-                    const pendingInvite = localStorage.getItem('pending_invite');
+                    const pendingInvite = _readPendingInvite();
                     if (pendingInvite) {
                         localStorage.removeItem('pending_invite');
                         try {

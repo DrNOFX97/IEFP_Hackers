@@ -249,7 +249,8 @@
             try {
                 const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
                 const key      = `${Date.now()}-${safeName}`;
-                const ref      = storage.ref(`uc-files/${key}`);
+                const uid      = auth.currentUser?.uid || 'unknown';
+                const ref      = storage.ref(`uc-files/${uid}/${key}`);
                 const snapshot = await ref.put(file, { contentType });
                 uploadedUrl    = await snapshot.ref.getDownloadURL();
             } catch (e) {

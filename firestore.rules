@@ -43,11 +43,15 @@ service cloud.firestore {
     }
 
     // ── invites ───────────────────────────────────────────────────────
-    // Leitura: qualquer autenticado (para validar token após login).
-    // Escrita: só admin/mod pode criar/gerir convites.
+    // get:  qualquer autenticado com o token (necessário após redirect OAuth).
+    //       Restrito a invites ainda não expirados.
+    // list: só moderadores (evita enumeração de tokens por alunos).
     // O Cloud Function (Admin SDK) faz updates atómicos sem passar pelas rules.
     match /invites/{token} {
-      allow read:   if isAuth();
+      allow get:    if isAuth()
+                    && (!resource.data.keys().hasAny(['expiresAt'])
+                        || resource.data.expiresAt > request.time);
+      allow list:   if isModerador();
       allow create: if isModerador()
                     && request.resource.data.createdBy == request.auth.uid
                     && request.resource.data.active    == true
@@ -73,8 +77,14 @@ service cloud.firestore {
     // Chave: sessionKey (ucCode ou ucCode_date) — materiais partilhados por sessão.
     // Documento: { items: [{id, type, label, url, size, uid, createdAt}] }
     match /materials/{key} {
-      allow read:  if isAluno();
-      allow write: if isAluno();
+      allow read:   if isAluno();
+      allow create: if isAluno();
+      // update: impede wipe em bulk — só permite remover no máximo 1 item por write
+      // (comportamento de deleteMaterial), ou adicionar items (arrayUnion).
+      allow update: if isAluno()
+                    && request.resource.data.items is list
+                    && request.resource.data.items.size() >= resource.data.items.size() - 1;
+      allow delete: if isAdmin();
     }
 
     // ── chat global ───────────────────────────────────────────────────

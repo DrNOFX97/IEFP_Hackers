@@ -21,19 +21,31 @@
         })();
 
         // ── CAPTURAR TOKEN DE CONVITE NO URL ────────────────────────────
+        // localStorage (não sessionStorage) — sobrevive ao signInWithRedirect em mobile.
+        // TTL de 10 min para limitar janela de exposição.
+        const _INVITE_TTL = 10 * 60 * 1000;
+        function _readPendingInvite() {
+            try {
+                const raw = localStorage.getItem('pending_invite');
+                if (!raw) return null;
+                const { token, exp } = JSON.parse(raw);
+                if (Date.now() > exp) { localStorage.removeItem('pending_invite'); return null; }
+                return token;
+            } catch { localStorage.removeItem('pending_invite'); return null; }
+        }
+
         (function captureInviteToken() {
             try {
                 const params = new URLSearchParams(window.location.search);
                 const token  = params.get('invite');
                 if (token && /^[a-f0-9]{32,64}$/.test(token)) {
-                    // localStorage em vez de sessionStorage — sobrevive ao signInWithRedirect em mobile
-                    localStorage.setItem('pending_invite', token);
+                    localStorage.setItem('pending_invite', JSON.stringify({ token, exp: Date.now() + _INVITE_TTL }));
                     history.replaceState({}, '', window.location.pathname);
                     const badge = document.getElementById('auth-invite-badge');
                     if (badge) badge.style.display = 'block';
                 }
-                // Mostrar badge se já havia token guardado (utilizador voltou após redirect)
-                if (localStorage.getItem('pending_invite')) {
+                // Mostrar badge se já havia token válido guardado (utilizador voltou após redirect)
+                if (_readPendingInvite()) {
                     const badge = document.getElementById('auth-invite-badge');
                     if (badge) badge.style.display = 'block';
                 }

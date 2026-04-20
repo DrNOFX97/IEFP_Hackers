@@ -50,7 +50,7 @@
             }
 
             if (merged.length === 0 && found.nota) {
-                el.innerHTML = `<div class="aula-card empty-card holiday"><div class="aula-info"><div class="aula-desc">${found.nota}</div></div></div>`;
+                el.innerHTML = `<div class="aula-card empty-card holiday"><div class="aula-info"><div class="aula-desc">${escapeHtml(found.nota)}</div></div></div>`;
                 return;
             }
 
