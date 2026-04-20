@@ -3012,9 +3012,7 @@ opacity: 0.35;
                     <button class="cs-tab" onclick="csSwitch('cybersec')" style="padding:0.5rem 1.2rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;cursor:pointer;font-size:0.85rem;">🛡️ CyberSec</button>
                     <a id="cs-open-link" href="cheatsheet_python.html" target="_blank" style="margin-left:auto;padding:0.5rem 1rem;border-radius:6px;border:1px solid var(--border);color:var(--text-muted);font-size:0.8rem;text-decoration:none;display:flex;align-items:center;gap:0.4rem;">↗ abrir em separador</a>
                 </div>
-                <iframe id="cs-frame-python"   src="cheatsheet_python.html"   style="width:100%;height:80vh;border:none;border-radius:8px;"></iframe>
-                <iframe id="cs-frame-sql"      src="cheatsheet_sql_cybersec.html" style="width:100%;height:80vh;border:none;border-radius:8px;display:none;"></iframe>
-                <iframe id="cs-frame-cybersec" src="cheatsheet_cybersec.html" style="width:100%;height:80vh;border:none;border-radius:8px;display:none;"></iframe>
+                <div id="cs-host" style="border-radius:8px;overflow:hidden;min-height:80vh;"></div>
             </div>
 
             <!-- VIEW: DEFINIÇÕES -->
@@ -3216,6 +3214,7 @@ opacity: 0.35;
             } else if (view === 'cheatsheets') {
                 document.getElementById('view-cheatsheets').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
+                if (!_csShadow) csSwitch('python');
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -7239,21 +7238,31 @@ async def _pg_exec_async(files, ns, tab_id):
 
         // ── CHEATSHEETS ─────────────────────────────────────────────────
         const CS_TABS = { python: 'cheatsheet_python.html', sql: 'cheatsheet_sql_cybersec.html', cybersec: 'cheatsheet_cybersec.html' };
+        const _csCache = {};
+        let _csShadow = null;
 
-        function csSwitch(key) {
-            Object.keys(CS_TABS).forEach(k => {
-                const frame = document.getElementById('cs-frame-' + k);
-                if (frame) frame.style.display = k === key ? 'block' : 'none';
-            });
-            document.querySelectorAll('.cs-tab').forEach((btn, i) => {
-                const k = Object.keys(CS_TABS)[i];
-                const isActive = k === key;
-                btn.style.background = isActive ? 'var(--accent)' : 'transparent';
-                btn.style.color = isActive ? '#0a0e1a' : 'var(--text)';
-                btn.style.borderColor = isActive ? 'var(--accent)' : 'var(--border)';
+        async function csSwitch(key) {
+            // Update tab styles
+            document.querySelectorAll('.cs-tab').forEach(btn => {
+                const k = btn.getAttribute('onclick').match(/'(\w+)'/)[1];
+                const on = k === key;
+                btn.style.background   = on ? 'var(--accent)' : 'transparent';
+                btn.style.color        = on ? '#0a0e1a' : 'var(--text)';
+                btn.style.borderColor  = on ? 'var(--accent)' : 'var(--border)';
             });
             const link = document.getElementById('cs-open-link');
             if (link) link.href = CS_TABS[key];
+
+            // Attach shadow root once
+            const host = document.getElementById('cs-host');
+            if (!_csShadow) _csShadow = host.attachShadow({ mode: 'open' });
+
+            // Fetch with cache
+            if (!_csCache[key]) {
+                const res = await fetch(CS_TABS[key]);
+                _csCache[key] = await res.text();
+            }
+            _csShadow.innerHTML = _csCache[key];
         }
 
         // ── CAPTURAR TOKEN DE CONVITE NO URL ────────────────────────────

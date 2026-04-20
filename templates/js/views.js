@@ -59,6 +59,7 @@
             } else if (view === 'cheatsheets') {
                 document.getElementById('view-cheatsheets').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
+                if (!_csShadow) csSwitch('python');
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
