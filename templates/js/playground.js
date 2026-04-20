@@ -13,8 +13,12 @@
             tabs: [],
             active: null,
             counter: { python: 0, sql: 0 },
-            pyodide: null,
+            worker: null,
+            workerReady: false,
             pyodideLoading: false,
+            hasFormat: false,
+            _runId: 0,
+            _pendingRuns: {},   // id → { resolve, reject, tabId }
             SQL: null,
             sqlLoading: false,
             editors: {},       // tabId → CodeMirror instance
@@ -210,6 +214,7 @@ SELECT * FROM utilizadores;
             if (idx === -1) return;
             const tab = pg.tabs[idx];
             if (tab.db) { try { tab.db.close(); } catch(_) {} }
+            if (tab.type === 'python' && pg.worker) pg.worker.postMessage({ type: 'clear_ns', tabId: id });
             if (pg.editors[id]) { delete pg.editors[id]; }
             pg.tabs.splice(idx, 1);
             document.getElementById(id + '-tab')?.remove();
@@ -441,101 +446,76 @@ SELECT * FROM utilizadores;
             wrap.appendChild(div);
         }
 
-        // ── Python ──────────────────────────────────────────
+        // ── Python (Web Worker) ─────────────────────────────────
+        function _pgWorkerInit() {
+            if (pg.worker) return;
+            pg.worker = new Worker('pyodide-worker.js');
+            pg.worker.onmessage = ({ data }) => {
+                const { type, id } = data;
+                if (type === 'ready') {
+                    pg.workerReady = true;
+                    pg.hasFormat = data.hasFormat;
+                    pg.pyodideLoading = false;
+                    pg.tabs.filter(t => t.type === 'python').forEach(t => pgSetRunReady(t.id));
+                    return;
+                }
+                if (type === 'init_error') {
+                    pg.pyodideLoading = false;
+                    pg.tabs.filter(t => t.type === 'python').forEach(t =>
+                        pgSetOutput(t.id, `<span class="pg-err">Erro ao carregar Python: ${escapeHtml(data.message)}</span>`)
+                    );
+                    return;
+                }
+                if (type === 'result' || type === 'run_error') {
+                    const pending = pg._pendingRuns[id];
+                    if (!pending) return;
+                    delete pg._pendingRuns[id];
+                    if (type === 'result') pending.resolve(data);
+                    else pending.reject(new Error(data.message));
+                    return;
+                }
+                if (type === 'input_request') {
+                    // Show inline input prompt in the tab output, then relay value back to worker
+                    const { tabId, buffered, prompt } = data;
+                    window._pgRequestInput(tabId, buffered, prompt).then(value => {
+                        pg.worker.postMessage({ type: 'input_response', value });
+                    });
+                    return;
+                }
+            };
+            pg.worker.onerror = (e) => {
+                pg.pyodideLoading = false;
+                pg.tabs.filter(t => t.type === 'python').forEach(t =>
+                    pgSetOutput(t.id, `<span class="pg-err">Erro no worker: ${escapeHtml(e.message || 'desconhecido')}</span>`)
+                );
+            };
+            pg.worker.postMessage({ type: 'init' });
+        }
+
         async function pgEnsurePyodide(tabId) {
-            if (pg.pyodide) { pgSetRunReady(tabId); return; }
+            if (pg.workerReady) { pgSetRunReady(tabId); return; }
             if (pg.pyodideLoading) {
                 pgSetOutput(tabId, '<span class="pg-info"># A carregar Python (Pyodide)…</span>');
                 while (pg.pyodideLoading) await new Promise(r => setTimeout(r, 200));
-                if (pg.pyodide) pgSetRunReady(tabId);
+                if (pg.workerReady) pgSetRunReady(tabId);
                 return;
             }
             pg.pyodideLoading = true;
             pgSetOutput(tabId, '<span class="pg-info"># A carregar Python (~10 MB, apenas na primeira vez)…</span>');
             const btn = document.getElementById(tabId + '-run');
             if (btn) btn.disabled = true;
-            const _timeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Timeout (>45s). Faz Ctrl+Shift+R e tenta de novo. Se o erro persistir, o browser pode estar a bloquear WebAssembly (verifica as Shields/CSP).')), 45000)
-            );
-            try {
-                await pgLoadScript('https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js');
-                pg.pyodide = await Promise.race([
-                    loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/' }),
-                    _timeout
-                ]);
-                // Bootstrap helper (usa chr(10) para evitar problemas de escape)
-                pg.pyodide.runPython(`
-import sys, io, traceback, ast as _ast
-from js import _pgRequestInput as _js_input
-_NL = chr(10)
-
-class _AwaitInput(_ast.NodeTransformer):
-    def visit_Call(self, node):
-        self.generic_visit(node)
-        if isinstance(node.func, _ast.Name) and node.func.id == 'input':
-            aw = _ast.Await(value=node)
-            return _ast.copy_location(aw, node)
-        return node
-
-async def _pg_exec_async(files, ns, tab_id):
-    if '__name__' not in ns:
-        ns['__name__'] = '__main__'
-    _saved_out = sys.stdout
-    _saved_err = sys.stderr
-    buf = io.StringIO()
-    sys.stdout = buf
-    sys.stderr = buf
-
-    async def _input(prompt=''):
-        flushed = buf.getvalue()
-        buf.truncate(0)
-        buf.seek(0)
-        val = await _js_input(str(tab_id), flushed, str(prompt) if prompt else '')
-        return val if val is not None else ''
-
-    ns['input'] = _input
-    out = ''
-    err = ''
-    try:
-        for f in list(files):
-            src  = str(f['code']).strip() if hasattr(f, '__getitem__') else str(getattr(f, 'code', '')).strip()
-            name = str(f['name'])         if hasattr(f, '__getitem__') else str(getattr(f, 'name', '<pg>'))
-            if not src:
-                continue
-            tree = _ast.parse(src, name)
-            tree = _AwaitInput().visit(tree)
-            fn = _ast.AsyncFunctionDef(
-                name='__pg_run__',
-                args=_ast.arguments(posonlyargs=[], args=[], vararg=None,
-                                    kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]),
-                body=tree.body, decorator_list=[], returns=None,
-                lineno=1, col_offset=0
-            )
-            _ast.fix_missing_locations(fn)
-            mod = _ast.Module(body=[fn], type_ignores=[])
-            exec(compile(mod, name, 'exec'), ns)
-            await ns['__pg_run__']()
-        out = buf.getvalue()
-    except Exception:
-        out = buf.getvalue()
-        err = traceback.format_exc()
-    finally:
-        sys.stdout = _saved_out
-        sys.stderr = _saved_err
-    return {'out': out, 'err': err}
-`);
-                // Instalar autopep8 para auto-formatação (silencioso)
-                try {
-                    await pg.pyodide.loadPackage('micropip');
-                    await pg.pyodide.runPythonAsync(_PG_FMT_CODE);
-                } catch(_) {/* autopep8 é opcional — não bloqueia */}
-                pgSetRunReady(tabId);
-            } catch(e) {
-                pgSetOutput(tabId, `<span class="pg-err">Erro: ${e.message}</span>`);
-            } finally {
-                if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+            _pgWorkerInit();
+            // Wait for ready/error (up to 90s for large Pyodide download)
+            await new Promise((res, rej) => {
+                const t = setTimeout(() => rej(new Error('Timeout (>90s). Faz Ctrl+Shift+R e tenta de novo.')), 90000);
+                const check = setInterval(() => {
+                    if (pg.workerReady || !pg.pyodideLoading) { clearInterval(check); clearTimeout(t); res(); }
+                }, 300);
+            }).catch(e => {
                 pg.pyodideLoading = false;
-            }
+                pgSetOutput(tabId, `<span class="pg-err">Erro: ${escapeHtml(e.message)}</span>`);
+            });
+            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
         }
 
         function pgSetRunReady(tabId) {
@@ -547,7 +527,7 @@ async def _pg_exec_async(files, ns, tab_id):
         function pgEditorKey(e, tabId) { /* legacy — CodeMirror usa extraKeys */ }
 
         async function pgRunPython(tabId) {
-            if (!pg.pyodide) { await pgEnsurePyodide(tabId); return; }
+            if (!pg.workerReady) { await pgEnsurePyodide(tabId); return; }
             const code = pgEditorGetValue(tabId).trim();
             if (!code) return;
             const btn = document.getElementById(tabId + '-run');
@@ -556,36 +536,30 @@ async def _pg_exec_async(files, ns, tab_id):
             if (outputEl) outputEl.innerHTML = '';
             try {
                 const tab = pg.tabs.find(t => t.id === tabId);
-                if (!tab._ns) tab._ns = pg.pyodide.globals.get('dict')();
-                if (!pg.pyodide.globals.has('_pg_exec_async')) {
-                    await pgEnsurePyodide(tabId);
-                    return;
-                }
                 // Salvar ficheiro activo
                 pgSaveCurrentFile(tabId);
-                // Auto-formatar com autopep8 (se disponível)
-                if (pg.pyodide.globals.has('_pg_format')) {
-                    for (const f of tab.files) {
-                        if (!f.code.trim()) continue;
-                        pg.pyodide.globals.set('_pg_fmt_src', f.code);
-                        const p = pg.pyodide.runPython('_pg_format(_pg_fmt_src)');
-                        const r = p.toJs(); p.destroy();
-                        if (!r.get('err')) f.code = r.get('ok');
-                    }
-                    // Reflectir no editor o ficheiro activo formatado
+                const files = tab.files.filter(f => f.code.trim()).map(f => ({name: f.name, code: f.code}));
+                if (!files.length) { pgSetOutput(tabId, '<span class="pg-info"># (sem código)</span>'); return; }
+
+                const runId = ++pg._runId;
+                const resultPromise = new Promise((resolve, reject) => {
+                    pg._pendingRuns[runId] = { resolve, reject, tabId };
+                });
+                pg.worker.postMessage({ type: 'run', id: runId, tabId, files });
+
+                const data = await resultPromise;
+                const { out, err, formattedFiles } = data;
+
+                // Apply formatted code back to tab files
+                if (pg.hasFormat && formattedFiles) {
+                    formattedFiles.forEach(ff => {
+                        const f = tab.files.find(x => x.name === ff.name);
+                        if (f) f.code = ff.code;
+                    });
                     const activeFile = tab.files.find(f => f.id === tab.activeFile);
                     if (activeFile) pgEditorSetValue(tabId, activeFile.code);
                 }
-                const files = tab.files.filter(f => f.code.trim()).map(f => ({name: f.name, code: f.code}));
-                if (!files.length) { pgSetOutput(tabId, '<span class="pg-info"># (sem código)</span>'); return; }
-                pg.pyodide.globals.set('_pg_ns', tab._ns);
-                pg.pyodide.globals.set('_pg_tab_id', tabId);
-                pg.pyodide.globals.set('_pg_files', files);
-                const proxy = await pg.pyodide.runPythonAsync('await _pg_exec_async(_pg_files.to_py(), _pg_ns, _pg_tab_id)');
-                const result = proxy.toJs();
-                proxy.destroy();
-                const out = result.get('out') || '';
-                const err = result.get('err') || '';
+
                 if (out) {
                     const span = document.createElement('span');
                     span.style.color = '#3fb950';
@@ -624,6 +598,7 @@ async def _pg_exec_async(files, ns, tab_id):
                 const src = `${CM_BASE}/mode/sql/sql.min.js`;
                 if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
                 const s = document.createElement('script'); s.src = src;
+                if (_PG_SRI[src]) { s.integrity = _PG_SRI[src]; s.crossOrigin = 'anonymous'; }
                 s.onload = () => { pg.cmSQLReady = true; res(); };
                 s.onerror = rej;
                 document.head.appendChild(s);

@@ -37,7 +37,11 @@
       "api/**",
       ".git/**",
       ".claude/**",
-      ".firebase/**"
+      ".firebase/**",
+      "test_*.html",
+      "scanner.py",
+      "security_audit.py",
+      "report_*.txt"
     ],
     "rewrites": [
       {

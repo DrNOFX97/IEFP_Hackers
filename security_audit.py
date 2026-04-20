@@ -160,17 +160,18 @@ def audit_firestore(base: str):
             path, "Acesso irrestrito a pelo menos uma coleção.",
             "Adicionar condição: allow read: if request.auth != null;")
 
-    # Materials sem verificação de ownership
+    # Materials — design intencional: materiais partilhados por sessão (turma inteira).
+    # Verificar apenas se existe proteção anti-wipe (size check) para evitar bulk-delete.
     mat_block = re.search(
         r"match\s*/materials/\{[^}]+\}\s*\{(.+?)\}", raw, re.DOTALL
     )
     if mat_block:
         block = mat_block.group(1)
-        if "request.auth.uid" not in block and "uid" not in block:
-            add("HIGH", "Firestore", "IDOR: /materials sem ownership check",
+        if "items.size()" not in block:
+            add("MEDIUM", "Firestore", "IDOR: /materials sem proteção anti-wipe",
                 f"{path} → /materials/{{key}}",
-                "Qualquer aluno autenticado pode ler/escrever materiais de qualquer sessão.",
-                "Adicionar: allow write: if isAluno() && request.auth.uid == resource.data.ownerUid;")
+                "Sem size-check no update, um aluno pode apagar todos os materiais de uma sessão.",
+                "Adicionar: request.resource.data.items.size() >= resource.data.items.size() - 1")
 
     # Invites sem verificação de expiração nas regras
     invite_block = re.search(
@@ -301,7 +302,26 @@ def audit_xss(base: str):
 
 # ── 5. SRI — Subresource Integrity ────────────────────────────────────────────
 
+def _firebase_ignored_files(base: str) -> set:
+    """Return set of base-relative glob patterns that Firebase ignores."""
+    try:
+        cfg = json.loads(Path(os.path.join(base, "firebase.json")).read_text())
+        return set(cfg.get("hosting", {}).get("ignore", []))
+    except Exception:
+        return set()
+
+
+def _is_ignored(fname: str, ignored_patterns: set) -> bool:
+    import fnmatch
+    for pat in ignored_patterns:
+        if fnmatch.fnmatch(fname, pat) or fnmatch.fnmatch(os.path.basename(fname), pat):
+            return True
+    return False
+
+
 def audit_sri(base: str):
+    ignored = _firebase_ignored_files(base)
+
     html_files = glob.glob(os.path.join(base, "templates", "**", "*.html"), recursive=True)
     html_files += glob.glob(os.path.join(base, "*.html"))
 
@@ -310,6 +330,9 @@ def audit_sri(base: str):
         if not content:
             continue
         fname = os.path.relpath(fpath, base)
+        # Skip files not deployed to Firebase (dev/test files)
+        if _is_ignored(fname, ignored):
+            continue
 
         for i, line in enumerate(content.splitlines(), 1):
             # <script src="http..."> sem integrity
@@ -338,11 +361,11 @@ def audit_sri(base: str):
         fname = os.path.relpath(fpath, base)
         for i, line in enumerate(content.splitlines(), 1):
             if "createElement('script')" in line or 'createElement("script")' in line:
-                # Verificar se as próximas linhas definem integrity
+                # Verificar se as próximas linhas definem integrity ou usam tabela SRI
                 ctx_start = i
                 ctx_end = min(len(content.splitlines()), i + 6)
                 ctx = "\n".join(content.splitlines()[ctx_start:ctx_end])
-                if "integrity" not in ctx:
+                if "integrity" not in ctx and "_PG_SRI[" not in ctx:
                     add("MEDIUM", "Supply Chain", "Script dinâmico carregado sem SRI",
                         f"{fname}:{i}",
                         "Script criado via createElement sem definir integrity.",

@@ -3125,7 +3125,7 @@ opacity: 0.35;
 
     <script>
         // ── DATA ────────────────────────────────────────────────────────
-        const BUILD_TS   = '1776721045';
+        const BUILD_TS   = '1776723343';
         const UC_MAP     = {"FPCT": {"descricao": "Formação em Contexto de Trabalho", "formador": "", "carga_horaria": 500, "modalidade": ""}, "UC00034": {"descricao": "Colaborar e Trabalhar em Equipa", "formador": "", "carga_horaria": null, "modalidade": ""}, "UC00245": {"descricao": "Desenvolver Algoritmos", "formador": "Iolanda Aquino Serro", "carga_horaria": 50, "modalidade": ""}, "UC00598": {"descricao": "Efetuar Operações e Cálculos Matemáticos Aplicados a Projetos da Área de Informática", "formador": "Jose Gabriel Fernandes Chaveca", "carga_horaria": 25, "modalidade": ""}, "UC00599": {"descricao": "Interagir em Inglês nas Atividades do Setor da Informática", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC00602": {"descricao": "Modelar Bases de Dados Relacionais", "formador": "Paulo Ricardo Costa Ramalho", "carga_horaria": 50, "modalidade": "remoto"}, "UC00606": {"descricao": "Desenvolver Programas em Linguagem Estruturada", "formador": "Iolanda Aquino Serro", "carga_horaria": 25, "modalidade": ""}, "UC00616": {"descricao": "Implementar as Normas de Segurança e Saúde no Trabalho no Setor de Informática", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC00631": {"descricao": "Planear e Instalar a Infraestrutura de Redes Locais", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 25, "modalidade": ""}, "UC00633": {"descricao": "Instalar e Parametrizar Sistemas Operativos de Servidor (Plataforma Proprietária)", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 50, "modalidade": ""}, "UC00634": {"descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 50, "modalidade": ""}, "UC00635": {"descricao": "Configurar Serviços de Rede", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 25, "modalidade": ""}, "UC01476": {"descricao": "Implementar a Legislação Relativa à Cibersegurança", "formador": "Luis Manuel Ferreira De Melo E Horta", "carga_horaria": 25, "modalidade": ""}, "UC01477": {"descricao": "Aplicar Métodos Estatísticos", "formador": "Jose Gabriel Fernandes Chaveca", "carga_horaria": 25, "modalidade": ""}, "UC01478": {"descricao": "Configurar Redes de Computadores", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01479": {"descricao": "Implementar Mecanismos de Proteção Contra Ameaças Cibernéticas", "formador": "", "carga_horaria": 25, "modalidade": ""}, "UC01480": {"descricao": "Analisar Evidências de Ataques Cibernéticos", "formador": "Paulo Ricardo Costa Ramalho", "carga_horaria": 25, "modalidade": ""}, "UC01481": {"descricao": "Desenvolver Scripts Aplicados à Cibersegurança", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01482": {"descricao": "Programar Scripts de Normalização e Filtragem de Logs", "formador": "", "carga_horaria": 25, "modalidade": ""}, "UC01483": {"descricao": "Detetar e Analisar Vulnerabilidades em Soluções Web", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01484": {"descricao": "Detetar e Analisar Vulnerabilidades em Sistemas de Rede", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01485": {"descricao": "Instalar e Configurar Ferramentas de Análise e Recolha de Logs e Evidências", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01486": {"descricao": "Gerir Sistemas de Deteção de Intrusos (IDS)", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01487": {"descricao": "Simular Cenários de Cibersegurança e Ciberdefesa (Wargaming)", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 50, "modalidade": ""}, "UC01489": {"descricao": "Implementar Procedimentos de Recolha e Análise Forense Digital", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01491": {"descricao": "Projetar e Administrar Sistemas de Bases de Dados", "formador": "Paulo Ricardo Costa Ramalho", "carga_horaria": 50, "modalidade": ""}};
         const UC_LIST    = [{"codigo": "FPCT", "descricao": "Formação em Contexto de Trabalho", "carga_horaria": 500, "formador": ""}, {"codigo": "UC00034", "descricao": "Colaborar e Trabalhar em Equipa", "carga_horaria": null, "formador": ""}, {"codigo": "UC00245", "descricao": "Desenvolver Algoritmos", "carga_horaria": 50, "formador": "Iolanda Aquino Serro"}, {"codigo": "UC00598", "descricao": "Efetuar Operações e Cálculos Matemáticos Aplicados a Projetos da Área de Informática", "carga_horaria": 25, "formador": "Jose Gabriel Fernandes Chaveca"}, {"codigo": "UC00599", "descricao": "Interagir em Inglês nas Atividades do Setor da Informática", "carga_horaria": 50, "formador": ""}, {"codigo": "UC00602", "descricao": "Modelar Bases de Dados Relacionais", "carga_horaria": 50, "formador": "Paulo Ricardo Costa Ramalho", "modalidade": "remoto"}, {"codigo": "UC00606", "descricao": "Desenvolver Programas em Linguagem Estruturada", "carga_horaria": 25, "formador": "Iolanda Aquino Serro"}, {"codigo": "UC00616", "descricao": "Implementar as Normas de Segurança e Saúde no Trabalho no Setor de Informática", "carga_horaria": 50, "formador": ""}, {"codigo": "UC00631", "descricao": "Planear e Instalar a Infraestrutura de Redes Locais", "carga_horaria": 25, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC00633", "descricao": "Instalar e Parametrizar Sistemas Operativos de Servidor (Plataforma Proprietária)", "carga_horaria": 50, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC00634", "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente", "carga_horaria": 50, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC00635", "descricao": "Configurar Serviços de Rede", "carga_horaria": 25, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC01476", "descricao": "Implementar a Legislação Relativa à Cibersegurança", "carga_horaria": 25, "formador": "Luis Manuel Ferreira De Melo E Horta"}, {"codigo": "UC01477", "descricao": "Aplicar Métodos Estatísticos", "carga_horaria": 25, "formador": "Jose Gabriel Fernandes Chaveca"}, {"codigo": "UC01478", "descricao": "Configurar Redes de Computadores", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01479", "descricao": "Implementar Mecanismos de Proteção Contra Ameaças Cibernéticas", "carga_horaria": 25, "formador": ""}, {"codigo": "UC01480", "descricao": "Analisar Evidências de Ataques Cibernéticos", "carga_horaria": 25, "formador": "Paulo Ricardo Costa Ramalho"}, {"codigo": "UC01481", "descricao": "Desenvolver Scripts Aplicados à Cibersegurança", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01482", "descricao": "Programar Scripts de Normalização e Filtragem de Logs", "carga_horaria": 25, "formador": ""}, {"codigo": "UC01483", "descricao": "Detetar e Analisar Vulnerabilidades em Soluções Web", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01484", "descricao": "Detetar e Analisar Vulnerabilidades em Sistemas de Rede", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01485", "descricao": "Instalar e Configurar Ferramentas de Análise e Recolha de Logs e Evidências", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01486", "descricao": "Gerir Sistemas de Deteção de Intrusos (IDS)", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01487", "descricao": "Simular Cenários de Cibersegurança e Ciberdefesa (Wargaming)", "carga_horaria": 50, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC01489", "descricao": "Implementar Procedimentos de Recolha e Análise Forense Digital", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01491", "descricao": "Projetar e Administrar Sistemas de Bases de Dados", "carga_horaria": 50, "formador": "Paulo Ricardo Costa Ramalho"}];
         const HORARIOS   = [{"instituicao": "Centro de Emprego e Formação Profissional de Faro", "modalidade": "Cursos de Especialização Tecnológica - CET", "designacao": "Técnico/a Especialista em Cibersegurança", "codigo_financeiro": "4,8111E+12", "codigo_administrativo": "11650885", "nivel": 5, "mes_ano": "abril 2026", "horario_diario": "09:00-17:00", "dias": [{"data": "2026-04-09", "dia_semana": "QUI", "aulas": [{"hora": "14:00-15:00", "uc": "UC00631"}, {"hora": "15:00-16:00", "uc": "UC00631"}, {"hora": "16:00-17:00", "uc": "UC00631"}]}, {"data": "2026-04-10", "dia_semana": "SEX", "aulas": [{"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-13", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01476"}, {"hora": "10:00-11:00", "uc": "UC01476"}, {"hora": "11:00-12:00", "uc": "UC01476"}, {"hora": "12:00-13:00", "uc": "UC01476"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-14", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-15", "dia_semana": "QUA", "aulas": []}, {"data": "2026-04-16", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00245"}, {"hora": "10:00-11:00", "uc": "UC00245"}, {"hora": "11:00-12:00", "uc": "UC00245"}, {"hora": "12:00-13:00", "uc": "UC00245"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-17", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00245"}, {"hora": "10:00-11:00", "uc": "UC00245"}, {"hora": "11:00-12:00", "uc": "UC00245"}, {"hora": "12:00-13:00", "uc": "UC00245"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-20", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01476"}, {"hora": "10:00-11:00", "uc": "UC01476"}, {"hora": "11:00-12:00", "uc": "UC01476"}, {"hora": "12:00-13:00", "uc": "UC01476"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-21", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-22", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}]}, {"data": "2026-04-23", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-24", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00634"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-27", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01477"}, {"hora": "10:00-11:00", "uc": "UC01477"}, {"hora": "11:00-12:00", "uc": "UC01477"}, {"hora": "12:00-13:00", "uc": "UC01477"}, {"hora": "14:00-15:00", "uc": "UC01476"}, {"hora": "15:00-16:00", "uc": "UC01476"}, {"hora": "16:00-17:00", "uc": "UC01476"}]}, {"data": "2026-04-28", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-29", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00634"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-30", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00634"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-05-01", "dia_semana": "SEX", "aulas": [], "nota": "Feriado - Dia do Trabalhador"}], "ucs_identificadas": ["UC00245", "UC00599", "UC00602", "UC00631", "UC00634", "UC01476", "UC01477"]}];
@@ -5135,8 +5135,12 @@ opacity: 0.35;
             tabs: [],
             active: null,
             counter: { python: 0, sql: 0 },
-            pyodide: null,
+            worker: null,
+            workerReady: false,
             pyodideLoading: false,
+            hasFormat: false,
+            _runId: 0,
+            _pendingRuns: {},   // id → { resolve, reject, tabId }
             SQL: null,
             sqlLoading: false,
             editors: {},       // tabId → CodeMirror instance
@@ -5332,6 +5336,7 @@ SELECT * FROM utilizadores;
             if (idx === -1) return;
             const tab = pg.tabs[idx];
             if (tab.db) { try { tab.db.close(); } catch(_) {} }
+            if (tab.type === 'python' && pg.worker) pg.worker.postMessage({ type: 'clear_ns', tabId: id });
             if (pg.editors[id]) { delete pg.editors[id]; }
             pg.tabs.splice(idx, 1);
             document.getElementById(id + '-tab')?.remove();
@@ -5563,101 +5568,76 @@ SELECT * FROM utilizadores;
             wrap.appendChild(div);
         }
 
-        // ── Python ──────────────────────────────────────────
+        // ── Python (Web Worker) ─────────────────────────────────
+        function _pgWorkerInit() {
+            if (pg.worker) return;
+            pg.worker = new Worker('pyodide-worker.js');
+            pg.worker.onmessage = ({ data }) => {
+                const { type, id } = data;
+                if (type === 'ready') {
+                    pg.workerReady = true;
+                    pg.hasFormat = data.hasFormat;
+                    pg.pyodideLoading = false;
+                    pg.tabs.filter(t => t.type === 'python').forEach(t => pgSetRunReady(t.id));
+                    return;
+                }
+                if (type === 'init_error') {
+                    pg.pyodideLoading = false;
+                    pg.tabs.filter(t => t.type === 'python').forEach(t =>
+                        pgSetOutput(t.id, `<span class="pg-err">Erro ao carregar Python: ${escapeHtml(data.message)}</span>`)
+                    );
+                    return;
+                }
+                if (type === 'result' || type === 'run_error') {
+                    const pending = pg._pendingRuns[id];
+                    if (!pending) return;
+                    delete pg._pendingRuns[id];
+                    if (type === 'result') pending.resolve(data);
+                    else pending.reject(new Error(data.message));
+                    return;
+                }
+                if (type === 'input_request') {
+                    // Show inline input prompt in the tab output, then relay value back to worker
+                    const { tabId, buffered, prompt } = data;
+                    window._pgRequestInput(tabId, buffered, prompt).then(value => {
+                        pg.worker.postMessage({ type: 'input_response', value });
+                    });
+                    return;
+                }
+            };
+            pg.worker.onerror = (e) => {
+                pg.pyodideLoading = false;
+                pg.tabs.filter(t => t.type === 'python').forEach(t =>
+                    pgSetOutput(t.id, `<span class="pg-err">Erro no worker: ${escapeHtml(e.message || 'desconhecido')}</span>`)
+                );
+            };
+            pg.worker.postMessage({ type: 'init' });
+        }
+
         async function pgEnsurePyodide(tabId) {
-            if (pg.pyodide) { pgSetRunReady(tabId); return; }
+            if (pg.workerReady) { pgSetRunReady(tabId); return; }
             if (pg.pyodideLoading) {
                 pgSetOutput(tabId, '<span class="pg-info"># A carregar Python (Pyodide)…</span>');
                 while (pg.pyodideLoading) await new Promise(r => setTimeout(r, 200));
-                if (pg.pyodide) pgSetRunReady(tabId);
+                if (pg.workerReady) pgSetRunReady(tabId);
                 return;
             }
             pg.pyodideLoading = true;
             pgSetOutput(tabId, '<span class="pg-info"># A carregar Python (~10 MB, apenas na primeira vez)…</span>');
             const btn = document.getElementById(tabId + '-run');
             if (btn) btn.disabled = true;
-            const _timeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Timeout (>45s). Faz Ctrl+Shift+R e tenta de novo. Se o erro persistir, o browser pode estar a bloquear WebAssembly (verifica as Shields/CSP).')), 45000)
-            );
-            try {
-                await pgLoadScript('https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js');
-                pg.pyodide = await Promise.race([
-                    loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/' }),
-                    _timeout
-                ]);
-                // Bootstrap helper (usa chr(10) para evitar problemas de escape)
-                pg.pyodide.runPython(`
-import sys, io, traceback, ast as _ast
-from js import _pgRequestInput as _js_input
-_NL = chr(10)
-
-class _AwaitInput(_ast.NodeTransformer):
-    def visit_Call(self, node):
-        self.generic_visit(node)
-        if isinstance(node.func, _ast.Name) and node.func.id == 'input':
-            aw = _ast.Await(value=node)
-            return _ast.copy_location(aw, node)
-        return node
-
-async def _pg_exec_async(files, ns, tab_id):
-    if '__name__' not in ns:
-        ns['__name__'] = '__main__'
-    _saved_out = sys.stdout
-    _saved_err = sys.stderr
-    buf = io.StringIO()
-    sys.stdout = buf
-    sys.stderr = buf
-
-    async def _input(prompt=''):
-        flushed = buf.getvalue()
-        buf.truncate(0)
-        buf.seek(0)
-        val = await _js_input(str(tab_id), flushed, str(prompt) if prompt else '')
-        return val if val is not None else ''
-
-    ns['input'] = _input
-    out = ''
-    err = ''
-    try:
-        for f in list(files):
-            src  = str(f['code']).strip() if hasattr(f, '__getitem__') else str(getattr(f, 'code', '')).strip()
-            name = str(f['name'])         if hasattr(f, '__getitem__') else str(getattr(f, 'name', '<pg>'))
-            if not src:
-                continue
-            tree = _ast.parse(src, name)
-            tree = _AwaitInput().visit(tree)
-            fn = _ast.AsyncFunctionDef(
-                name='__pg_run__',
-                args=_ast.arguments(posonlyargs=[], args=[], vararg=None,
-                                    kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]),
-                body=tree.body, decorator_list=[], returns=None,
-                lineno=1, col_offset=0
-            )
-            _ast.fix_missing_locations(fn)
-            mod = _ast.Module(body=[fn], type_ignores=[])
-            exec(compile(mod, name, 'exec'), ns)
-            await ns['__pg_run__']()
-        out = buf.getvalue()
-    except Exception:
-        out = buf.getvalue()
-        err = traceback.format_exc()
-    finally:
-        sys.stdout = _saved_out
-        sys.stderr = _saved_err
-    return {'out': out, 'err': err}
-`);
-                // Instalar autopep8 para auto-formatação (silencioso)
-                try {
-                    await pg.pyodide.loadPackage('micropip');
-                    await pg.pyodide.runPythonAsync(_PG_FMT_CODE);
-                } catch(_) {/* autopep8 é opcional — não bloqueia */}
-                pgSetRunReady(tabId);
-            } catch(e) {
-                pgSetOutput(tabId, `<span class="pg-err">Erro: ${e.message}</span>`);
-            } finally {
-                if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+            _pgWorkerInit();
+            // Wait for ready/error (up to 90s for large Pyodide download)
+            await new Promise((res, rej) => {
+                const t = setTimeout(() => rej(new Error('Timeout (>90s). Faz Ctrl+Shift+R e tenta de novo.')), 90000);
+                const check = setInterval(() => {
+                    if (pg.workerReady || !pg.pyodideLoading) { clearInterval(check); clearTimeout(t); res(); }
+                }, 300);
+            }).catch(e => {
                 pg.pyodideLoading = false;
-            }
+                pgSetOutput(tabId, `<span class="pg-err">Erro: ${escapeHtml(e.message)}</span>`);
+            });
+            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
         }
 
         function pgSetRunReady(tabId) {
@@ -5669,7 +5649,7 @@ async def _pg_exec_async(files, ns, tab_id):
         function pgEditorKey(e, tabId) { /* legacy — CodeMirror usa extraKeys */ }
 
         async function pgRunPython(tabId) {
-            if (!pg.pyodide) { await pgEnsurePyodide(tabId); return; }
+            if (!pg.workerReady) { await pgEnsurePyodide(tabId); return; }
             const code = pgEditorGetValue(tabId).trim();
             if (!code) return;
             const btn = document.getElementById(tabId + '-run');
@@ -5678,36 +5658,30 @@ async def _pg_exec_async(files, ns, tab_id):
             if (outputEl) outputEl.innerHTML = '';
             try {
                 const tab = pg.tabs.find(t => t.id === tabId);
-                if (!tab._ns) tab._ns = pg.pyodide.globals.get('dict')();
-                if (!pg.pyodide.globals.has('_pg_exec_async')) {
-                    await pgEnsurePyodide(tabId);
-                    return;
-                }
                 // Salvar ficheiro activo
                 pgSaveCurrentFile(tabId);
-                // Auto-formatar com autopep8 (se disponível)
-                if (pg.pyodide.globals.has('_pg_format')) {
-                    for (const f of tab.files) {
-                        if (!f.code.trim()) continue;
-                        pg.pyodide.globals.set('_pg_fmt_src', f.code);
-                        const p = pg.pyodide.runPython('_pg_format(_pg_fmt_src)');
-                        const r = p.toJs(); p.destroy();
-                        if (!r.get('err')) f.code = r.get('ok');
-                    }
-                    // Reflectir no editor o ficheiro activo formatado
+                const files = tab.files.filter(f => f.code.trim()).map(f => ({name: f.name, code: f.code}));
+                if (!files.length) { pgSetOutput(tabId, '<span class="pg-info"># (sem código)</span>'); return; }
+
+                const runId = ++pg._runId;
+                const resultPromise = new Promise((resolve, reject) => {
+                    pg._pendingRuns[runId] = { resolve, reject, tabId };
+                });
+                pg.worker.postMessage({ type: 'run', id: runId, tabId, files });
+
+                const data = await resultPromise;
+                const { out, err, formattedFiles } = data;
+
+                // Apply formatted code back to tab files
+                if (pg.hasFormat && formattedFiles) {
+                    formattedFiles.forEach(ff => {
+                        const f = tab.files.find(x => x.name === ff.name);
+                        if (f) f.code = ff.code;
+                    });
                     const activeFile = tab.files.find(f => f.id === tab.activeFile);
                     if (activeFile) pgEditorSetValue(tabId, activeFile.code);
                 }
-                const files = tab.files.filter(f => f.code.trim()).map(f => ({name: f.name, code: f.code}));
-                if (!files.length) { pgSetOutput(tabId, '<span class="pg-info"># (sem código)</span>'); return; }
-                pg.pyodide.globals.set('_pg_ns', tab._ns);
-                pg.pyodide.globals.set('_pg_tab_id', tabId);
-                pg.pyodide.globals.set('_pg_files', files);
-                const proxy = await pg.pyodide.runPythonAsync('await _pg_exec_async(_pg_files.to_py(), _pg_ns, _pg_tab_id)');
-                const result = proxy.toJs();
-                proxy.destroy();
-                const out = result.get('out') || '';
-                const err = result.get('err') || '';
+
                 if (out) {
                     const span = document.createElement('span');
                     span.style.color = '#3fb950';
@@ -5746,6 +5720,7 @@ async def _pg_exec_async(files, ns, tab_id):
                 const src = `${CM_BASE}/mode/sql/sql.min.js`;
                 if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
                 const s = document.createElement('script'); s.src = src;
+                if (_PG_SRI[src]) { s.integrity = _PG_SRI[src]; s.crossOrigin = 'anonymous'; }
                 s.onload = () => { pg.cmSQLReady = true; res(); };
                 s.onerror = rej;
                 document.head.appendChild(s);
