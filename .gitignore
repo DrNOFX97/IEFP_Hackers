@@ -2,7 +2,8 @@
 # Não commitados mas precisam de existir para o firebase deploy
 # /dashboard.html   ← removido do gitignore para que firebase CLI o inclua no deploy
 
-# Dependências Node (Netlify legacy, não usado em produção Firebase)
+# Netlify — desativado, usar Firebase
+_netlify/
 node_modules/
 
 # Estado local de ferramentas e serviços
