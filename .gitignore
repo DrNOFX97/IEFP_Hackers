@@ -1,31 +1,49 @@
-# Ficheiros gerados — recriar com: python gerador_dashboard.py
-# Não commitados mas precisam de existir para o firebase deploy
-# /dashboard.html   ← removido do gitignore para que firebase CLI o inclua no deploy
+# ── Gerado / rebuilável ─────────────────────────────────────────
+# dashboard.html está fora do ignore para o Firebase CLI o incluir no deploy
 
-# Netlify — desativado, usar Firebase
+# ── Instruções internas / ferramentas ───────────────────────────
+CLAUDE.md
+.claude/
+.playwright-mcp/
+cloudrun/
+
+# ── Scripts de administração e segurança ────────────────────────
+seed_admin.py
+security_audit.py
+scanner.py
+report_*.txt
+pentestlab*.md
+
+# ── Ficheiros standalone / media / assets locais ────────────────
+*_standalone_.html
+CyberMap_final.html
+*.mp4
+index.html
+logo_*.png
+
+# ── Netlify (desativado — usar Firebase) ────────────────────────
 _netlify/
+.netlify/
 node_modules/
 
-# Estado local de ferramentas e serviços
-.netlify/
+# ── Estado local de ferramentas ─────────────────────────────────
 .firebase/
-.playwright-mcp/
-.claude/
 
-# Variáveis de ambiente / segredos
+# ── Variáveis de ambiente / segredos ────────────────────────────
 api/.env
 .env
 .env.local
 
-# Python
+# ── Python ──────────────────────────────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Ficheiros de teste temporários
+# ── Testes ──────────────────────────────────────────────────────
 test_*.html
 test_*.js
+test_*.py
 
-# macOS
+# ── macOS ───────────────────────────────────────────────────────
 .DS_Store
