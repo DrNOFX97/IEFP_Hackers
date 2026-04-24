@@ -21,6 +21,9 @@
             height: 1px;
             background: var(--border-color, rgba(255,255,255,0.08));
         }
+        .day-card.weekend-day { opacity: 0.45; }
+        .day-card.weekend-day .day-header { border-bottom-color: transparent; }
+        .aula-card.weekend-card { background: transparent; border: 1px dashed rgba(255,255,255,0.1); color: var(--text-secondary); font-size: 0.8rem; }
 
 /* Cheatsheet tab chips */
         .cs-chip {

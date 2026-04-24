@@ -116,48 +116,81 @@
         function renderHorarioCardsAll(filter) {
             scheduleGrid.className = 'schedule-grid';
             const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-            let html = '';
+            const pad = n => String(n).padStart(2, '0');
+            const DOW_PT = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+            const parseDate = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
 
-            HORARIOS.forEach(horario => {
-                let monthHtml = '';
-                let monthHasContent = false;
+            // Flatten all days from all months, sorted by date
+            const flat = [];
+            HORARIOS.forEach(h => h.dias.forEach(d => flat.push({ mes_ano: h.mes_ano, ...d })));
+            flat.sort((a, b) => a.data.localeCompare(b.data));
 
-                horario.dias.forEach(dia => {
-                    const mergedAulas = mergeTimeSlots(dia.aulas);
-                    let aulasHtml = '';
-                    let dayMatches = false;
-
-                    if (mergedAulas.length > 0) {
-                        mergedAulas.forEach(aula => {
-                            const matched = aulaMatchesFilter(aula, filter);
-                            if (matched) dayMatches = true;
-                            aulasHtml += buildAulaCardHtml(aula, getAulaState(dia.data, aula.hora), matched);
-                        });
-                    } else if (dia.nota) {
-                        dayMatches = !filter;
-                        aulasHtml = `<div class="aula-card empty-card holiday"><div class="aula-info"><div class="aula-desc">${dia.nota}</div></div></div>`;
-                    } else {
-                        dayMatches = !filter;
-                        aulasHtml = `<div class="aula-card empty-card"><div class="aula-info"><div class="aula-desc">Sem aulas programadas</div></div></div>`;
+            // Insert weekend days into cross-month gaps
+            const days = [];
+            flat.forEach((entry, i) => {
+                days.push(entry);
+                if (i < flat.length - 1) {
+                    const next = flat[i + 1];
+                    const d1 = parseDate(entry.data), d2 = parseDate(next.data);
+                    for (const d = new Date(d1); ; ) {
+                        d.setDate(d.getDate() + 1);
+                        if (d >= d2) break;
+                        const dow = d.getDay();
+                        if (dow === 0 || dow === 6) {
+                            const ds = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+                            days.push({ mes_ano: entry.mes_ano, data: ds, dia_semana: DOW_PT[dow], aulas: [], nota: 'Fim de semana', isWeekend: true });
+                        }
                     }
-
-                    if (!filter || dayMatches) monthHasContent = true;
-                    monthHtml += `
-                    <div class="day-card" data-date="${dia.data}" style="${(filter && !dayMatches) ? 'display:none;' : ''}">
-                        <div class="day-header">
-                            <span class="day-date">${dia.data}</span>
-                            <span class="day-week badge">${dia.dia_semana}</span>
-                        </div>
-                        <div class="day-body">${aulasHtml}</div>
-                    </div>`;
-                });
-
-                if (!filter || monthHasContent) {
-                    html += `<div class="month-separator" data-month="${horario.mes_ano}">
-                        <span>${cap(horario.mes_ano)}</span>
-                    </div>${monthHtml}`;
                 }
             });
+
+            // Group by month and render with separators
+            let html = '';
+            let lastMonth = null;
+            let monthHtml = '';
+            let monthHasContent = false;
+
+            const flushMonth = () => {
+                if (lastMonth !== null && (!filter || monthHasContent)) {
+                    html += `<div class="month-separator" data-month="${lastMonth}"><span>${cap(lastMonth)}</span></div>${monthHtml}`;
+                }
+                monthHtml = ''; monthHasContent = false;
+            };
+
+            days.forEach(dia => {
+                if (dia.mes_ano !== lastMonth) { flushMonth(); lastMonth = dia.mes_ano; }
+                if (dia.isWeekend && filter) return;
+
+                const mergedAulas = mergeTimeSlots(dia.aulas);
+                let aulasHtml = '';
+                let dayMatches = false;
+
+                if (mergedAulas.length > 0) {
+                    mergedAulas.forEach(aula => {
+                        const matched = aulaMatchesFilter(aula, filter);
+                        if (matched) dayMatches = true;
+                        aulasHtml += buildAulaCardHtml(aula, getAulaState(dia.data, aula.hora), matched);
+                    });
+                } else if (dia.nota) {
+                    dayMatches = !filter;
+                    const cls = dia.isWeekend ? 'weekend-card' : 'holiday';
+                    aulasHtml = `<div class="aula-card empty-card ${cls}"><div class="aula-info"><div class="aula-desc">${dia.nota}</div></div></div>`;
+                } else {
+                    dayMatches = !filter;
+                    aulasHtml = `<div class="aula-card empty-card"><div class="aula-info"><div class="aula-desc">Sem aulas programadas</div></div></div>`;
+                }
+
+                if (!filter || dayMatches) monthHasContent = true;
+                monthHtml += `
+                <div class="day-card${dia.isWeekend ? ' weekend-day' : ''}" data-date="${dia.data}" style="${(filter && !dayMatches) ? 'display:none;' : ''}">
+                    <div class="day-header">
+                        <span class="day-date">${dia.data}</span>
+                        <span class="day-week badge">${dia.dia_semana}</span>
+                    </div>
+                    <div class="day-body">${aulasHtml}</div>
+                </div>`;
+            });
+            flushMonth();
 
             scheduleGrid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma aula encontrada para esse filtro.</div>`;
             scheduleGrid.querySelectorAll('[data-uc-sched]').forEach(el =>
