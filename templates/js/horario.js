@@ -152,7 +152,7 @@
 
             const flushMonth = () => {
                 if (lastMonth !== null && (!filter || monthHasContent)) {
-                    html += `<div class="month-separator" data-month="${lastMonth}"><span>${cap(lastMonth)}</span></div>${monthHtml}`;
+                    html += monthHtml;
                 }
                 monthHtml = ''; monthHasContent = false;
             };
@@ -211,7 +211,6 @@
         function renderHorarioWeekAll(filter) {
             scheduleGrid.className = 'schedule-grid week-view';
             const pad = n => String(n).padStart(2, '0');
-            const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
             const now = new Date();
             const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
             const DAY_NAMES = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
@@ -242,13 +241,7 @@
                 // Detect month change based on first day of this week that has data
                 const firstDayOfWeek = Object.keys(byWeek[weekStart]).sort()[0];
                 const weekMonth = dayMonth[firstDayOfWeek];
-                let separatorHtml = '';
-                if (weekMonth && weekMonth !== lastMonth) {
-                    separatorHtml = `<div class="month-separator" data-month="${weekMonth}">
-                        <span>${cap(weekMonth)}</span>
-                    </div>`;
-                    lastMonth = weekMonth;
-                }
+                if (weekMonth) lastMonth = weekMonth;
 
                 const colsHtml = DAY_NAMES.map((dayName, i) => {
                     const dt = new Date(monDate);
@@ -302,7 +295,7 @@
                 friDate.setDate(monDate.getDate() + 4);
                 const weekLabel = `${pad(monDate.getDate())}–${pad(friDate.getDate())}/${pad(monDate.getMonth()+1)}`;
 
-                return `${separatorHtml}<div class="week-block">
+                return `<div class="week-block">
                     <div class="week-label">${weekLabel}</div>
                     <div class="week-days">${colsHtml}</div>
                 </div>`;
