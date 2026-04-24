@@ -11,21 +11,25 @@
                 ? `<span class="uc-meta-tag uc-has-notes">📝 Apontamentos</span>` : '';
             const matBadge = numMaterials > 0
                 ? `<span class="uc-meta-tag uc-has-materials">📎 ${numMaterials} material${numMaterials !== 1 ? 'is' : ''}</span>` : '';
-            const chBadge = uc.carga_horaria
-                ? `<span class="uc-meta-tag">⏱ ${uc.carga_horaria}h</span>` : '';
-            const formBadge = uc.formador
-                ? `<span class="uc-meta-tag">👤 ${shortName(uc.formador)}</span>` : '';
 
             const { done: ucDone, scheduled: ucSched } = computeUCHours(uc.codigo);
             const ucTarget = uc.carga_horaria;
+
+            const chBadge = ucTarget
+                ? `<span class="uc-meta-tag">⏱ ${ucTarget}h</span>`
+                : ucSched > 0 ? `<span class="uc-meta-tag">⏱ ${ucSched.toFixed(0)}h agendadas</span>` : '';
+            const formBadge = uc.formador
+                ? `<span class="uc-meta-tag">👤 ${shortName(uc.formador)}</span>` : '';
+
             let progressHtml = '';
-            if (ucTarget && ucSched > 0) {
-                const donePct  = Math.min(100, Math.round((ucDone  / ucTarget) * 100));
-                const schedPct = Math.min(100, Math.round((ucSched / ucTarget) * 100));
-                const label = ucDone > 0
-                    ? `${ucDone.toFixed(0)}h realizadas · ${ucSched.toFixed(0)}h agendadas · ${ucTarget}h total`
-                    : `${ucSched.toFixed(0)}h agendadas · ${ucTarget}h total`;
-                progressHtml = `
+            if (ucSched > 0) {
+                if (ucTarget) {
+                    const donePct  = Math.min(100, Math.round((ucDone  / ucTarget) * 100));
+                    const schedPct = Math.min(100, Math.round((ucSched / ucTarget) * 100));
+                    const label = ucDone > 0
+                        ? `${ucDone.toFixed(0)}h realizadas · ${ucSched.toFixed(0)}h agendadas · ${ucTarget}h total`
+                        : `${ucSched.toFixed(0)}h agendadas · ${ucTarget}h total`;
+                    progressHtml = `
                     <div class="uc-progress-wrap">
                         <div class="uc-progress-bar">
                             <div class="uc-progress-sched" style="width:${schedPct}%"></div>
@@ -33,6 +37,15 @@
                         </div>
                         <div class="uc-progress-label">${label}</div>
                     </div>`;
+                } else {
+                    const label = ucDone > 0
+                        ? `${ucDone.toFixed(0)}h realizadas · ${ucSched.toFixed(0)}h agendadas`
+                        : `${ucSched.toFixed(0)}h agendadas`;
+                    progressHtml = `
+                    <div class="uc-progress-wrap">
+                        <div class="uc-progress-label">${label}</div>
+                    </div>`;
+                }
             }
 
             return `
