@@ -38,11 +38,16 @@
                         <div class="uc-progress-label">${label}</div>
                     </div>`;
                 } else {
+                    const donePct = ucSched > 0 ? Math.min(100, Math.round((ucDone / ucSched) * 100)) : 0;
                     const label = ucDone > 0
                         ? `${ucDone.toFixed(0)}h realizadas · ${ucSched.toFixed(0)}h agendadas`
                         : `${ucSched.toFixed(0)}h agendadas`;
                     progressHtml = `
                     <div class="uc-progress-wrap">
+                        <div class="uc-progress-bar">
+                            <div class="uc-progress-sched" style="width:100%"></div>
+                            <div class="uc-progress-done"  style="width:${donePct}%"></div>
+                        </div>
                         <div class="uc-progress-label">${label}</div>
                     </div>`;
                 }
