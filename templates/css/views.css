@@ -1,3 +1,43 @@
+/* Month separator in continuous schedule view */
+        .month-separator {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 2rem 0 0.75rem;
+        }
+        .month-separator:first-child { padding-top: 0.25rem; }
+        .month-separator span {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+        .month-separator::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color, rgba(255,255,255,0.08));
+        }
+
+/* Cheatsheet tab chips */
+        .cs-chip {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.28rem 0.75rem; border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: transparent; color: var(--text-secondary);
+            font-size: 0.78rem; font-weight: 600; cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+            white-space: nowrap;
+        }
+        .cs-chip:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        .cs-chip.cs-chip-active {
+            background: var(--accent-color); border-color: var(--accent-color);
+            color: #0a0e1a;
+        }
+
 /* Dashboard view */
         #view-dashboard { display: none; max-width: 920px; }
         #view-turma { display: none; max-width: 640px; }
@@ -15,6 +55,31 @@
         }
         .dash-section-label:first-of-type { margin-top: 0; }
         .dash-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
+
+        /* Dashboard — Links Úteis chips */
+        .dash-links-row {
+            display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.5rem;
+        }
+        .dash-link-chip {
+            display: flex; align-items: center; gap: 0.45rem;
+            background: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 0.45rem 0.8rem;
+            font-size: 0.82rem; color: var(--text-primary);
+            text-decoration: none; transition: border-color 0.15s, color 0.15s;
+        }
+        .dash-link-chip:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        .dash-link-icon { font-size: 0.95rem; line-height: 1; }
+        .dash-link-label { font-weight: 500; }
+        .dash-link-arrow { font-size: 0.75rem; color: var(--text-secondary); margin-left: 0.1rem; }
+
+        /* Hoje + Amanhã side by side */
+        .hoje-amanha-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 0;
+        }
+        .hoje-amanha-col .dash-section-label { margin-top: 0; }
 
         /* Turma chips */
         .turma-grid {
@@ -250,6 +315,7 @@
             .detail-uc-name { font-size: 1.1rem; }
             .session-nav-strip { max-width: 100%; overflow: hidden; }
             .dash-greeting h1 { font-size: 1.25rem; }
+            .hoje-amanha-grid { grid-template-columns: 1fr; gap: 0.5rem; }
         }
 
         /* ── CHAT ── */
@@ -314,6 +380,22 @@
             background: rgba(255,255,255,0.07);
             border-bottom-left-radius: 0.25rem;
         }
+        .chat-link {
+            color: inherit; text-decoration: underline; text-underline-offset: 2px;
+            word-break: break-all; opacity: 0.85;
+        }
+        .chat-link:hover { opacity: 1; }
+        .chat-msg.mine .chat-link { color: #000; }
+        .chat-pre {
+            background: rgba(0,0,0,0.3); border-radius: 6px;
+            padding: 0.5rem 0.65rem; margin: 0.3rem 0;
+            font-size: 0.78rem; overflow-x: auto; white-space: pre;
+        }
+        .chat-code {
+            background: rgba(0,0,0,0.25); border-radius: 4px;
+            padding: 0.1rem 0.35rem; font-size: 0.82em; font-family: 'Fira Code', monospace;
+        }
+        .chat-msg.mine .chat-pre, .chat-msg.mine .chat-code { background: rgba(0,0,0,0.2); }
         .chat-msg-time {
             font-size: 0.62rem; color: var(--text-secondary);
             margin-top: 0.15rem; padding: 0 0.2rem;

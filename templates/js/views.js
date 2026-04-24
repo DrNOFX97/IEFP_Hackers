@@ -1,10 +1,12 @@
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','chat-wa','lab','cheatsheets','links','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','lab','cheatsheets','definicoes'];
 
         function switchView(view) {
             if (currentView === 'definicoes' && view !== 'definicoes') {
                 if (typeof unsubscribeInvites === 'function') unsubscribeInvites();
             }
+            // Sidebar/main-view navigation resets the stack
+            if (view !== 'uc-detail' && view !== 'session-detail') navStack = [];
             ALL_VIEWS.forEach(v => {
                 const el = document.getElementById('view-' + v);
                 if (el) el.style.display = 'none';
@@ -15,15 +17,8 @@
                 monthSelectContainer.style.display = 'none';
             } else if (view === 'horario') {
                 document.getElementById('view-horario').style.display = 'block';
-                monthSelectContainer.style.display = HORARIOS.length > 0 ? 'flex' : 'none';
-                // Saltar para o mês que contém hoje, depois fazer scroll até ao dia
-                const todayIdx = findNearestMonthIndex();
-                if (todayIdx !== -1 && todayIdx !== currentMonthIndex) {
-                    monthSelect.value = todayIdx;
-                    renderHorario(todayIdx);
-                } else {
-                    setTimeout(scrollToToday, 100);
-                }
+                monthSelectContainer.style.display = 'none';
+                setTimeout(scrollToToday, 100);
             } else if (view === 'disciplinas') {
                 document.getElementById('view-disciplinas').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -48,10 +43,7 @@
                 monthSelectContainer.style.display = 'none';
                 chatViewInit();
                 chatMarkRead();
-            } else if (view === 'chat-wa') {
-                document.getElementById('view-chat-wa').style.display = 'flex';
-                monthSelectContainer.style.display = 'none';
-                chatWAInit();
+                setTimeout(() => { const el = document.getElementById('chat-view-msgs'); if (el) el.scrollTop = el.scrollHeight; }, 0);
             } else if (view === 'lab') {
                 document.getElementById('view-lab').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -60,10 +52,6 @@
                 document.getElementById('view-cheatsheets').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
                 if (!_csShadow) csSwitch('python');
-            } else if (view === 'links') {
-                document.getElementById('view-links').style.display = 'block';
-                monthSelectContainer.style.display = 'none';
-                linksRender();
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -79,7 +67,7 @@
             mobMoreClose();
 
             // Sync sidebar + mobile bottom nav active state
-            const navKey = (view === 'uc-detail' || view === 'session-detail') ? previousView : view;
+            const navKey = (view === 'uc-detail' || view === 'session-detail') ? (navStack[0] || 'dashboard') : view;
             document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.view === navKey);
             });
@@ -98,17 +86,13 @@
 
         function goBackFromDetail() {
             if (ucChatUnsub) { ucChatUnsub(); ucChatUnsub = null; }
-            switchView(previousView);
+            const prev = navStack.pop() || 'dashboard';
+            switchView(prev);
         }
 
         function goBackFromSession() {
-            // Always go back to the UC detail that owns this session
-            if (currentSessionKey) {
-                const ucCode = currentSessionKey.split('_')[0];
-                openUCDetail(ucCode);
-            } else {
-                switchView(previousView);
-            }
+            const prev = navStack.pop() || 'uc-detail';
+            switchView(prev);
         }
 
         // ── MOBILE SIDEBAR ──────────────────────────────────────────────

@@ -26,11 +26,11 @@
             <div id="auth-invite-badge" style="display:none;margin:0.75rem 0 0.25rem;padding:0.45rem 0.85rem;background:rgba(0,255,65,0.1);border:1px solid rgba(0,255,65,0.3);border-radius:8px;font-size:0.78rem;color:#00ff41;text-align:center;">
                 ✅ Convite válido detectado — inicia sessão para entrar
             </div>
-            <button class="auth-btn" onclick="signInWithGoogle()">
+            <button class="auth-btn" id="auth-google-btn">
                 <svg width="18" height="18" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:8px"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
                 Entrar com Google
             </button>
-            <button class="auth-btn" onclick="signInWithMicrosoftPersonal()" style="margin-bottom:0;">
+            <button class="auth-btn" id="auth-ms-btn" style="margin-bottom:0;">
                 <svg width="18" height="18" viewBox="0 0 21 21" style="vertical-align:middle;margin-right:8px"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
                 Entrar com Microsoft
             </button>
@@ -39,8 +39,8 @@
     </div>
 
     <!-- Mobile nav toggle -->
-    <button class="nav-mobile-toggle" id="nav-mobile-toggle" onclick="navSidebarOpen()">☰</button>
-    <div class="nav-sidebar-overlay" id="nav-sidebar-overlay" onclick="navSidebarClose()"></div>
+    <button class="nav-mobile-toggle" id="nav-mobile-toggle">☰</button>
+    <div class="nav-sidebar-overlay" id="nav-sidebar-overlay"></div>
 
     <div class="app-shell">
 
@@ -54,43 +54,39 @@
                 </div>
             </div>
             <div class="nav-items">
-                <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+                <button class="nav-item active" data-view="dashboard">
                     <span class="nav-item-icon">🏠</span><span class="nav-item-label"> Dashboard</span>
                 </button>
                 <div class="nav-divider"></div>
-                <button class="nav-item" data-view="horario" onclick="switchView('horario')">
+                <button class="nav-item" data-view="horario">
                     <span class="nav-item-icon">📅</span><span class="nav-item-label"> Horário</span>
                 </button>
-                <button class="nav-item" data-view="disciplinas" onclick="switchView('disciplinas')">
+                <button class="nav-item" data-view="disciplinas">
                     <span class="nav-item-icon">📚</span><span class="nav-item-label"> Disciplinas</span>
                 </button>
-                <button class="nav-item" data-view="turma" onclick="switchView('turma')">
+                <button class="nav-item" data-view="turma">
                     <span class="nav-item-icon">👥</span><span class="nav-item-label"> Turma</span>
                 </button>
-                <button class="nav-item" data-view="chat" id="nav-item-chat" onclick="switchView('chat')">
+                <button class="nav-item" data-view="chat" id="nav-item-chat">
                     <span class="nav-item-icon">💬</span><span class="nav-item-label"> Chat</span>
                     <span class="nav-item-badge" id="nav-chat-badge"></span>
                 </button>
-                <button class="nav-item" data-view="chat-wa" onclick="switchView('chat-wa')">
-                    <span class="nav-item-icon">📱</span><span class="nav-item-label"> WhatsApp <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
-                </button>
-                <button class="nav-item" data-view="playground" onclick="switchView('playground')">
+
+                <button class="nav-item" data-view="playground">
                     <span class="nav-item-icon">💻</span><span class="nav-item-label"> Playground <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
                 </button>
-                <button class="nav-item" data-view="lab" onclick="switchView('lab')">
+                <button class="nav-item" data-view="lab">
                     <span class="nav-item-icon">🔬</span><span class="nav-item-label"> Lab <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
                 </button>
-                <button class="nav-item" data-view="cheatsheets" onclick="switchView('cheatsheets')">
+                <button class="nav-item" data-view="cheatsheets">
                     <span class="nav-item-icon">📋</span><span class="nav-item-label"> Cheatsheets</span>
                 </button>
-                <button class="nav-item" data-view="links" onclick="switchView('links')">
-                    <span class="nav-item-icon">🔗</span><span class="nav-item-label"> Links Úteis</span>
-                </button>
+
                 <div class="nav-divider"></div>
                 <a class="nav-item" id="nav-admin-link" href="/admin.html" style="display:none;text-decoration:none;color:inherit;" title="Painel de Administração">
                     <span class="nav-item-icon">🔐</span><span class="nav-item-label"> Admin</span>
                 </a>
-                <button class="nav-item" data-view="definicoes" onclick="switchView('definicoes')">
+                <button class="nav-item" data-view="definicoes">
                     <span class="nav-item-icon">⚙️</span><span class="nav-item-label"> Definições</span>
                 </button>
             </div>
@@ -99,7 +95,7 @@
                     <div class="nav-user-avatar" id="nav-user-avatar">?</div>
                     <span class="nav-user-name" id="nav-user-name">–</span>
                 </div>
-                <button class="nav-item signout" onclick="auth.signOut()">
+                <button class="nav-item signout" id="nav-signout-btn">
                     <span class="nav-item-icon">⏻</span> Sair
                 </button>
                 <div class="nav-clock" id="live-clock">--:--:--</div>
@@ -115,11 +111,19 @@
                     <h1 id="dash-greeting-text">Olá!</h1>
                     <div class="dash-date" id="dash-date"></div>
                 </div>
-                <div class="dash-section-label">Hoje</div>
-                <div id="hoje-content"><p class="hoje-empty">A carregar...</p></div>
-                <div class="dash-section-label" style="margin-top:2rem;" id="amanha-label">Amanhã</div>
-                <div id="amanha-content"><p class="hoje-empty">A carregar...</p></div>
-                <div class="dash-section-label" style="margin-top:2rem;">Turma</div>
+                <div class="hoje-amanha-grid">
+                    <div class="hoje-amanha-col">
+                        <div class="dash-section-label">Hoje</div>
+                        <div id="hoje-content"><p class="hoje-empty">A carregar...</p></div>
+                    </div>
+                    <div class="hoje-amanha-col">
+                        <div class="dash-section-label" id="amanha-label">Amanhã</div>
+                        <div id="amanha-content"><p class="hoje-empty">A carregar...</p></div>
+                    </div>
+                </div>
+                <div class="dash-section-label" style="margin-top:2rem;">Links Úteis</div>
+                <div id="dash-links"></div>
+                <div class="dash-section-label" style="margin-top:2rem;">Colegas Online</div>
                 <div class="turma-grid" id="turma-grid">
                     <span style="color:var(--text-secondary);font-size:0.82rem;">A carregar…</span>
                 </div>
@@ -130,22 +134,16 @@
                 <div class="schedule-toolbar">
                     <h2 id="schedule-title" style="margin-bottom:0;">Horário</h2>
                     <div class="schedule-controls">
-                        <div class="month-selector" id="month-selector-container" style="display:none;">
-                            <label for="month-select">Mês</label>
-                            <select id="month-select"></select>
-                        </div>
+                        <div id="month-selector-container" style="display:none;"></div>
                         <input type="text" class="schedule-filter" id="schedule-filter"
-                            placeholder="🔍 Filtrar UC ou formador…"
-                            oninput="filterHorario(this.value)">
+                            placeholder="🔍 Filtrar UC ou formador…">
                         <div class="view-toggle">
-                            <button class="view-toggle-btn active" id="btn-view-cards"
-                                onclick="setScheduleView('cards')" title="Vista cards">⊞</button>
-                            <button class="view-toggle-btn" id="btn-view-week"
-                                onclick="setScheduleView('week')" title="Vista semanal">▦</button>
+                            <button class="view-toggle-btn active" id="btn-view-cards" title="Vista cards">⊞</button>
+                            <button class="view-toggle-btn" id="btn-view-week" title="Vista semanal">▦</button>
                         </div>
                         <div class="pdf-group">
-                            <button class="btn-pdf" id="btn-pdf-lista"   onclick="downloadListaPDF(this)">⬇ Lista</button>
-                            <button class="btn-pdf" id="btn-pdf-semanal" onclick="downloadSemanalPDF(this)">⬇ Semanal</button>
+                            <button class="btn-pdf" id="btn-pdf-lista">⬇ Lista</button>
+                            <button class="btn-pdf" id="btn-pdf-semanal">⬇ Semanal</button>
                         </div>
                     </div>
                 </div>
@@ -156,7 +154,7 @@
             <div id="view-disciplinas">
                 <div class="disciplines-header">
                     <h2 style="margin-bottom:0;">Disciplinas</h2>
-                    <input type="text" class="uc-search" id="uc-search" placeholder="🔍  Pesquisar UC..." oninput="filterUCs(this.value)">
+                    <input type="text" class="uc-search" id="uc-search" placeholder="🔍  Pesquisar UC...">
                 </div>
                 <div id="disciplines-grid"></div>
             </div>
@@ -173,8 +171,8 @@
 ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═════╝</pre>
                 </div>
                 <div class="pg-lang-btns">
-                    <button class="pg-lang-btn pg-lang-python" onclick="pgNewTab('python')" title="Nova sessão Python">🐍 Python</button>
-                    <button class="pg-lang-btn pg-lang-sql" onclick="pgNewTab('sql')" title="Nova sessão SQL">🗄️ SQL</button>
+                    <button class="pg-lang-btn pg-lang-python" id="pg-btn-python" title="Nova sessão Python">🐍 Python</button>
+                    <button class="pg-lang-btn pg-lang-sql" id="pg-btn-sql" title="Nova sessão SQL">🗄️ SQL</button>
                 </div>
                 <div class="pg-wrap">
                     <div class="pg-tabbar-outer">
@@ -194,7 +192,7 @@
             <!-- VIEW: UC DETAIL -->
             <div id="view-uc-detail">
                 <div class="detail-header">
-                    <button class="back-btn" onclick="goBackFromDetail()">← Voltar</button>
+                    <button class="back-btn" id="back-btn-uc-detail">← Voltar</button>
                     <div class="detail-title-block">
                         <div class="detail-uc-code" id="detail-uc-code"></div>
                         <div class="detail-uc-name" id="detail-uc-name"></div>
@@ -208,7 +206,7 @@
                         <h2 style="margin-bottom:0;font-size:1.1rem;">📅 Sessões</h2>
                         <div style="display:flex;gap:0.6rem;align-items:center;">
                             <span class="uc-total-hours" id="uc-total-hours"></span>
-                            <button class="btn-pdf btn-pdf-uc" id="btn-pdf-uc" onclick="downloadUCPDF(this)">⬇ PDF</button>
+                            <button class="btn-pdf btn-pdf-uc" id="btn-pdf-uc">⬇ PDF</button>
                         </div>
                     </div>
                     <div id="uc-schedule-content"></div>
@@ -221,8 +219,8 @@
                         <div class="chat-empty">Sem mensagens ainda. Sê o primeiro a comentar!</div>
                     </div>
                     <div class="uc-chat-input-row">
-                        <input class="chat-input" id="uc-chat-input" placeholder="Mensagem…" onkeydown="ucChatKey(event)">
-                        <button class="chat-send" onclick="ucChatSend()" id="uc-chat-send">↑</button>
+                        <input class="chat-input" id="uc-chat-input" placeholder="Mensagem…">
+                        <button class="chat-send" id="uc-chat-send">↑</button>
                     </div>
                 </div>
             </div>
@@ -230,7 +228,7 @@
             <!-- VIEW: SESSION DETAIL -->
             <div id="view-session-detail">
                 <div class="detail-header">
-                    <button class="back-btn" onclick="goBackFromSession()">← Voltar</button>
+                    <button class="back-btn" id="back-btn-session-detail">← Voltar</button>
                     <div class="detail-title-block">
                         <div class="detail-uc-code" id="session-detail-num"></div>
                         <div class="detail-uc-name" id="session-detail-uc-name"></div>
@@ -270,13 +268,12 @@
                                 <input type="text" class="form-input" id="session-mat-label" placeholder="Descrição / título">
                             </div>
                             <div class="form-row">
-                                <input type="text" class="form-input" id="session-mat-url" placeholder="URL (https://...)"
-                                       oninput="if(getYouTubeId(this.value)) document.getElementById('session-mat-type').value='video'">
-                                <button class="btn-primary" onclick="addSessionMaterial()">+ Adicionar</button>
+                                <input type="text" class="form-input" id="session-mat-url" placeholder="URL (https://...)">
+                                <button class="btn-primary" id="session-mat-add-btn">+ Adicionar</button>
                             </div>
                             <div class="file-drop-zone" id="file-drop-zone">
                                 📂 Arrastar ficheiro ou clicar para selecionar
-                                <input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.png,.jpg" onchange="handleFileSelect(event)">
+                                <input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.png,.jpg,.html">
                             </div>
                         </div>
                         <div class="materials-list" id="session-materials-list"></div>
@@ -301,22 +298,8 @@
                         <div class="chat-empty">A carregar…</div>
                     </div>
                     <div class="chat-view-input-row">
-                        <input class="chat-input" id="chat-view-input" placeholder="Mensagem…" onkeydown="chatViewKey(event)">
-                        <button class="chat-send" onclick="chatViewSend()">↑</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VIEW: WHATSAPP CHAT -->
-            <div id="view-chat-wa">
-                <h2 style="margin-bottom:1.25rem;">📱 WhatsApp da turma <span style="font-size:0.55em;opacity:0.6;font-weight:400;vertical-align:middle;">(beta)</span></h2>
-                <div class="chat-view-body">
-                    <div class="chat-view-msgs" id="chat-wa-msgs">
-                        <div class="chat-empty">A carregar…</div>
-                    </div>
-                    <div class="chat-view-input-row">
-                        <input class="chat-input" id="chat-wa-input" placeholder="Mensagem para o grupo WA…" onkeydown="chatWAKey(event)">
-                        <button class="chat-send" id="chat-wa-send" onclick="chatWASend()">↑</button>
+                        <input class="chat-input" id="chat-view-input" placeholder="Mensagem…">
+                        <button class="chat-send" id="chat-view-send">↑</button>
                     </div>
                 </div>
             </div>
@@ -326,24 +309,19 @@
 
             <!-- VIEW: CHEATSHEETS -->
             <div id="view-cheatsheets" style="display:none;flex-direction:column;gap:1.5rem;padding:1.5rem 0;">
-                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.5rem;">
+                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
                     <h2 style="margin:0;">📋 Cheatsheets</h2>
-                </div>
-                <div id="cs-tab-bar" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-                    <button class="cs-tab active" onclick="csSwitch('python')" style="padding:0.5rem 1.2rem;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#0a0e1a;font-weight:600;cursor:pointer;font-size:0.85rem;">🐍 Python</button>
-                    <button class="cs-tab" onclick="csSwitch('sql')" style="padding:0.5rem 1.2rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;cursor:pointer;font-size:0.85rem;">🗄️ SQL</button>
-                    <button class="cs-tab" onclick="csSwitch('cybersec')" style="padding:0.5rem 1.2rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;cursor:pointer;font-size:0.85rem;">🛡️ CyberSec</button>
-                    <a id="cs-open-link" href="cheatsheet_python.html" target="_blank" style="margin-left:auto;padding:0.5rem 1rem;border-radius:6px;border:1px solid var(--border);color:var(--text-muted);font-size:0.8rem;text-decoration:none;display:flex;align-items:center;gap:0.4rem;">↗ abrir em separador</a>
+                    <div id="cs-tab-bar" style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+                        <button class="cs-tab cs-chip cs-chip-active" data-cs="python">🐍 Python</button>
+                        <button class="cs-tab cs-chip" data-cs="sql">🗄️ SQL</button>
+                        <button class="cs-tab cs-chip" data-cs="cybersec">🛡️ CyberSec</button>
+                    </div>
+                    <a id="cs-open-link" href="cheatsheet_python.html" target="_blank" style="margin-left:auto;padding:0.28rem 0.75rem;border-radius:999px;border:1px solid var(--border-color);color:var(--text-secondary);font-size:0.78rem;text-decoration:none;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;">↗ abrir em separador</a>
                 </div>
                 <div id="cs-host" style="border-radius:8px;overflow:hidden;min-height:80vh;"></div>
             </div>
 
             <!-- VIEW: LINKS ÚTEIS -->
-            <div id="view-links" style="display:none;">
-                <h2 style="margin-bottom:1.5rem;">🔗 Links Úteis</h2>
-                <div id="links-grid"></div>
-            </div>
-
             <!-- VIEW: DEFINIÇÕES -->
             <div id="view-definicoes">
                 <h2 style="margin-bottom:1.5rem;">⚙️ Definições</h2>
@@ -354,7 +332,7 @@
                             <div class="settings-row-label">Tema</div>
                             <div class="settings-row-sub">Alternar entre modo escuro e claro</div>
                         </div>
-                        <button class="theme-toggle-btn" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+                        <button class="theme-toggle-btn" id="theme-toggle">🌙</button>
                     </div>
                 </div>
                 <div class="settings-section">
@@ -364,7 +342,7 @@
                             <div class="settings-row-label">Avisos de aula</div>
                             <div class="settings-row-sub">Alerta 5 minutos antes do início de cada aula</div>
                         </div>
-                        <button class="notif-btn" id="notif-btn" onclick="requestNotifications()">🔔</button>
+                        <button class="notif-btn" id="notif-btn">🔔</button>
                     </div>
                 </div>
                 <div class="settings-section">
@@ -374,14 +352,14 @@
                             <div class="settings-row-label" id="settings-user-name">–</div>
                             <div class="settings-row-sub" id="settings-user-email">–</div>
                         </div>
-                        <button class="nav-item signout" style="width:auto;padding:0.4rem 0.8rem;" onclick="auth.signOut()">Sair</button>
+                        <button class="nav-item signout" id="settings-signout-btn" style="width:auto;padding:0.4rem 0.8rem;">Sair</button>
                     </div>
                 </div>
                 <div class="settings-section" id="invite-section">
                     <div class="settings-section-title">Convites de Acesso</div>
                     <div class="invite-btn-row">
-                        <button class="invite-btn" onclick="createInvite('individual')">＋ Convite individual</button>
-                        <button class="invite-btn" onclick="createInvite('turma')">＋ Link de turma</button>
+                        <button class="invite-btn" id="invite-btn-individual">＋ Convite individual</button>
+                        <button class="invite-btn" id="invite-btn-turma">＋ Link de turma</button>
                     </div>
                     <div id="invite-list"><span style="color:var(--text-secondary);font-size:0.8rem;">A carregar…</span></div>
                 </div>
@@ -395,14 +373,14 @@ __INJECT_JS__
     </script>
 
     <!-- PDF Modal -->
-    <div id="pdf-modal" class="pdf-modal-overlay" onclick="closePdfModal(event)">
+    <div id="pdf-modal" class="pdf-modal-overlay">
         <div class="pdf-modal-box">
             <div class="pdf-modal-header">
                 <span id="pdf-modal-title" class="pdf-modal-title"></span>
                 <div class="pdf-modal-actions">
                     <a id="pdf-modal-download" href="#" target="_blank" rel="noopener noreferrer"
                        class="pdf-modal-btn" title="Descarregar PDF">⬇ Descarregar</a>
-                    <button class="pdf-modal-btn close" onclick="closePdfModalBtn()" title="Fechar">✕</button>
+                    <button class="pdf-modal-btn close" id="pdf-modal-close" title="Fechar">✕</button>
                 </div>
             </div>
             <iframe id="pdf-modal-frame" src="" class="pdf-modal-frame"></iframe>
@@ -410,42 +388,40 @@ __INJECT_JS__
     </div>
 
     <!-- ── MOBILE BOTTOM NAV ── -->
-    <div class="mob-more-overlay" id="mob-more-overlay" onclick="mobMoreClose()"></div>
+    <div class="mob-more-overlay" id="mob-more-overlay"></div>
     <div class="mob-more-menu" id="mob-more-menu">
-        <button class="mob-more-item" data-view="disciplinas" onclick="switchView('disciplinas');mobMoreClose()">
+        <button class="mob-more-item" data-view="disciplinas">
             <span class="mob-more-item-icon">📚</span> Disciplinas
         </button>
-        <button class="mob-more-item" data-view="chat-wa" onclick="switchView('chat-wa');mobMoreClose()">
-            <span class="mob-more-item-icon">📱</span> WhatsApp (beta)
-        </button>
-        <button class="mob-more-item" data-view="playground" onclick="switchView('playground');mobMoreClose()">
+
+        <button class="mob-more-item" data-view="playground">
             <span class="mob-more-item-icon">💻</span> Playground
         </button>
-        <button class="mob-more-item" data-view="definicoes" onclick="switchView('definicoes');mobMoreClose()">
+        <button class="mob-more-item" data-view="definicoes">
             <span class="mob-more-item-icon">⚙️</span> Definições
         </button>
-        <button class="mob-more-item signout" onclick="auth.signOut()" style="color:#f85149;">
+        <button class="mob-more-item signout" id="mob-signout-btn" style="color:#f85149;">
             <span class="mob-more-item-icon">⏻</span> Sair
         </button>
     </div>
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
-        <button class="mob-nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
+        <button class="mob-nav-btn active" data-view="dashboard">
             <span class="mob-icon">🏠</span>
             <span>Início</span>
         </button>
-        <button class="mob-nav-btn" data-view="horario" onclick="switchView('horario')">
+        <button class="mob-nav-btn" data-view="horario">
             <span class="mob-icon">📅</span>
             <span>Horário</span>
         </button>
-        <button class="mob-nav-btn" data-view="turma" onclick="switchView('turma')">
+        <button class="mob-nav-btn" data-view="turma">
             <span class="mob-icon">👥</span>
             <span>Turma</span>
         </button>
-        <button class="mob-nav-btn" data-view="chat" onclick="switchView('chat')">
+        <button class="mob-nav-btn" data-view="chat">
             <span class="mob-icon">💬<span class="mob-nav-badge" id="mob-chat-badge"></span></span>
             <span>Chat</span>
         </button>
-        <button class="mob-nav-btn" id="mob-more-btn" onclick="mobMoreToggle()">
+        <button class="mob-nav-btn" id="mob-more-btn">
             <span class="mob-icon">⋯</span>
             <span>Mais</span>
         </button>

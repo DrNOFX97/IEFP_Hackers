@@ -60,14 +60,11 @@
             setupNotifications();
             setupFileDrop();
             renderDashboardGreeting();
+            dashLinksRender();
             renderTurma();
 
             if (HORARIOS.length > 0) {
-                monthSelect.innerHTML = HORARIOS.map((h,i) =>
-                    `<option value="${i}">${h.mes_ano.toUpperCase()}</option>`
-                ).join('');
-                monthSelect.addEventListener('change', e => renderHorario(parseInt(e.target.value)));
-                renderHorario(0);
+                renderHorario();
             } else {
                 scheduleGrid.innerHTML = `<div class="empty-state"><h3>Sem Dados</h3><p>Sem ficheiros de horário.</p></div>`;
             }
@@ -75,8 +72,129 @@
             switchView('dashboard');
         }
 
+        window.addEventListener('error', e => {
+            const msg = document.getElementById('auth-err');
+            if (msg && document.getElementById('auth-gate').style.display !== 'none') {
+                msg.textContent = 'Erro JS: ' + e.message + ' (' + (e.filename||'').split('/').pop() + ':' + e.lineno + ')';
+                msg.style.display = 'block';
+            }
+            console.error('Uncaught:', e.message, e.filename, e.lineno);
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             updateClock();
             setInterval(updateClock, 1000);
+            _bindStaticHandlers();
             initAuth(); // calls init() after successful auth
         });
+
+        function _bindStaticHandlers() {
+            // Auth gate
+            document.getElementById('auth-google-btn').addEventListener('click', () => signInWithGoogle());
+            document.getElementById('auth-ms-btn').addEventListener('click', () => signInWithMicrosoftPersonal());
+
+            // Nav sidebar — event delegation for data-view buttons
+            document.querySelector('.nav-sidebar .nav-items').addEventListener('click', e => {
+                const btn = e.target.closest('[data-view]');
+                if (btn) switchView(btn.dataset.view);
+            });
+            document.getElementById('nav-signout-btn').addEventListener('click', () => auth.signOut());
+            document.getElementById('nav-mobile-toggle').addEventListener('click', () => navSidebarOpen());
+            document.getElementById('nav-sidebar-overlay').addEventListener('click', () => navSidebarClose());
+
+            // Horário toolbar
+            document.getElementById('schedule-filter').addEventListener('input', e => filterHorario(e.target.value));
+            document.getElementById('btn-view-cards').addEventListener('click', () => setScheduleView('cards'));
+            document.getElementById('btn-view-week').addEventListener('click', () => setScheduleView('week'));
+            document.getElementById('btn-pdf-lista').addEventListener('click', function() { downloadListaPDF(this); });
+            document.getElementById('btn-pdf-semanal').addEventListener('click', function() { downloadSemanalPDF(this); });
+
+            // Disciplinas search
+            document.getElementById('uc-search').addEventListener('input', e => filterUCs(e.target.value));
+
+            // Playground lang buttons
+            document.getElementById('pg-btn-python').addEventListener('click', () => pgNewTab('python'));
+            document.getElementById('pg-btn-sql').addEventListener('click', () => pgNewTab('sql'));
+
+            // UC detail
+            document.getElementById('back-btn-uc-detail').addEventListener('click', () => goBackFromDetail());
+            document.getElementById('btn-pdf-uc').addEventListener('click', function() { downloadUCPDF(this); });
+            document.getElementById('uc-chat-input').addEventListener('keydown', e => ucChatKey(e));
+            document.getElementById('uc-chat-send').addEventListener('click', () => ucChatSend());
+
+            // Session detail
+            document.getElementById('back-btn-session-detail').addEventListener('click', () => goBackFromSession());
+            document.getElementById('session-mat-url').addEventListener('input', function() {
+                if (getYouTubeId(this.value)) document.getElementById('session-mat-type').value = 'video';
+            });
+            document.getElementById('session-mat-add-btn').addEventListener('click', () => addSessionMaterial());
+            document.getElementById('file-input').addEventListener('change', e => handleFileSelect(e));
+
+            // Chat views
+            document.getElementById('chat-view-input').addEventListener('keydown', e => chatViewKey(e));
+            document.getElementById('chat-view-send').addEventListener('click', () => chatViewSend());
+
+
+            // Cheatsheet tabs — event delegation
+            document.getElementById('cs-tab-bar').addEventListener('click', e => {
+                const btn = e.target.closest('.cs-tab');
+                if (btn) csSwitch(btn.dataset.cs);
+            });
+
+            // Settings
+            document.getElementById('theme-toggle').addEventListener('click', () => toggleTheme());
+            document.getElementById('notif-btn').addEventListener('click', () => requestNotifications());
+            document.getElementById('settings-signout-btn').addEventListener('click', () => auth.signOut());
+            document.getElementById('invite-btn-individual').addEventListener('click', () => createInvite('individual'));
+            document.getElementById('invite-btn-turma').addEventListener('click', () => createInvite('turma'));
+
+            // PDF modal
+            document.getElementById('pdf-modal').addEventListener('click', e => closePdfModal(e));
+            document.getElementById('pdf-modal-close').addEventListener('click', () => closePdfModalBtn());
+
+            // Mobile bottom nav — event delegation
+            document.getElementById('mobile-bottom-nav').addEventListener('click', e => {
+                const btn = e.target.closest('[data-view]');
+                if (btn) switchView(btn.dataset.view);
+            });
+            document.getElementById('mob-more-btn').addEventListener('click', () => mobMoreToggle());
+
+            // Mobile more menu — event delegation
+            document.getElementById('mob-more-overlay').addEventListener('click', () => mobMoreClose());
+            document.getElementById('mob-more-menu').addEventListener('click', e => {
+                const btn = e.target.closest('[data-view]');
+                if (btn) { switchView(btn.dataset.view); mobMoreClose(); }
+            });
+            document.getElementById('mob-signout-btn').addEventListener('click', () => auth.signOut());
+
+            // Lab — single delegated listener on the stable #view-lab container
+            const labEl = document.getElementById('view-lab');
+            if (labEl) {
+                labEl.addEventListener('click', e => {
+                    let t;
+                    if ((t = e.target.closest('[data-lab-open]')))       { labOpenModule(t.dataset.labOpen); return; }
+                    if ((t = e.target.closest('[data-lab-close]')))      { labCloseDetail(); return; }
+                    if ((t = e.target.closest('[data-lab-tab]')))        { labSwitchTab(t.dataset.labTab); return; }
+                    if ((t = e.target.closest('[data-lab-step-mod]')))   { labToggleStep(t.dataset.labStepMod, parseInt(t.dataset.labStepIdx)); return; }
+                    if ((t = e.target.closest('[data-lab-submit-flag]'))) { labSubmitFlag(t.dataset.labSubmitFlag); return; }
+                    if ((t = e.target.closest('[data-lab-hint]')))       { labToggleHint(t.dataset.labHint); return; }
+                });
+                labEl.addEventListener('keydown', e => {
+                    if (e.key !== 'Enter') return;
+                    let t;
+                    if ((t = e.target.closest('[data-lab-flag-input]'))) { labSubmitFlag(t.dataset.labFlagInput); return; }
+                    if ((t = e.target.closest('[data-lab-arena-mod]')))  {
+                        labSubmitArena(t.dataset.labArenaMod, t.dataset.labArenaChall, t.dataset.labArenaFlag, parseInt(t.dataset.labArenaXp));
+                    }
+                });
+            }
+
+            // Chat delete buttons — event delegation on all chat containers
+            ['chat-view-msgs', 'uc-chat-msgs'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('click', e => {
+                    const btn = e.target.closest('[data-chat-del-ch]');
+                    if (btn) chatDelete(btn.dataset.chatDelCh, btn.dataset.chatDelId);
+                });
+            });
+        }

@@ -68,17 +68,15 @@
         }
 
         // ── RENDER HORÁRIO ──────────────────────────────────────────────
-        function renderHorario(index) {
-            currentMonthIndex = index;
-            const horario = HORARIOS[index];
-            if (!horario) return;
-            const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-            scheduleTitle.innerText = `Horário — ${cap(horario.mes_ano)}`;
-            highlightCurrentMonth(horario.mes_ano);
+        function renderHorario() {
+            scheduleTitle.innerText = 'Horário';
+            const now = new Date();
+            const monthNames = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            highlightCurrentMonth(monthNames[now.getMonth()]);
             if (scheduleViewMode === 'week') {
-                renderHorarioWeek(horario, scheduleFilter);
+                renderHorarioWeekAll(scheduleFilter);
             } else {
-                renderHorarioCards(horario, scheduleFilter);
+                renderHorarioCardsAll(scheduleFilter);
             }
         }
 
@@ -100,7 +98,7 @@
             const formadorBadge = aula.formador
                 ? `<div class="aula-uc badge" style="margin-top:0;background:rgba(255,255,255,0.1);color:#fff;">👤 ${shortName(aula.formador)}</div>` : '';
             const clickAttr = UC_MAP[aula.uc]
-                ? `onclick="openUCFromSchedule('${aula.uc}')"` : '';
+                ? `data-uc-sched="${aula.uc}"` : '';
             return `
             <div class="aula-card ${state} ${isClickable} ${remoteClass} ${dimClass}" ${clickAttr}>
                 <div class="aula-time">${aula.hora}</div>
@@ -115,39 +113,56 @@
             </div>`;
         }
 
-        function renderHorarioCards(horario, filter) {
+        function renderHorarioCardsAll(filter) {
             scheduleGrid.className = 'schedule-grid';
-            let daysHtml = '';
-            horario.dias.forEach(dia => {
-                const mergedAulas = mergeTimeSlots(dia.aulas);
-                let aulasHtml = '';
-                let dayMatches = false;
+            const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+            let html = '';
 
-                if (mergedAulas.length > 0) {
-                    mergedAulas.forEach(aula => {
-                        const matched = aulaMatchesFilter(aula, filter);
-                        if (matched) dayMatches = true;
-                        aulasHtml += buildAulaCardHtml(aula, getAulaState(dia.data, aula.hora), matched);
-                    });
-                } else if (dia.nota) {
-                    dayMatches = !filter;
-                    aulasHtml = `<div class="aula-card empty-card holiday"><div class="aula-info"><div class="aula-desc">${dia.nota}</div></div></div>`;
-                } else {
-                    dayMatches = !filter;
-                    aulasHtml = `<div class="aula-card empty-card"><div class="aula-info"><div class="aula-desc">Sem aulas programadas</div></div></div>`;
+            HORARIOS.forEach(horario => {
+                let monthHtml = '';
+                let monthHasContent = false;
+
+                horario.dias.forEach(dia => {
+                    const mergedAulas = mergeTimeSlots(dia.aulas);
+                    let aulasHtml = '';
+                    let dayMatches = false;
+
+                    if (mergedAulas.length > 0) {
+                        mergedAulas.forEach(aula => {
+                            const matched = aulaMatchesFilter(aula, filter);
+                            if (matched) dayMatches = true;
+                            aulasHtml += buildAulaCardHtml(aula, getAulaState(dia.data, aula.hora), matched);
+                        });
+                    } else if (dia.nota) {
+                        dayMatches = !filter;
+                        aulasHtml = `<div class="aula-card empty-card holiday"><div class="aula-info"><div class="aula-desc">${dia.nota}</div></div></div>`;
+                    } else {
+                        dayMatches = !filter;
+                        aulasHtml = `<div class="aula-card empty-card"><div class="aula-info"><div class="aula-desc">Sem aulas programadas</div></div></div>`;
+                    }
+
+                    if (!filter || dayMatches) monthHasContent = true;
+                    monthHtml += `
+                    <div class="day-card" data-date="${dia.data}" style="${(filter && !dayMatches) ? 'display:none;' : ''}">
+                        <div class="day-header">
+                            <span class="day-date">${dia.data}</span>
+                            <span class="day-week badge">${dia.dia_semana}</span>
+                        </div>
+                        <div class="day-body">${aulasHtml}</div>
+                    </div>`;
+                });
+
+                if (!filter || monthHasContent) {
+                    html += `<div class="month-separator" data-month="${horario.mes_ano}">
+                        <span>${cap(horario.mes_ano)}</span>
+                    </div>${monthHtml}`;
                 }
-
-                daysHtml += `
-                <div class="day-card" data-date="${dia.data}" style="${(filter && !dayMatches) ? 'display:none;' : ''}">
-                    <div class="day-header">
-                        <span class="day-date">${dia.data}</span>
-                        <span class="day-week badge">${dia.dia_semana}</span>
-                    </div>
-                    <div class="day-body">${aulasHtml}</div>
-                </div>`;
             });
 
-            scheduleGrid.innerHTML = daysHtml || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma aula encontrada para esse filtro.</div>`;
+            scheduleGrid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma aula encontrada para esse filtro.</div>`;
+            scheduleGrid.querySelectorAll('[data-uc-sched]').forEach(el =>
+                el.addEventListener('click', () => openUCFromSchedule(el.dataset.ucSched))
+            );
             setTimeout(scrollToToday, 60);
         }
 
@@ -160,24 +175,47 @@
             return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
         }
 
-        function renderHorarioWeek(horario, filter) {
+        function renderHorarioWeekAll(filter) {
             scheduleGrid.className = 'schedule-grid week-view';
             const pad = n => String(n).padStart(2, '0');
+            const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
             const now = new Date();
             const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
             const DAY_NAMES = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
 
-            // Index days by date and group by week
-            const byWeek = {};
-            horario.dias.forEach(dia => {
-                const wk = getWeekStart(dia.data);
-                if (!byWeek[wk]) byWeek[wk] = {};
-                byWeek[wk][dia.data] = dia;
+            // Collect all days across all months, preserving mes_ano
+            const allDays = {};
+            const dayMonth = {};
+            HORARIOS.forEach(horario => {
+                horario.dias.forEach(dia => {
+                    allDays[dia.data] = dia;
+                    dayMonth[dia.data] = horario.mes_ano;
+                });
             });
 
+            // Group by week
+            const byWeek = {};
+            Object.keys(allDays).sort().forEach(dateStr => {
+                const wk = getWeekStart(dateStr);
+                if (!byWeek[wk]) byWeek[wk] = {};
+                byWeek[wk][dateStr] = allDays[dateStr];
+            });
+
+            let lastMonth = null;
             const weeksHtml = Object.keys(byWeek).sort().map(weekStart => {
                 const [wy, wm, wd] = weekStart.split('-').map(Number);
                 const monDate = new Date(wy, wm - 1, wd);
+
+                // Detect month change based on first day of this week that has data
+                const firstDayOfWeek = Object.keys(byWeek[weekStart]).sort()[0];
+                const weekMonth = dayMonth[firstDayOfWeek];
+                let separatorHtml = '';
+                if (weekMonth && weekMonth !== lastMonth) {
+                    separatorHtml = `<div class="month-separator" data-month="${weekMonth}">
+                        <span>${cap(weekMonth)}</span>
+                    </div>`;
+                    lastMonth = weekMonth;
+                }
 
                 const colsHtml = DAY_NAMES.map((dayName, i) => {
                     const dt = new Date(monDate);
@@ -200,12 +238,12 @@
 
                     if (mergedAulas.length > 0) {
                         mergedAulas.forEach(aula => {
-                            const matched   = aulaMatchesFilter(aula, filter);
+                            const matched    = aulaMatchesFilter(aula, filter);
                             if (matched) colMatches = true;
                             const state      = getAulaState(dia.data, aula.hora);
                             const dimCls     = (filter && !matched) ? 'filtered-out' : '';
                             const clickCls   = UC_MAP[aula.uc] ? 'clickable' : '';
-                            const clickAttr  = UC_MAP[aula.uc] ? `onclick="openUCFromSchedule('${aula.uc}')"` : '';
+                            const clickAttr  = UC_MAP[aula.uc] ? `data-uc-sched="${aula.uc}"` : '';
                             const isRemote   = (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
                             const remoteCls  = isRemote ? 'remote' : '';
                             const remoteBadge = isRemote ? `<span class="badge remote" style="font-size:0.62rem;padding:0.1rem 0.4rem;margin-top:3px;display:inline-block;">🌐 Remoto</span>` : '';
@@ -229,16 +267,18 @@
 
                 const friDate = new Date(monDate);
                 friDate.setDate(monDate.getDate() + 4);
-                const weekLabel = `${pad(monDate.getDate())}–${pad(friDate.getDate())} ${horario.mes_ano.split(' ')[0]}`;
+                const weekLabel = `${pad(monDate.getDate())}–${pad(friDate.getDate())}/${pad(monDate.getMonth()+1)}`;
 
-                return `<div class="week-block">
+                return `${separatorHtml}<div class="week-block">
                     <div class="week-label">${weekLabel}</div>
                     <div class="week-days">${colsHtml}</div>
                 </div>`;
             }).join('');
 
             scheduleGrid.innerHTML = weeksHtml || '<div class="empty-state">Nenhuma aula encontrada.</div>';
-
+            scheduleGrid.querySelectorAll('[data-uc-sched]').forEach(el =>
+                el.addEventListener('click', () => openUCFromSchedule(el.dataset.ucSched))
+            );
             setTimeout(scrollToToday, 60);
         }
 
@@ -277,7 +317,7 @@
         }
 
         function openUCFromSchedule(ucCode) {
-            previousView = 'horario';
+            navStack.push(currentView);
             openUCDetail(ucCode);
         }
 
@@ -285,7 +325,6 @@
             // S1 reuses the original UC key so existing notes/materials are preserved
             const key = num === 1 ? ucCode : `${ucCode}_${date}`;
             currentSessionKey = key;
-            previousView = 'uc-detail';  // back button → UC detail
 
             const uc = UC_MAP[ucCode] || {};
             const [y, mo, d] = date.split('-');
@@ -300,8 +339,14 @@
             const sessions = buildUCSchedule(ucCode);
             let sNum = 1;
             sessions.forEach(s => { s.num = sNum++; });
-            document.getElementById('session-nav-chips').innerHTML =
-                buildSessionChipsHTML(ucCode, sessions, key);
+            const navChips = document.getElementById('session-nav-chips');
+            navChips.innerHTML = buildSessionChipsHTML(ucCode, sessions, key);
+            navChips.querySelectorAll('[data-sess-uc]').forEach(el =>
+                el.addEventListener('click', () => openSessionDetail(
+                    el.dataset.sessUc, el.dataset.sessDate, parseInt(el.dataset.sessNum),
+                    el.dataset.sessHora, el.dataset.sessDow, el.dataset.sessMes
+                ))
+            );
 
             // Reset notes & materials UI before switching view
             const ta = document.getElementById('session-notes-textarea');
@@ -377,8 +422,11 @@
                     <div class="material-info">
                         <a class="material-label" href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.label || m.url)}</a>
                     </div>
-                    <button class="material-delete" onclick="deleteSessionMaterial('${key}',${i})">✕</button>
+                    <button class="material-delete" data-del-key="${key}" data-del-idx="${i}">✕</button>
                 </div>`).join('');
+            el.querySelectorAll('[data-del-key]').forEach(btn =>
+                btn.addEventListener('click', () => deleteSessionMaterial(btn.dataset.delKey, parseInt(btn.dataset.delIdx)))
+            );
         }
 
         async function addSessionMaterial() {
@@ -420,17 +468,12 @@
         }
 
         function goToSession(dateStr) {
-            // Find which month index contains this date
-            let targetIdx = -1;
-            HORARIOS.forEach((h, i) => {
-                if (h.dias.some(d => d.data === dateStr)) targetIdx = i;
-            });
-            if (targetIdx === -1) return;
+            const exists = HORARIOS.some(h => h.dias.some(d => d.data === dateStr));
+            if (!exists) return;
 
-            previousView = 'uc-detail';
             switchView('horario');
 
-            const doScroll = () => {
+            setTimeout(() => {
                 const toolbar = document.querySelector('.schedule-toolbar');
                 const offset  = (toolbar?.offsetHeight || 80) + 16;
                 const content = document.getElementById('app-content');
@@ -440,14 +483,6 @@
                 const targetRect  = target.getBoundingClientRect();
                 const contentRect = content.getBoundingClientRect();
                 content.scrollTo({ top: content.scrollTop + targetRect.top - contentRect.top - offset, behavior: 'smooth' });
-            };
-
-            if (targetIdx !== currentMonthIndex) {
-                monthSelect.value = targetIdx;
-                renderHorario(targetIdx);
-                setTimeout(doScroll, 80);
-            } else {
-                setTimeout(doScroll, 60);
-            }
+            }, 80);
         }
 

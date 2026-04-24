@@ -1964,6 +1964,30 @@ opacity: 0.35;
         .app-content::-webkit-scrollbar { width: 5px; }
         .app-content::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 5px; }
 
+/* Month separator in continuous schedule view */
+        .month-separator {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 2rem 0 0.75rem;
+        }
+        .month-separator:first-child { padding-top: 0.25rem; }
+        .month-separator span {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+        .month-separator::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color, rgba(255,255,255,0.08));
+        }
+
 /* Cheatsheet tab chips */
         .cs-chip {
             display: inline-flex; align-items: center; gap: 0.35rem;
@@ -2925,10 +2949,7 @@ opacity: 0.35;
                 <div class="schedule-toolbar">
                     <h2 id="schedule-title" style="margin-bottom:0;">Horário</h2>
                     <div class="schedule-controls">
-                        <div class="month-selector" id="month-selector-container" style="display:none;">
-                            <label for="month-select">Mês</label>
-                            <select id="month-select"></select>
-                        </div>
+                        <div id="month-selector-container" style="display:none;"></div>
                         <input type="text" class="schedule-filter" id="schedule-filter"
                             placeholder="🔍 Filtrar UC ou formador…">
                         <div class="view-toggle">
@@ -3164,7 +3185,7 @@ opacity: 0.35;
 
     <script>
         // ── DATA ────────────────────────────────────────────────────────
-        const BUILD_TS    = '1777041671';
+        const BUILD_TS    = '1777042162';
         const UC_MAP      = {"FPCT": {"descricao": "Formação em Contexto de Trabalho", "formador": "", "carga_horaria": 500, "modalidade": ""}, "UC00034": {"descricao": "Colaborar e Trabalhar em Equipa", "formador": "", "carga_horaria": null, "modalidade": ""}, "UC00245": {"descricao": "Desenvolver Algoritmos", "formador": "Iolanda Aquino Serro", "carga_horaria": 50, "modalidade": ""}, "UC00598": {"descricao": "Efetuar Operações e Cálculos Matemáticos Aplicados a Projetos da Área de Informática", "formador": "Jose Gabriel Fernandes Chaveca", "carga_horaria": 25, "modalidade": ""}, "UC00599": {"descricao": "Interagir em Inglês nas Atividades do Setor da Informática", "formador": "Olinda Oliveira", "carga_horaria": 50, "modalidade": ""}, "UC00602": {"descricao": "Modelar Bases de Dados Relacionais", "formador": "Paulo Ricardo Costa Ramalho", "carga_horaria": 50, "modalidade": "remoto"}, "UC00606": {"descricao": "Desenvolver Programas em Linguagem Estruturada", "formador": "Iolanda Aquino Serro", "carga_horaria": 25, "modalidade": ""}, "UC00616": {"descricao": "Implementar as Normas de Segurança e Saúde no Trabalho no Setor de Informática", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC00631": {"descricao": "Planear e Instalar a Infraestrutura de Redes Locais", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 25, "modalidade": ""}, "UC00633": {"descricao": "Instalar e Parametrizar Sistemas Operativos de Servidor (Plataforma Proprietária)", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 50, "modalidade": ""}, "UC00634": {"descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 50, "modalidade": ""}, "UC00635": {"descricao": "Configurar Serviços de Rede", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 25, "modalidade": ""}, "UC01476": {"descricao": "Implementar a Legislação Relativa à Cibersegurança", "formador": "Luis Manuel Ferreira De Melo E Horta", "carga_horaria": 25, "modalidade": ""}, "UC01477": {"descricao": "Aplicar Métodos Estatísticos", "formador": "Jose Gabriel Fernandes Chaveca", "carga_horaria": 25, "modalidade": ""}, "UC01478": {"descricao": "Configurar Redes de Computadores", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01479": {"descricao": "Implementar Mecanismos de Proteção Contra Ameaças Cibernéticas", "formador": "", "carga_horaria": 25, "modalidade": ""}, "UC01480": {"descricao": "Analisar Evidências de Ataques Cibernéticos", "formador": "Paulo Ricardo Costa Ramalho", "carga_horaria": 25, "modalidade": "remoto"}, "UC01481": {"descricao": "Desenvolver Scripts Aplicados à Cibersegurança", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01482": {"descricao": "Programar Scripts de Normalização e Filtragem de Logs", "formador": "", "carga_horaria": 25, "modalidade": ""}, "UC01483": {"descricao": "Detetar e Analisar Vulnerabilidades em Soluções Web", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01484": {"descricao": "Detetar e Analisar Vulnerabilidades em Sistemas de Rede", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01485": {"descricao": "Instalar e Configurar Ferramentas de Análise e Recolha de Logs e Evidências", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01486": {"descricao": "Gerir Sistemas de Deteção de Intrusos (IDS)", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01487": {"descricao": "Simular Cenários de Cibersegurança e Ciberdefesa (Wargaming)", "formador": "Ivan Filipe Saloio Gonçalves", "carga_horaria": 50, "modalidade": ""}, "UC01489": {"descricao": "Implementar Procedimentos de Recolha e Análise Forense Digital", "formador": "", "carga_horaria": 50, "modalidade": ""}, "UC01491": {"descricao": "Projetar e Administrar Sistemas de Bases de Dados", "formador": "Paulo Ricardo Costa Ramalho", "carga_horaria": 50, "modalidade": ""}};
         const UC_LIST     = [{"codigo": "FPCT", "descricao": "Formação em Contexto de Trabalho", "carga_horaria": 500, "formador": ""}, {"codigo": "UC00034", "descricao": "Colaborar e Trabalhar em Equipa", "carga_horaria": null, "formador": ""}, {"codigo": "UC00245", "descricao": "Desenvolver Algoritmos", "carga_horaria": 50, "formador": "Iolanda Aquino Serro"}, {"codigo": "UC00598", "descricao": "Efetuar Operações e Cálculos Matemáticos Aplicados a Projetos da Área de Informática", "carga_horaria": 25, "formador": "Jose Gabriel Fernandes Chaveca"}, {"codigo": "UC00599", "descricao": "Interagir em Inglês nas Atividades do Setor da Informática", "carga_horaria": 50, "formador": "Olinda Oliveira"}, {"codigo": "UC00602", "descricao": "Modelar Bases de Dados Relacionais", "carga_horaria": 50, "formador": "Paulo Ricardo Costa Ramalho", "modalidade": "remoto"}, {"codigo": "UC00606", "descricao": "Desenvolver Programas em Linguagem Estruturada", "carga_horaria": 25, "formador": "Iolanda Aquino Serro"}, {"codigo": "UC00616", "descricao": "Implementar as Normas de Segurança e Saúde no Trabalho no Setor de Informática", "carga_horaria": 50, "formador": ""}, {"codigo": "UC00631", "descricao": "Planear e Instalar a Infraestrutura de Redes Locais", "carga_horaria": 25, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC00633", "descricao": "Instalar e Parametrizar Sistemas Operativos de Servidor (Plataforma Proprietária)", "carga_horaria": 50, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC00634", "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente", "carga_horaria": 50, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC00635", "descricao": "Configurar Serviços de Rede", "carga_horaria": 25, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC01476", "descricao": "Implementar a Legislação Relativa à Cibersegurança", "carga_horaria": 25, "formador": "Luis Manuel Ferreira De Melo E Horta"}, {"codigo": "UC01477", "descricao": "Aplicar Métodos Estatísticos", "carga_horaria": 25, "formador": "Jose Gabriel Fernandes Chaveca"}, {"codigo": "UC01478", "descricao": "Configurar Redes de Computadores", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01479", "descricao": "Implementar Mecanismos de Proteção Contra Ameaças Cibernéticas", "carga_horaria": 25, "formador": ""}, {"codigo": "UC01480", "descricao": "Analisar Evidências de Ataques Cibernéticos", "carga_horaria": 25, "formador": "Paulo Ricardo Costa Ramalho", "modalidade": "remoto"}, {"codigo": "UC01481", "descricao": "Desenvolver Scripts Aplicados à Cibersegurança", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01482", "descricao": "Programar Scripts de Normalização e Filtragem de Logs", "carga_horaria": 25, "formador": ""}, {"codigo": "UC01483", "descricao": "Detetar e Analisar Vulnerabilidades em Soluções Web", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01484", "descricao": "Detetar e Analisar Vulnerabilidades em Sistemas de Rede", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01485", "descricao": "Instalar e Configurar Ferramentas de Análise e Recolha de Logs e Evidências", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01486", "descricao": "Gerir Sistemas de Deteção de Intrusos (IDS)", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01487", "descricao": "Simular Cenários de Cibersegurança e Ciberdefesa (Wargaming)", "carga_horaria": 50, "formador": "Ivan Filipe Saloio Gonçalves"}, {"codigo": "UC01489", "descricao": "Implementar Procedimentos de Recolha e Análise Forense Digital", "carga_horaria": 50, "formador": ""}, {"codigo": "UC01491", "descricao": "Projetar e Administrar Sistemas de Bases de Dados", "carga_horaria": 50, "formador": "Paulo Ricardo Costa Ramalho"}];
         const HORARIOS    = [{"instituicao": "Centro de Emprego e Formação Profissional de Faro", "modalidade": "Cursos de Especialização Tecnológica - CET", "designacao": "Técnico/a Especialista em Cibersegurança", "codigo_financeiro": "4,8111E+12", "codigo_administrativo": "11650885", "nivel": 5, "mes_ano": "abril 2026", "horario_diario": "09:00-17:00", "dias": [{"data": "2026-04-09", "dia_semana": "QUI", "aulas": [{"hora": "14:00-15:00", "uc": "UC00631"}, {"hora": "15:00-16:00", "uc": "UC00631"}, {"hora": "16:00-17:00", "uc": "UC00631"}]}, {"data": "2026-04-10", "dia_semana": "SEX", "aulas": [{"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-13", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01476"}, {"hora": "10:00-11:00", "uc": "UC01476"}, {"hora": "11:00-12:00", "uc": "UC01476"}, {"hora": "12:00-13:00", "uc": "UC01476"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-14", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-15", "dia_semana": "QUA", "aulas": []}, {"data": "2026-04-16", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00245"}, {"hora": "10:00-11:00", "uc": "UC00245"}, {"hora": "11:00-12:00", "uc": "UC00245"}, {"hora": "12:00-13:00", "uc": "UC00245"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-17", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00245"}, {"hora": "10:00-11:00", "uc": "UC00245"}, {"hora": "11:00-12:00", "uc": "UC00245"}, {"hora": "12:00-13:00", "uc": "UC00245"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-20", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01476"}, {"hora": "10:00-11:00", "uc": "UC01476"}, {"hora": "11:00-12:00", "uc": "UC01476"}, {"hora": "12:00-13:00", "uc": "UC01476"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-21", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-22", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}]}, {"data": "2026-04-23", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-04-24", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00634"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-27", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01477"}, {"hora": "10:00-11:00", "uc": "UC01477"}, {"hora": "11:00-12:00", "uc": "UC01477"}, {"hora": "12:00-13:00", "uc": "UC01477"}, {"hora": "14:00-15:00", "uc": "UC01476"}, {"hora": "15:00-16:00", "uc": "UC01476"}, {"hora": "16:00-17:00", "uc": "UC01476"}]}, {"data": "2026-04-28", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-29", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00634"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-04-30", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00634"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC00602"}, {"hora": "16:00-17:00", "uc": "UC00602"}]}, {"data": "2026-05-01", "dia_semana": "SEX", "aulas": [], "nota": "Feriado - Dia do Trabalhador"}], "ucs_identificadas": ["UC00245", "UC00599", "UC00602", "UC00631", "UC00634", "UC01476", "UC01477"]}, {"instituicao": "Centro de Emprego e Formação Profissional de Faro", "modalidade": "Cursos de Especialização Tecnológica - CET", "designacao": "Técnico/a Especialista em Cibersegurança", "codigo_financeiro": "481110E0007", "codigo_administrativo": "11650885", "nivel": 5, "mes_ano": "maio 2026", "horario_diario": "09:00-17:00", "dias": [{"data": "2026-05-04", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01477"}, {"hora": "10:00-11:00", "uc": "UC01477"}, {"hora": "11:00-12:00", "uc": "UC01477"}, {"hora": "12:00-13:00", "uc": "UC01477"}, {"hora": "14:00-15:00", "uc": "UC01476"}, {"hora": "15:00-16:00", "uc": "UC01476"}, {"hora": "16:00-17:00", "uc": "UC01476"}]}, {"data": "2026-05-05", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC00602"}, {"hora": "15:00-16:00", "uc": "UC01480"}, {"hora": "16:00-17:00", "uc": "UC01480"}]}, {"data": "2026-05-06", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00245"}, {"hora": "15:00-16:00", "uc": "UC00245"}, {"hora": "16:00-17:00", "uc": "UC00245"}]}, {"data": "2026-05-07", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00245"}, {"hora": "10:00-11:00", "uc": "UC00245"}, {"hora": "11:00-12:00", "uc": "UC00606"}, {"hora": "12:00-13:00", "uc": "UC00606"}, {"hora": "14:00-15:00", "uc": "UC00606"}, {"hora": "15:00-16:00", "uc": "UC00606"}, {"hora": "16:00-17:00", "uc": "UC00606"}]}, {"data": "2026-05-08", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC01480"}, {"hora": "15:00-16:00", "uc": "UC01480"}, {"hora": "16:00-17:00", "uc": "UC01480"}]}, {"data": "2026-05-11", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01477"}, {"hora": "10:00-11:00", "uc": "UC01477"}, {"hora": "11:00-12:00", "uc": "UC01477"}, {"hora": "12:00-13:00", "uc": "UC01477"}, {"hora": "14:00-15:00", "uc": "UC01476"}, {"hora": "15:00-16:00", "uc": "UC01476"}, {"hora": "16:00-17:00", "uc": "UC01476"}]}, {"data": "2026-05-12", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC01480"}, {"hora": "15:00-16:00", "uc": "UC01480"}, {"hora": "16:00-17:00", "uc": "UC01480"}]}, {"data": "2026-05-13", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00606"}, {"hora": "15:00-16:00", "uc": "UC00606"}, {"hora": "16:00-17:00", "uc": "UC00606"}]}, {"data": "2026-05-14", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00034"}, {"hora": "10:00-11:00", "uc": "UC00034"}, {"hora": "11:00-12:00", "uc": "UC00034"}, {"hora": "12:00-13:00", "uc": "UC00034"}, {"hora": "14:00-15:00", "uc": "UC00631"}, {"hora": "15:00-16:00", "uc": "UC00631"}, {"hora": "16:00-17:00", "uc": "UC00631"}]}, {"data": "2026-05-15", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC01480"}, {"hora": "15:00-16:00", "uc": "UC01480"}, {"hora": "16:00-17:00", "uc": "UC01480"}]}, {"data": "2026-05-18", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01477"}, {"hora": "10:00-11:00", "uc": "UC01477"}, {"hora": "11:00-12:00", "uc": "UC01477"}, {"hora": "12:00-13:00", "uc": "UC01477"}, {"hora": "14:00-15:00", "uc": "UC01476"}, {"hora": "15:00-16:00", "uc": "UC01476"}, {"hora": "16:00-17:00", "uc": "UC01476"}]}, {"data": "2026-05-19", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC00631"}, {"hora": "15:00-16:00", "uc": "UC00631"}, {"hora": "16:00-17:00", "uc": "UC00631"}]}, {"data": "2026-05-20", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00034"}, {"hora": "15:00-16:00", "uc": "UC00034"}, {"hora": "16:00-17:00", "uc": "UC00034"}]}, {"data": "2026-05-21", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC01480"}, {"hora": "15:00-16:00", "uc": "UC01480"}, {"hora": "16:00-17:00", "uc": "UC01480"}]}, {"data": "2026-05-22", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00034"}, {"hora": "10:00-11:00", "uc": "UC00034"}, {"hora": "11:00-12:00", "uc": "UC00034"}, {"hora": "12:00-13:00", "uc": "UC00034"}, {"hora": "14:00-15:00", "uc": "UC01480"}, {"hora": "15:00-16:00", "uc": "UC01480"}, {"hora": "16:00-17:00", "uc": "UC01480"}]}, {"data": "2026-05-25", "dia_semana": "SEG", "aulas": [{"hora": "09:00-10:00", "uc": "UC01477"}, {"hora": "10:00-11:00", "uc": "UC01477"}, {"hora": "11:00-12:00", "uc": "UC01477"}, {"hora": "12:00-13:00", "uc": "UC01477"}, {"hora": "14:00-15:00", "uc": "UC01476"}, {"hora": "15:00-16:00", "uc": "UC01476"}, {"hora": "16:00-17:00", "uc": "UC01476"}]}, {"data": "2026-05-26", "dia_semana": "TER", "aulas": [{"hora": "09:00-10:00", "uc": "UC00599"}, {"hora": "10:00-11:00", "uc": "UC00599"}, {"hora": "11:00-12:00", "uc": "UC00599"}, {"hora": "12:00-13:00", "uc": "UC00599"}, {"hora": "14:00-15:00", "uc": "UC01480"}, {"hora": "15:00-16:00", "uc": "UC01480"}, {"hora": "16:00-17:00", "uc": "UC01480"}]}, {"data": "2026-05-27", "dia_semana": "QUA", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00631"}, {"hora": "11:00-12:00", "uc": "UC00631"}, {"hora": "12:00-13:00", "uc": "UC00631"}, {"hora": "14:00-15:00", "uc": "UC00034"}, {"hora": "15:00-16:00", "uc": "UC00034"}, {"hora": "16:00-17:00", "uc": "UC00034"}]}, {"data": "2026-05-28", "dia_semana": "QUI", "aulas": [{"hora": "09:00-10:00", "uc": "UC00631"}, {"hora": "10:00-11:00", "uc": "UC00634"}, {"hora": "11:00-12:00", "uc": "UC00634"}, {"hora": "12:00-13:00", "uc": "UC00634"}, {"hora": "14:00-15:00", "uc": "UC01480"}, {"hora": "15:00-16:00", "uc": "UC01480"}, {"hora": "16:00-17:00", "uc": "UC01480"}]}, {"data": "2026-05-29", "dia_semana": "SEX", "aulas": [{"hora": "09:00-10:00", "uc": "UC00034"}, {"hora": "10:00-11:00", "uc": "UC00034"}, {"hora": "11:00-12:00", "uc": "UC00034"}, {"hora": "12:00-13:00", "uc": "UC00034"}, {"hora": "14:00-15:00", "uc": "UC01480"}, {"hora": "15:00-16:00", "uc": "UC01480"}, {"hora": "16:00-17:00", "uc": "UC01480"}]}], "ucs_identificadas": ["UC00034", "UC00245", "UC00599", "UC00602", "UC00606", "UC00631", "UC00634", "UC01476", "UC01477", "UC01480"]}];
@@ -3276,15 +3297,8 @@ opacity: 0.35;
                 monthSelectContainer.style.display = 'none';
             } else if (view === 'horario') {
                 document.getElementById('view-horario').style.display = 'block';
-                monthSelectContainer.style.display = HORARIOS.length > 0 ? 'flex' : 'none';
-                // Saltar para o mês que contém hoje, depois fazer scroll até ao dia
-                const todayIdx = findNearestMonthIndex();
-                if (todayIdx !== -1 && todayIdx !== currentMonthIndex) {
-                    monthSelect.value = todayIdx;
-                    renderHorario(todayIdx);
-                } else {
-                    setTimeout(scrollToToday, 100);
-                }
+                monthSelectContainer.style.display = 'none';
+                setTimeout(scrollToToday, 100);
             } else if (view === 'disciplinas') {
                 document.getElementById('view-disciplinas').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -3455,17 +3469,15 @@ opacity: 0.35;
         }
 
         // ── RENDER HORÁRIO ──────────────────────────────────────────────
-        function renderHorario(index) {
-            currentMonthIndex = index;
-            const horario = HORARIOS[index];
-            if (!horario) return;
-            const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-            scheduleTitle.innerText = `Horário — ${cap(horario.mes_ano)}`;
-            highlightCurrentMonth(horario.mes_ano);
+        function renderHorario() {
+            scheduleTitle.innerText = 'Horário';
+            const now = new Date();
+            const monthNames = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            highlightCurrentMonth(monthNames[now.getMonth()]);
             if (scheduleViewMode === 'week') {
-                renderHorarioWeek(horario, scheduleFilter);
+                renderHorarioWeekAll(scheduleFilter);
             } else {
-                renderHorarioCards(horario, scheduleFilter);
+                renderHorarioCardsAll(scheduleFilter);
             }
         }
 
@@ -3502,39 +3514,53 @@ opacity: 0.35;
             </div>`;
         }
 
-        function renderHorarioCards(horario, filter) {
+        function renderHorarioCardsAll(filter) {
             scheduleGrid.className = 'schedule-grid';
-            let daysHtml = '';
-            horario.dias.forEach(dia => {
-                const mergedAulas = mergeTimeSlots(dia.aulas);
-                let aulasHtml = '';
-                let dayMatches = false;
+            const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+            let html = '';
 
-                if (mergedAulas.length > 0) {
-                    mergedAulas.forEach(aula => {
-                        const matched = aulaMatchesFilter(aula, filter);
-                        if (matched) dayMatches = true;
-                        aulasHtml += buildAulaCardHtml(aula, getAulaState(dia.data, aula.hora), matched);
-                    });
-                } else if (dia.nota) {
-                    dayMatches = !filter;
-                    aulasHtml = `<div class="aula-card empty-card holiday"><div class="aula-info"><div class="aula-desc">${dia.nota}</div></div></div>`;
-                } else {
-                    dayMatches = !filter;
-                    aulasHtml = `<div class="aula-card empty-card"><div class="aula-info"><div class="aula-desc">Sem aulas programadas</div></div></div>`;
+            HORARIOS.forEach(horario => {
+                let monthHtml = '';
+                let monthHasContent = false;
+
+                horario.dias.forEach(dia => {
+                    const mergedAulas = mergeTimeSlots(dia.aulas);
+                    let aulasHtml = '';
+                    let dayMatches = false;
+
+                    if (mergedAulas.length > 0) {
+                        mergedAulas.forEach(aula => {
+                            const matched = aulaMatchesFilter(aula, filter);
+                            if (matched) dayMatches = true;
+                            aulasHtml += buildAulaCardHtml(aula, getAulaState(dia.data, aula.hora), matched);
+                        });
+                    } else if (dia.nota) {
+                        dayMatches = !filter;
+                        aulasHtml = `<div class="aula-card empty-card holiday"><div class="aula-info"><div class="aula-desc">${dia.nota}</div></div></div>`;
+                    } else {
+                        dayMatches = !filter;
+                        aulasHtml = `<div class="aula-card empty-card"><div class="aula-info"><div class="aula-desc">Sem aulas programadas</div></div></div>`;
+                    }
+
+                    if (!filter || dayMatches) monthHasContent = true;
+                    monthHtml += `
+                    <div class="day-card" data-date="${dia.data}" style="${(filter && !dayMatches) ? 'display:none;' : ''}">
+                        <div class="day-header">
+                            <span class="day-date">${dia.data}</span>
+                            <span class="day-week badge">${dia.dia_semana}</span>
+                        </div>
+                        <div class="day-body">${aulasHtml}</div>
+                    </div>`;
+                });
+
+                if (!filter || monthHasContent) {
+                    html += `<div class="month-separator" data-month="${horario.mes_ano}">
+                        <span>${cap(horario.mes_ano)}</span>
+                    </div>${monthHtml}`;
                 }
-
-                daysHtml += `
-                <div class="day-card" data-date="${dia.data}" style="${(filter && !dayMatches) ? 'display:none;' : ''}">
-                    <div class="day-header">
-                        <span class="day-date">${dia.data}</span>
-                        <span class="day-week badge">${dia.dia_semana}</span>
-                    </div>
-                    <div class="day-body">${aulasHtml}</div>
-                </div>`;
             });
 
-            scheduleGrid.innerHTML = daysHtml || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma aula encontrada para esse filtro.</div>`;
+            scheduleGrid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma aula encontrada para esse filtro.</div>`;
             scheduleGrid.querySelectorAll('[data-uc-sched]').forEach(el =>
                 el.addEventListener('click', () => openUCFromSchedule(el.dataset.ucSched))
             );
@@ -3550,24 +3576,47 @@ opacity: 0.35;
             return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
         }
 
-        function renderHorarioWeek(horario, filter) {
+        function renderHorarioWeekAll(filter) {
             scheduleGrid.className = 'schedule-grid week-view';
             const pad = n => String(n).padStart(2, '0');
+            const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
             const now = new Date();
             const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
             const DAY_NAMES = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
 
-            // Index days by date and group by week
-            const byWeek = {};
-            horario.dias.forEach(dia => {
-                const wk = getWeekStart(dia.data);
-                if (!byWeek[wk]) byWeek[wk] = {};
-                byWeek[wk][dia.data] = dia;
+            // Collect all days across all months, preserving mes_ano
+            const allDays = {};
+            const dayMonth = {};
+            HORARIOS.forEach(horario => {
+                horario.dias.forEach(dia => {
+                    allDays[dia.data] = dia;
+                    dayMonth[dia.data] = horario.mes_ano;
+                });
             });
 
+            // Group by week
+            const byWeek = {};
+            Object.keys(allDays).sort().forEach(dateStr => {
+                const wk = getWeekStart(dateStr);
+                if (!byWeek[wk]) byWeek[wk] = {};
+                byWeek[wk][dateStr] = allDays[dateStr];
+            });
+
+            let lastMonth = null;
             const weeksHtml = Object.keys(byWeek).sort().map(weekStart => {
                 const [wy, wm, wd] = weekStart.split('-').map(Number);
                 const monDate = new Date(wy, wm - 1, wd);
+
+                // Detect month change based on first day of this week that has data
+                const firstDayOfWeek = Object.keys(byWeek[weekStart]).sort()[0];
+                const weekMonth = dayMonth[firstDayOfWeek];
+                let separatorHtml = '';
+                if (weekMonth && weekMonth !== lastMonth) {
+                    separatorHtml = `<div class="month-separator" data-month="${weekMonth}">
+                        <span>${cap(weekMonth)}</span>
+                    </div>`;
+                    lastMonth = weekMonth;
+                }
 
                 const colsHtml = DAY_NAMES.map((dayName, i) => {
                     const dt = new Date(monDate);
@@ -3590,7 +3639,7 @@ opacity: 0.35;
 
                     if (mergedAulas.length > 0) {
                         mergedAulas.forEach(aula => {
-                            const matched   = aulaMatchesFilter(aula, filter);
+                            const matched    = aulaMatchesFilter(aula, filter);
                             if (matched) colMatches = true;
                             const state      = getAulaState(dia.data, aula.hora);
                             const dimCls     = (filter && !matched) ? 'filtered-out' : '';
@@ -3619,9 +3668,9 @@ opacity: 0.35;
 
                 const friDate = new Date(monDate);
                 friDate.setDate(monDate.getDate() + 4);
-                const weekLabel = `${pad(monDate.getDate())}–${pad(friDate.getDate())} ${horario.mes_ano.split(' ')[0]}`;
+                const weekLabel = `${pad(monDate.getDate())}–${pad(friDate.getDate())}/${pad(monDate.getMonth()+1)}`;
 
-                return `<div class="week-block">
+                return `${separatorHtml}<div class="week-block">
                     <div class="week-label">${weekLabel}</div>
                     <div class="week-days">${colsHtml}</div>
                 </div>`;
@@ -3820,16 +3869,12 @@ opacity: 0.35;
         }
 
         function goToSession(dateStr) {
-            // Find which month index contains this date
-            let targetIdx = -1;
-            HORARIOS.forEach((h, i) => {
-                if (h.dias.some(d => d.data === dateStr)) targetIdx = i;
-            });
-            if (targetIdx === -1) return;
+            const exists = HORARIOS.some(h => h.dias.some(d => d.data === dateStr));
+            if (!exists) return;
 
             switchView('horario');
 
-            const doScroll = () => {
+            setTimeout(() => {
                 const toolbar = document.querySelector('.schedule-toolbar');
                 const offset  = (toolbar?.offsetHeight || 80) + 16;
                 const content = document.getElementById('app-content');
@@ -3839,15 +3884,7 @@ opacity: 0.35;
                 const targetRect  = target.getBoundingClientRect();
                 const contentRect = content.getBoundingClientRect();
                 content.scrollTo({ top: content.scrollTop + targetRect.top - contentRect.top - offset, behavior: 'smooth' });
-            };
-
-            if (targetIdx !== currentMonthIndex) {
-                monthSelect.value = targetIdx;
-                renderHorario(targetIdx);
-                setTimeout(doScroll, 80);
-            } else {
-                setTimeout(doScroll, 60);
-            }
+            }, 80);
         }
 
 
@@ -5008,14 +5045,14 @@ opacity: 0.35;
         // ── FILTER & VIEW TOGGLE ────────────────────────────────────────
         function filterHorario(val) {
             scheduleFilter = val.trim();
-            renderHorario(currentMonthIndex);
+            renderHorario();
         }
 
         function setScheduleView(mode) {
             scheduleViewMode = mode;
             document.getElementById('btn-view-cards').classList.toggle('active', mode === 'cards');
             document.getElementById('btn-view-week').classList.toggle('active', mode === 'week');
-            renderHorario(currentMonthIndex);
+            renderHorario();
         }
 
         // ── HOJE / AMANHÃ ────────────────────────────────────────────────
@@ -7568,11 +7605,7 @@ SELECT * FROM utilizadores;
             renderTurma();
 
             if (HORARIOS.length > 0) {
-                monthSelect.innerHTML = HORARIOS.map((h,i) =>
-                    `<option value="${i}">${h.mes_ano.toUpperCase()}</option>`
-                ).join('');
-                monthSelect.addEventListener('change', e => renderHorario(parseInt(e.target.value)));
-                renderHorario(0);
+                renderHorario();
             } else {
                 scheduleGrid.innerHTML = `<div class="empty-state"><h3>Sem Dados</h3><p>Sem ficheiros de horário.</p></div>`;
             }

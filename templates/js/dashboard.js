@@ -15,14 +15,14 @@
         // ── FILTER & VIEW TOGGLE ────────────────────────────────────────
         function filterHorario(val) {
             scheduleFilter = val.trim();
-            renderHorario(currentMonthIndex);
+            renderHorario();
         }
 
         function setScheduleView(mode) {
             scheduleViewMode = mode;
             document.getElementById('btn-view-cards').classList.toggle('active', mode === 'cards');
             document.getElementById('btn-view-week').classList.toggle('active', mode === 'week');
-            renderHorario(currentMonthIndex);
+            renderHorario();
         }
 
         // ── HOJE / AMANHÃ ────────────────────────────────────────────────
@@ -64,7 +64,7 @@
                 const formadorBadge = aula.formador
                     ? `<div class="aula-uc badge" style="margin-top:0;background:rgba(255,255,255,0.1);color:#fff;">👤 ${shortName(aula.formador)}</div>` : '';
                 const clickAttr = UC_MAP[aula.uc]
-                    ? `onclick="openUCFromSchedule('${aula.uc}')"` : '';
+                    ? `data-uc-sched="${aula.uc}"` : '';
                 return `
                 <div class="aula-card ${state} ${isClickable} ${remoteClass}" ${clickAttr}>
                     <div class="aula-time">${aula.hora}</div>
@@ -78,6 +78,9 @@
                     ${UC_MAP[aula.uc] ? `<button class="open-uc-btn" title="Abrir disciplina">↗</button>` : ''}
                 </div>`;
             }).join('');
+            el.querySelectorAll('[data-uc-sched]').forEach(card =>
+                card.addEventListener('click', () => openUCFromSchedule(card.dataset.ucSched))
+            );
         }
 
         function buildTodayPanel() {
