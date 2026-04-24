@@ -1,6 +1,6 @@
         // ── DISCIPLINES LIST ────────────────────────────────────────────
         function getTypeIcon(type) {
-            const icons = { link:'🔗', pdf:'📄', doc:'📝', video:'🎬', slide:'📊', outro:'📁', file:'📎' };
+            const icons = { link:'🔗', pdf:'📄', doc:'📝', video:'🎬', slide:'📊', html:'🌐', outro:'📁', file:'📎' };
             return icons[type] || '📎';
         }
 
@@ -36,7 +36,7 @@
             }
 
             return `
-            <div class="uc-card" onclick="openUCDetail('${uc.codigo}')">
+            <div class="uc-card" data-uc-open="${uc.codigo}">
                 <div class="uc-card-code">${uc.codigo}</div>
                 <div class="uc-card-name">${uc.descricao}</div>
                 ${progressHtml}
@@ -62,7 +62,7 @@
             }
 
             // Categorise UCs
-            const emCurso = [], porAgendar = [], concluidas = [];
+            const emCurso = [], agendadas = [], porAgendar = [], concluidas = [];
             filtered.forEach(uc => {
                 const { done, scheduled } = computeUCHours(uc.codigo);
                 const target = uc.carga_horaria || scheduled;
@@ -70,6 +70,8 @@
                     concluidas.push(uc);
                 } else if (done > 0) {
                     emCurso.push(uc);
+                } else if (scheduled > 0) {
+                    agendadas.push(uc);
                 } else {
                     porAgendar.push(uc);
                 }
@@ -92,11 +94,15 @@
 
             const html = [
                 sectionHtml('Em curso', '🔵', emCurso),
+                sectionHtml('Agendadas', '📅', agendadas),
                 sectionHtml('Por agendar', '⏳', porAgendar),
                 sectionHtml('Concluídas', '✅', concluidas),
             ].join('');
 
             grid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma UC encontrada.</div>`;
+            grid.querySelectorAll('[data-uc-open]').forEach(el =>
+                el.addEventListener('click', () => { navStack.push(currentView); openUCDetail(el.dataset.ucOpen); })
+            );
         }
 
         function filterUCs(value) {
@@ -138,7 +144,9 @@
                 const [y, mo, d] = s.data.split('-');
                 const sKey = s.num === 1 ? ucCode : `${ucCode}_${s.data}`;
                 const isActive = sKey === activeKey ? ' active-session' : '';
-                return `<div class="session-chip ${s.state}${isActive}" onclick="openSessionDetail('${ucCode}','${s.data}',${s.num},'${s.hora}','${s.dia_semana}','${s.mes_ano}')">
+                return `<div class="session-chip ${s.state}${isActive}"
+                    data-sess-uc="${ucCode}" data-sess-date="${s.data}" data-sess-num="${s.num}"
+                    data-sess-hora="${s.hora}" data-sess-dow="${s.dia_semana}" data-sess-mes="${s.mes_ano}">
                     <span class="session-chip-num">S${s.num}</span>
                     <span class="session-chip-date">${d}/${mo}</span>
                 </div>`;
@@ -169,12 +177,20 @@
 
             // Flat horizontal chips (no month grouping)
             contentEl.innerHTML = `<div class="session-list">${buildSessionChipsHTML(ucCode, sessions, null)}</div>`;
+            contentEl.querySelectorAll('[data-sess-uc]').forEach(el =>
+                el.addEventListener('click', () => {
+                    navStack.push(currentView);
+                    openSessionDetail(
+                        el.dataset.sessUc, el.dataset.sessDate, parseInt(el.dataset.sessNum),
+                        el.dataset.sessHora, el.dataset.sessDow, el.dataset.sessMes
+                    );
+                })
+            );
         }
 
         // ── UC DETAIL ───────────────────────────────────────────────────
         async function openUCDetail(ucCode) {
             currentUCCode = ucCode;
-            if (currentView !== 'uc-detail') previousView = currentView;
 
             const uc = UC_MAP[ucCode] || {};
             document.getElementById('detail-uc-code').textContent = ucCode;

@@ -35,36 +35,43 @@
             }
         }
 
-        function signInWithMicrosoftPersonal() {
+        function _signInWithProvider(provider) {
             const btns = document.querySelectorAll('.auth-btn');
+            const msg = document.getElementById('auth-err');
             btns.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
-            const provider = new firebase.auth.OAuthProvider('microsoft.com');
-            provider.setCustomParameters({ prompt: 'select_account' });
-            auth.signInWithPopup(provider).catch(e => {
-                if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
-                    auth.signInWithRedirect(provider);
+            // Safety fallback: always re-enable after 20s if no navigation/callback
+            const safety = setTimeout(() => {
+                btns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
+                if (msg) { msg.textContent = 'Timeout — tenta novamente.'; msg.style.display = 'block'; }
+            }, 20000);
+            auth.signInWithPopup(provider).then(() => clearTimeout(safety)).catch(e => {
+                clearTimeout(safety);
+                if (e.code === 'auth/popup-blocked') {
+                    if (msg) { msg.textContent = 'A redirecionar para login…'; msg.style.display = 'block'; }
+                    auth.signInWithRedirect(provider).catch(re => {
+                        btns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
+                        if (msg) { msg.textContent = 'Erro de redirect (' + (re.code || '') + '): ' + re.message; msg.style.display = 'block'; }
+                    });
+                } else if (e.code === 'auth/popup-closed-by-user') {
+                    btns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
+                    if (msg) { msg.style.display = 'none'; }
                 } else {
                     btns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
-                    const msg = document.getElementById('auth-err');
-                    if (msg) { msg.textContent = 'Erro (' + (e.code || '') + '): ' + e.message; msg.style.display = 'block'; }
+                    if (msg) { msg.textContent = 'Erro (' + (e.code || e.message) + ')'; msg.style.display = 'block'; }
                 }
             });
         }
 
+        function signInWithMicrosoftPersonal() {
+            const provider = new firebase.auth.OAuthProvider('microsoft.com');
+            provider.setCustomParameters({ prompt: 'select_account' });
+            _signInWithProvider(provider);
+        }
+
         function signInWithGoogle() {
-            const btns = document.querySelectorAll('.auth-btn');
-            btns.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
-            auth.signInWithPopup(provider).catch(e => {
-                if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
-                    auth.signInWithRedirect(provider);
-                } else {
-                    btns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
-                    const msg = document.getElementById('auth-err');
-                    if (msg) { msg.textContent = 'Erro (' + (e.code || '') + '): ' + e.message; msg.style.display = 'block'; }
-                }
-            });
+            _signInWithProvider(provider);
         }
 
         function initAuth() {
@@ -111,6 +118,8 @@
                         window._userRole = 'blocked';
                         window._isModerador = false;
                         showAuthGate();
+                        const msg = document.getElementById('auth-err');
+                        if (msg) { msg.textContent = 'Erro ao verificar acesso (' + (e.code || e.message || 'desconhecido') + '). Tenta novamente.'; msg.style.display = 'block'; }
                         return;
                     }
                     hideAuthGate();

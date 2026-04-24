@@ -1,3 +1,29 @@
+        // ── CHAT FORMAT (links + markdown) ──────────────────────────────
+        function chatFormatText(raw) {
+            // Split on URLs first so they're never HTML-escaped into unclickable text
+            const urlRe = /(https?:\/\/[^\s<>"']+)/g;
+            const parts = raw.split(urlRe);
+            return parts.map((part, i) => {
+                if (i % 2 === 1) {
+                    const safe = escapeHtml(part);
+                    return `<a href="${safe}" target="_blank" rel="noopener noreferrer" class="chat-link">${safe}</a>`;
+                }
+                let s = escapeHtml(part);
+                // Code blocks (``` ... ```)
+                s = s.replace(/```([\s\S]*?)```/g, (_, c) =>
+                    `<pre class="chat-pre"><code>${c.trim()}</code></pre>`);
+                // Inline code
+                s = s.replace(/`([^`\n]+)`/g, '<code class="chat-code">$1</code>');
+                // Bold
+                s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+                // Italic
+                s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+                // Line breaks
+                s = s.replace(/\n/g, '<br>');
+                return s;
+            }).join('');
+        }
+
         // ── CHAT (full-page view) ────────────────────────────────────────
         function chatViewInit() {
             if (chatUnsub) return;   // already subscribed
@@ -28,13 +54,13 @@
 
         function chatBubbleHtml(m, uid, channel) {
             const mine   = m.uid === uid;
-            const delBtn = `<button class="chat-del-btn" title="Apagar" onclick="chatDelete('${channel}','${escapeHtml(m.id)}')">✕</button>`;
+            const delBtn = `<button class="chat-del-btn" title="Apagar" data-chat-del-ch="${channel}" data-chat-del-id="${escapeHtml(m.id)}">✕</button>`;
             const time   = m.timestamp?.toMillis
                 ? new Date(m.timestamp.toMillis()).toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'})
                 : '';
             return `<div class="chat-msg ${mine ? 'mine' : 'other'}">
                 ${!mine ? `<div class="chat-author">${escapeHtml(m.displayName || 'Anónimo')}</div>` : ''}
-                <div class="chat-bubble">${escapeHtml(m.text)}</div>
+                <div class="chat-bubble">${chatFormatText(m.text)}</div>
                 <div style="display:flex;gap:0.25rem;align-items:center;">
                     <span class="chat-msg-time">${time}</span>
                     ${mine || window._isModerador ? delBtn : ''}
@@ -174,7 +200,7 @@
                 : '';
             return `<div class="chat-msg ${mine ? 'mine' : 'other'}">
                 ${!mine ? `<div class="chat-author">${escapeHtml(m.displayName || 'Anónimo')}${badge}</div>` : ''}
-                <div class="chat-bubble">${escapeHtml(m.text)}</div>
+                <div class="chat-bubble">${chatFormatText(m.text)}</div>
                 <span class="chat-msg-time">${time}</span>
             </div>`;
         }

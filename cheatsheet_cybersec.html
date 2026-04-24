@@ -258,10 +258,42 @@
     border-radius: 50%;
   }
 
+  @media screen {
+    body { font-size: 13px; }
+    td { font-size: 11.5px; }
+    td:first-child { font-size: 11.5px; }
+    .section-title { font-size: 11px; }
+    .phase-badge { font-size: 10px; }
+    .note { font-size: 10px; }
+    .header-title { font-size: 22px; }
+    .header-sub { font-size: 11px; }
+    .footer-text { font-size: 10px; }
+    .legend-item { font-size: 9px; }
+  }
   @media print {
     body { background: var(--bg) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .page { width: 297mm; padding: 8mm 10mm; }
   }
+
+  /* ── CHIP FILTERS ─────────────────────────────────────────────────── */
+  .header-right .phase-badge {
+    cursor: pointer; user-select: none;
+    transition: opacity .12s, box-shadow .12s, transform .1s;
+  }
+  .header-right .phase-badge:hover { opacity: .8; transform: scale(1.06); }
+  .header-right .phase-badge.chip-active { box-shadow: 0 0 0 1.5px currentColor; transform: scale(1.08); }
+  .header-right .phase-badge.chip-dimmed { opacity: .3; }
+  .chip-all {
+    background: rgba(255,255,255,.07) !important;
+    color: var(--text-dim) !important;
+    border: 1px solid rgba(255,255,255,.15) !important;
+  }
+  .chip-all.chip-active {
+    background: rgba(255,255,255,.13) !important;
+    box-shadow: 0 0 0 1.5px rgba(255,255,255,.35) !important;
+  }
+  .section { transition: opacity .15s; }
+  .section.filtered-out { display: none; }
 </style>
 </head>
 <body>
@@ -276,6 +308,7 @@
       </div>
     </div>
     <div class="header-right">
+      <span class="phase-badge chip-all">Todos</span>
       <span class="phase-badge p-recon">Recon</span>
       <span class="phase-badge p-scan">Scan</span>
       <span class="phase-badge p-exploit">Exploit</span>

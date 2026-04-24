@@ -665,7 +665,7 @@
 
             return `
 <div class="lab-module-card ${status}${_labActiveModule === mod.id ? ' active' : ''}"
-     onclick="labOpenModule('${mod.id}')">
+     data-lab-open="${mod.id}">
   <div class="lab-module-top">
     <span class="lab-module-icon">${status === 'locked' ? '🔒' : mod.icon}</span>
     <span class="lab-module-status status-${status}">${labStatusLabel(status)}</span>
@@ -730,10 +730,10 @@
       <span class="lab-detail-icon">${mod.icon}</span>
       <span class="lab-detail-name">Módulo ${mod.num} — ${mod.name}</span>
     </div>
-    <button class="lab-detail-close" onclick="labCloseDetail()">✕</button>
+    <button class="lab-detail-close" data-lab-close>✕</button>
   </div>
   <div class="lab-tabs">
-    ${tabs.map(([id, label]) => `<button class="lab-tab${_labActiveTab === id ? ' active' : ''}" onclick="labSwitchTab('${id}')">${label}</button>`).join('')}
+    ${tabs.map(([id, label]) => `<button class="lab-tab${_labActiveTab === id ? ' active' : ''}" data-lab-tab="${id}">${label}</button>`).join('')}
   </div>
   <div class="lab-tab-panel${_labActiveTab === 'teoria' ? ' active' : ''}" id="lab-panel-teoria">
     ${labRenderTheory(mod)}
@@ -761,7 +761,7 @@
 
         function labSwitchTab(tabId) {
             _labActiveTab = tabId;
-            document.querySelectorAll('.lab-tab').forEach(t => t.classList.toggle('active', t.textContent.toLowerCase().includes(tabId) || t.onclick.toString().includes(`'${tabId}'`)));
+            document.querySelectorAll('[data-lab-tab]').forEach(t => t.classList.toggle('active', t.dataset.labTab === tabId));
             document.querySelectorAll('.lab-tab-panel').forEach(p => p.classList.remove('active'));
             const panel = document.getElementById(`lab-panel-${tabId}`);
             if (panel) panel.classList.add('active');
@@ -797,7 +797,7 @@
   ${mod.steps.map((step, i) => {
     const done = p.steps && p.steps[i];
     return `
-<div class="lab-step${done ? ' done' : ''}" onclick="labToggleStep('${mod.id}', ${i})">
+<div class="lab-step${done ? ' done' : ''}" data-lab-step-mod="${mod.id}" data-lab-step-idx="${i}">
   <div class="lab-step-check">${done ? '✓' : ''}</div>
   <div class="lab-step-body">
     <div class="lab-step-title">${i + 1}. ${step.title}</div>
@@ -834,11 +834,11 @@
   <div class="lab-ctf-objective">${mod.ctfObjective}</div>
   <div class="lab-ctf-flag-row">
     <input class="lab-ctf-input" id="ctf-input-${mod.id}" type="text" placeholder="flag{...}" spellcheck="false"
-           onkeydown="if(event.key==='Enter')labSubmitFlag('${mod.id}')">
-    <button class="lab-ctf-submit" onclick="labSubmitFlag('${mod.id}')">Submeter Flag</button>
+           data-lab-flag-input="${mod.id}">
+    <button class="lab-ctf-submit" data-lab-submit-flag="${mod.id}">Submeter Flag</button>
   </div>
   <div class="lab-ctf-result" id="ctf-result-${mod.id}"></div>
-  <button class="lab-hint-btn" onclick="labToggleHint('${mod.id}')">💡 Pedir Hint (−25 XP)</button>
+  <button class="lab-hint-btn" data-lab-hint="${mod.id}">💡 Pedir Hint (−25 XP)</button>
   <div class="lab-hint-text" id="ctf-hint-${mod.id}">${mod.ctfHint}</div>
 </div>
             `;
@@ -860,7 +860,7 @@
   <div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.75rem;">${c.desc}</div>
   ${!solved ? `
   <input class="lab-ctf-input" id="arena-input-${c.id}" type="text" placeholder="flag{...}"
-         onkeydown="if(event.key==='Enter')labSubmitArena('${mod.id}','${c.id}','${c.flag}',${c.xp})"
+         data-lab-arena-mod="${mod.id}" data-lab-arena-chall="${c.id}" data-lab-arena-flag="${c.flag}" data-lab-arena-xp="${c.xp}"
          style="margin-bottom:0.5rem;font-size:0.75rem;">
   <div class="ctf-arena-card-meta">
     <span class="ctf-arena-diff ${c.diff}">${c.diff.toUpperCase()}</span>
@@ -953,16 +953,10 @@
         }
 
         function labRefreshModuleCard(moduleId) {
-            const cards = document.querySelectorAll('.lab-module-card');
-            LAB_MODULES.forEach((mod, idx) => {
-                if (mod.id === moduleId && cards[idx]) {
-                    cards[idx].outerHTML = labRenderModuleCard(mod, idx);
-                }
-            });
-            const grid = document.querySelector('.lab-modules-grid');
-            if (grid) {
+            const grids = document.querySelectorAll('.lab-modules-grid');
+            grids.forEach(grid => {
                 grid.innerHTML = LAB_MODULES.map((mod, idx) => labRenderModuleCard(mod, idx)).join('');
-            }
+            });
         }
 
         function labRefreshStats() {

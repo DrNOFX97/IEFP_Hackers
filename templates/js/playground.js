@@ -13,12 +13,7 @@
             tabs: [],
             active: null,
             counter: { python: 0, sql: 0 },
-            worker: null,
-            workerReady: false,
-            pyodideLoading: false,
-            hasFormat: false,
-            _runId: 0,
-            _pendingRuns: {},   // id → { resolve, reject, tabId }
+            runningTabs: new Set(),
             SQL: null,
             sqlLoading: false,
             editors: {},       // tabId → CodeMirror instance
@@ -33,19 +28,6 @@
 
         // ── Exemplos Python ────────────────────────────────────
         const PG_EXAMPLES = __INJECT_PG_EXAMPLES__;
-
-        // ── Black formatter (Prettier para Python) ─────────────
-        const _PG_FMT_CODE = `
-import micropip as _mp
-await _mp.install('autopep8')
-import autopep8 as _autopep8
-def _pg_format(src):
-    try:
-        out = _autopep8.fix_code(src, options={'aggressive': 1, 'max_line_length': 88})
-        return {'ok': out, 'err': ''}
-    except Exception as e:
-        return {'ok': src, 'err': str(e)}
-`;
 
         // ── SQL default example ────────────────────────────────
         const _SQL_DEFAULT = `-- Criar tabela
@@ -204,7 +186,7 @@ SELECT * FROM utilizadores;
             pgRenderTabBar();
             pgCreatePanel(tab);
             pgSwitchTab(id);
-            if (type === 'python') pgEnsurePyodide(id);
+            if (type === 'python') pgPythonTabReady(id);
             if (type === 'sql')    pgEnsureSQL(id);
         }
 
@@ -214,7 +196,7 @@ SELECT * FROM utilizadores;
             if (idx === -1) return;
             const tab = pg.tabs[idx];
             if (tab.db) { try { tab.db.close(); } catch(_) {} }
-            if (tab.type === 'python' && pg.worker) pg.worker.postMessage({ type: 'clear_ns', tabId: id });
+            pg.runningTabs.delete(id);
             if (pg.editors[id]) { delete pg.editors[id]; }
             pg.tabs.splice(idx, 1);
             document.getElementById(id + '-tab')?.remove();
@@ -247,10 +229,19 @@ SELECT * FROM utilizadores;
             const container = document.getElementById('pg-tabs');
             container.innerHTML = pg.tabs.map(t => `
                 <div class="pg-tab${t.id === pg.active ? ' active' : ''}"
-                     id="${t.id}-tab" onclick="pgSwitchTab('${t.id}')">
+                     id="${t.id}-tab" data-pg-tab="${t.id}">
                     ${escapeHtml(t.label)}
-                    <span class="pg-tab-close" onclick="pgCloseTab('${t.id}', event)" title="Fechar">✕</span>
+                    <span class="pg-tab-close" data-pg-close-tab="${t.id}" title="Fechar">✕</span>
                 </div>`).join('');
+            container.querySelectorAll('[data-pg-tab]').forEach(el =>
+                el.addEventListener('click', e => {
+                    if (e.target.closest('[data-pg-close-tab]')) return;
+                    pgSwitchTab(el.dataset.pgTab);
+                })
+            );
+            container.querySelectorAll('[data-pg-close-tab]').forEach(el =>
+                el.addEventListener('click', e => { e.stopPropagation(); pgCloseTab(el.dataset.pgCloseTab, e); })
+            );
         }
 
         // ── File management ─────────────────────────────────────
@@ -268,13 +259,27 @@ SELECT * FROM utilizadores;
             if (!bar) return;
             bar.innerHTML = tab.files.map(f => `
                 <div class="pg-filetab${f.id === tab.activeFile ? ' active' : ''}"
-                     id="${f.id}-ftab" onclick="pgSwitchFile('${tabId}','${f.id}')">
+                     id="${f.id}-ftab" data-pg-file-tab="${tabId}" data-pg-switch-file="${f.id}">
                     <span class="pg-filetab-name"
-                          ondblclick="pgRenameFile('${tabId}','${f.id}',event)"
+                          data-pg-rename-tab="${tabId}" data-pg-rename-file="${f.id}"
                           title="Duplo clique para renomear">${escapeHtml(f.name)}</span>
-                    ${tab.files.length > 1 ? `<span class="pg-filetab-close" onclick="pgCloseFile('${tabId}','${f.id}',event)">✕</span>` : ''}
+                    ${tab.files.length > 1 ? `<span class="pg-filetab-close" data-pg-close-file-tab="${tabId}" data-pg-close-file="${f.id}">✕</span>` : ''}
                 </div>`).join('') +
-                `<span class="pg-filetab-add" onclick="pgNewFile('${tabId}')" title="Novo ficheiro">＋</span>`;
+                `<span class="pg-filetab-add" data-pg-new-file="${tabId}" title="Novo ficheiro">＋</span>`;
+            bar.querySelectorAll('[data-pg-file-tab]').forEach(el =>
+                el.addEventListener('click', e => {
+                    if (e.target.closest('[data-pg-close-file-tab]')) return;
+                    pgSwitchFile(el.dataset.pgFileTab, el.dataset.pgSwitchFile);
+                })
+            );
+            bar.querySelectorAll('[data-pg-close-file-tab]').forEach(el =>
+                el.addEventListener('click', e => { e.stopPropagation(); pgCloseFile(el.dataset.pgCloseFileTab, el.dataset.pgCloseFile, e); })
+            );
+            bar.querySelectorAll('[data-pg-rename-tab]').forEach(el =>
+                el.addEventListener('dblclick', e => pgRenameFile(el.dataset.pgRenameTab, el.dataset.pgRenameFile, e))
+            );
+            const addBtn = bar.querySelector('[data-pg-new-file]');
+            if (addBtn) addBtn.addEventListener('click', () => pgNewFile(addBtn.dataset.pgNewFile));
         }
 
         function pgSwitchFile(tabId, fileId) {
@@ -344,13 +349,13 @@ SELECT * FROM utilizadores;
             div.id = tab.id + '-panel';
             if (tab.type === 'python') {
                 div.innerHTML = `
-                    <div class="pg-sandbox-warning">⚠️ Executa apenas código de fontes confiáveis. O código corre no teu browser.</div>
+                    <div class="pg-sandbox-warning">🔒 Código corre num servidor isolado (gVisor + sem rede + timeout 10s). Sem estado persistente entre execuções.</div>
                     <div class="pg-editor-wrap">
                         <div class="pg-toolbar">
-                            <button class="pg-run-btn" id="${tab.id}-run" onclick="pgRunPython('${tab.id}')">▶ Correr</button>
-                            <button class="pg-clear-btn" onclick="pgClearOutput('${tab.id}')">Limpar</button>
+                            <button class="pg-run-btn" id="${tab.id}-run" data-pg-run="${tab.id}">▶ Correr</button>
+                            <button class="pg-clear-btn" data-pg-clear="${tab.id}">Limpar</button>
                             <div class="pg-examples-wrap">
-                                <button class="pg-examples-btn" onclick="pgToggleExamples(event,'${tab.id}-ex')">Exemplos ▾</button>
+                                <button class="pg-examples-btn" data-pg-examples="${tab.id}-ex">Exemplos ▾</button>
                                 <div class="pg-examples-menu" id="${tab.id}-ex">
                                     ${PG_EXAMPLES.map((ex,i) => `<div class="pg-examples-item" data-idx="${i}" data-tabid="${tab.id}" data-menuid="${tab.id}-ex">${ex.label}</div>`).join('')}
                                 </div>
@@ -369,7 +374,9 @@ SELECT * FROM utilizadores;
                         </div>
                     </div>`;
                 pgRenderFileTabs(tab.id);
-                // Ligar exemplos via event delegation (evita problemas de aspas em onclick)
+                div.querySelector(`[data-pg-run]`)?.addEventListener('click', () => pgRunPython(tab.id));
+                div.querySelector(`[data-pg-clear]`)?.addEventListener('click', () => pgClearOutput(tab.id));
+                div.querySelector(`[data-pg-examples]`)?.addEventListener('click', e => pgToggleExamples(e, tab.id + '-ex'));
                 div.querySelectorAll('.pg-examples-item[data-idx]').forEach(el => {
                     el.addEventListener('click', () => {
                         const idx = parseInt(el.dataset.idx);
@@ -405,8 +412,8 @@ SELECT * FROM utilizadores;
                 div.innerHTML = `
                     <div class="pg-repl">
                         <div class="pg-toolbar">
-                            <button class="pg-run-btn" id="${tab.id}-run" onclick="pgSQLRun('${tab.id}')" disabled>▶ Correr</button>
-                            <button class="pg-clear-btn" onclick="pgSQLClear('${tab.id}')">Limpar</button>
+                            <button class="pg-run-btn" id="${tab.id}-run" data-pg-sql-run="${tab.id}" disabled>▶ Correr</button>
+                            <button class="pg-clear-btn" data-pg-sql-clear="${tab.id}">Limpar</button>
                             <span class="pg-hint">Ctrl+Enter para correr</span>
                         </div>
                         <div class="pg-repl-body">
@@ -421,6 +428,8 @@ SELECT * FROM utilizadores;
                             </div>
                         </div>
                     </div>`;
+                div.querySelector(`[data-pg-sql-run]`)?.addEventListener('click', () => pgSQLRun(tab.id));
+                div.querySelector(`[data-pg-sql-clear]`)?.addEventListener('click', () => pgSQLClear(tab.id));
                 // Inicializar CodeMirror SQL
                 pgEnsureCM().then(() => pgEnsureCMSQL()).then(() => {
                     const host = document.getElementById(tab.id + '-cm-host');
@@ -446,140 +455,98 @@ SELECT * FROM utilizadores;
             wrap.appendChild(div);
         }
 
-        // ── Python (Web Worker) ─────────────────────────────────
-        function _pgWorkerInit() {
-            if (pg.worker) return;
-            pg.worker = new Worker('pyodide-worker.js');
-            pg.worker.onmessage = ({ data }) => {
-                const { type, id } = data;
-                if (type === 'ready') {
-                    pg.workerReady = true;
-                    pg.hasFormat = data.hasFormat;
-                    pg.pyodideLoading = false;
-                    pg.tabs.filter(t => t.type === 'python').forEach(t => pgSetRunReady(t.id));
-                    return;
-                }
-                if (type === 'init_error') {
-                    pg.pyodideLoading = false;
-                    pg.tabs.filter(t => t.type === 'python').forEach(t =>
-                        pgSetOutput(t.id, `<span class="pg-err">Erro ao carregar Python: ${escapeHtml(data.message)}</span>`)
-                    );
-                    return;
-                }
-                if (type === 'result' || type === 'run_error') {
-                    const pending = pg._pendingRuns[id];
-                    if (!pending) return;
-                    delete pg._pendingRuns[id];
-                    if (type === 'result') pending.resolve(data);
-                    else pending.reject(new Error(data.message));
-                    return;
-                }
-                if (type === 'input_request') {
-                    // Show inline input prompt in the tab output, then relay value back to worker
-                    const { tabId, buffered, prompt } = data;
-                    window._pgRequestInput(tabId, buffered, prompt).then(value => {
-                        pg.worker.postMessage({ type: 'input_response', value });
-                    });
-                    return;
-                }
-            };
-            pg.worker.onerror = (e) => {
-                pg.pyodideLoading = false;
-                pg.tabs.filter(t => t.type === 'python').forEach(t =>
-                    pgSetOutput(t.id, `<span class="pg-err">Erro no worker: ${escapeHtml(e.message || 'desconhecido')}</span>`)
-                );
-            };
-            pg.worker.postMessage({ type: 'init' });
-        }
-
-        async function pgEnsurePyodide(tabId) {
-            if (pg.workerReady) { pgSetRunReady(tabId); return; }
-            if (pg.pyodideLoading) {
-                pgSetOutput(tabId, '<span class="pg-info"># A carregar Python (Pyodide)…</span>');
-                while (pg.pyodideLoading) await new Promise(r => setTimeout(r, 200));
-                if (pg.workerReady) pgSetRunReady(tabId);
-                return;
-            }
-            pg.pyodideLoading = true;
-            pgSetOutput(tabId, '<span class="pg-info"># A carregar Python (~10 MB, apenas na primeira vez)…</span>');
+        // ── Python (Cloud Run) ──────────────────────────────────
+        function pgPythonTabReady(tabId) {
             const btn = document.getElementById(tabId + '-run');
-            if (btn) btn.disabled = true;
-            _pgWorkerInit();
-            // Wait for ready/error (up to 90s for large Pyodide download)
-            await new Promise((res, rej) => {
-                const t = setTimeout(() => rej(new Error('Timeout (>90s). Faz Ctrl+Shift+R e tenta de novo.')), 90000);
-                const check = setInterval(() => {
-                    if (pg.workerReady || !pg.pyodideLoading) { clearInterval(check); clearTimeout(t); res(); }
-                }, 300);
-            }).catch(e => {
-                pg.pyodideLoading = false;
-                pgSetOutput(tabId, `<span class="pg-err">Erro: ${escapeHtml(e.message)}</span>`);
-            });
-            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
-        }
-
-        function pgSetRunReady(tabId) {
-            const btn = document.getElementById(tabId + '-run');
-            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
-            pgSetOutput(tabId, '<span class="pg-info"># Python pronto — escreve código e clica Correr</span>');
+            if (btn) btn.disabled = false;
+            const msg = CLOUDRUN_URL
+                ? '# Python pronto — escreve código e clica Correr'
+                : '# ⚠️ Servidor de execução não configurado';
+            pgSetOutput(tabId, `<span class="pg-info">${msg}</span>`);
         }
 
         function pgEditorKey(e, tabId) { /* legacy — CodeMirror usa extraKeys */ }
 
         async function pgRunPython(tabId) {
-            if (!pg.workerReady) { await pgEnsurePyodide(tabId); return; }
-            const code = pgEditorGetValue(tabId).trim();
-            if (!code) return;
+            if (!CLOUDRUN_URL) {
+                pgSetOutput(tabId, '<span class="pg-err">⚠️ Servidor de execução não configurado. Contacta o administrador.</span>');
+                return;
+            }
+            if (pg.runningTabs.has(tabId)) return;
+
+            pgSaveCurrentFile(tabId);
+            const tab = pg.tabs.find(t => t.id === tabId);
+            const files = tab.files
+                .filter(f => f.code.trim())
+                .map(f => ({
+                    name: f.name,
+                    // btoa sobre UTF-8: encodeURIComponent → unescape → Latin-1-safe → btoa
+                    content_b64: btoa(unescape(encodeURIComponent(f.code)))
+                }));
+            if (!files.length) { pgSetOutput(tabId, '<span class="pg-info"># (sem código)</span>'); return; }
+
             const btn = document.getElementById(tabId + '-run');
-            if (btn) btn.disabled = true;
+            pg.runningTabs.add(tabId);
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ A correr…'; }
             const outputEl = document.getElementById(tabId + '-output');
             if (outputEl) outputEl.innerHTML = '';
+
             try {
-                const tab = pg.tabs.find(t => t.id === tabId);
-                // Salvar ficheiro activo
-                pgSaveCurrentFile(tabId);
-                const files = tab.files.filter(f => f.code.trim()).map(f => ({name: f.name, code: f.code}));
-                if (!files.length) { pgSetOutput(tabId, '<span class="pg-info"># (sem código)</span>'); return; }
+                let token = null;
+                try {
+                    const user = firebase.auth().currentUser;
+                    if (user) token = await user.getIdToken();
+                } catch(_) {}
 
-                const runId = ++pg._runId;
-                const resultPromise = new Promise((resolve, reject) => {
-                    pg._pendingRuns[runId] = { resolve, reject, tabId };
+                const resp = await fetch(CLOUDRUN_URL + '/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify({ files, timeout: 10 }),
+                    signal: AbortSignal.timeout(15000)
                 });
-                pg.worker.postMessage({ type: 'run', id: runId, tabId, files });
 
-                const data = await resultPromise;
-                const { out, err, formattedFiles } = data;
-
-                // Apply formatted code back to tab files
-                if (pg.hasFormat && formattedFiles) {
-                    formattedFiles.forEach(ff => {
-                        const f = tab.files.find(x => x.name === ff.name);
-                        if (f) f.code = ff.code;
-                    });
-                    const activeFile = tab.files.find(f => f.id === tab.activeFile);
-                    if (activeFile) pgEditorSetValue(tabId, activeFile.code);
+                if (!resp.ok) {
+                    const txt = await resp.text().catch(() => '');
+                    pgSetOutput(tabId, `<span class="pg-err">Erro do servidor (${resp.status})${txt ? ': ' + escapeHtml(txt.slice(0, 200)) : ''}</span>`);
+                    return;
                 }
 
-                if (out) {
+                const { stdout, stderr, exit_code, elapsed_ms } = await resp.json();
+
+                if (stdout) {
                     const span = document.createElement('span');
                     span.style.color = '#3fb950';
                     span.style.whiteSpace = 'pre-wrap';
-                    span.textContent = out;
+                    span.textContent = stdout;
                     outputEl.appendChild(span);
                 }
-                if (err) {
+                if (stderr) {
                     const span = document.createElement('span');
                     span.style.color = '#f85149';
                     span.style.whiteSpace = 'pre-wrap';
-                    span.textContent = err;
+                    span.textContent = stderr;
                     outputEl.appendChild(span);
                 }
-                if (!out && !err && !outputEl.hasChildNodes())
-                    pgSetOutput(tabId, '<span class="pg-info"># (sem output)</span>');
+                if (elapsed_ms != null && (stdout || stderr)) {
+                    const info = document.createElement('span');
+                    info.className = 'pg-info';
+                    info.textContent = `\n# concluído em ${elapsed_ms}ms`;
+                    outputEl.appendChild(info);
+                }
+                if (!stdout && !stderr) pgSetOutput(tabId, '<span class="pg-info"># (sem output)</span>');
+
             } catch(e) {
-                pgSetOutput(tabId, `<span class="pg-err">${escapeHtml(e.message)}</span>`);
+                if (e.name === 'TimeoutError' || e.name === 'AbortError') {
+                    pgSetOutput(tabId, '<span class="pg-err">⏱️ Timeout: o servidor não respondeu em 15s.</span>');
+                } else {
+                    pgSetOutput(tabId, `<span class="pg-err">${escapeHtml(e.message)}</span>`);
+                }
             } finally {
-                if (btn) btn.disabled = false;
+                pg.runningTabs.delete(tabId);
+                if (btn) { btn.disabled = false; btn.textContent = '▶ Correr'; }
             }
         }
 

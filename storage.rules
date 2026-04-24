@@ -18,6 +18,7 @@ service firebase.storage {
                         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                         'text/plain',
                         'text/markdown',
+                        'text/html',
                         'image/png',
                         'image/jpeg',
                         'image/gif',

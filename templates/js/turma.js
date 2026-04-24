@@ -59,11 +59,14 @@
                     const avatarHtml = m.photoURL
                         ? `<div class="turma-chip-avatar"><img src="${escapeHtml(m.photoURL)}" loading="lazy"></div>`
                         : `<div class="turma-chip-avatar">${escapeHtml(initials)}</div>`;
-                    return `<div class="turma-chip online" onclick="switchView('turma')" style="cursor:pointer;">
+                    return `<div class="turma-chip online" data-view="turma" style="cursor:pointer;">
                         ${avatarHtml}
                         <span>${escapeHtml(m.displayName?.split(' ')[0] || 'Anónimo')}</span>
                     </div>`;
                 }).join('');
+                grid.querySelectorAll('[data-view="turma"]').forEach(el =>
+                    el.addEventListener('click', () => switchView('turma'))
+                );
             } catch(e) {
                 grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Não foi possível carregar.</span>';
                 console.warn('renderTurma:', e);

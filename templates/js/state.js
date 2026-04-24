@@ -1,6 +1,7 @@
         // ── STATE ───────────────────────────────────────────────────────
         let currentView         = 'dashboard';
         let previousView        = 'dashboard';
+        let navStack            = []; // navigation history stack for back buttons
         let currentUCCode       = null;
         let currentSessionKey   = null;  // "ucCode_date" for active session detail
         let currentMonthIndex   = 0;

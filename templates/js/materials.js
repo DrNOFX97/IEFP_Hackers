@@ -40,15 +40,15 @@
                            </video>`;
                     return `
                         <div class="material-video-wrap">
-                            <div class="material-video-header" onclick="toggleVideo(this)" data-idx="${i}">
+                            <div class="material-video-header" data-action="toggle-video" data-idx="${i}">
                                 <span class="material-icon">🎬</span>
                                 <div class="material-info">
                                     <div class="material-label">${safeLabel}</div>
                                     ${safeSize ? `<div class="material-url">📎 ${safeSize}</div>` : ''}
                                 </div>
                                 <div class="material-video-actions">
-                                    <button class="material-btn open" onclick="event.stopPropagation();openMaterial(${i})" title="Abrir em separador">↗</button>
-                                    <button class="material-btn delete" onclick="event.stopPropagation();deleteMaterial(${i})" title="Remover">✕</button>
+                                    <button class="material-btn open" data-action="open-mat" data-mat="${i}" title="Abrir em separador">↗</button>
+                                    <button class="material-btn delete" data-action="del-mat" data-mat="${i}" title="Remover">✕</button>
                                 </div>
                                 <span class="material-video-toggle">▶ ver</span>
                             </div>
@@ -60,7 +60,7 @@
                     const safeLabel = escapeHtml(m.label || 'documento.pdf');
                     const safeUrl   = escapeHtml(m.url);
                     return `
-                        <div class="material-item pdf-thumb" onclick="openPdfModal('${safeUrl}', '${safeLabel}')" title="Clica para visualizar">
+                        <div class="material-item pdf-thumb" data-action="open-pdf" data-pdf-url="${safeUrl}" data-pdf-label="${safeLabel}" title="Clica para visualizar">
                             <div class="pdf-thumb-preview">📄</div>
                             <div class="pdf-thumb-footer">
                                 <div class="material-info">
@@ -68,7 +68,7 @@
                                     ${m.size ? `<div class="pdf-thumb-meta">PDF · ${escapeHtml(m.size)}</div>` : '<div class="pdf-thumb-meta">PDF</div>'}
                                 </div>
                                 <div class="material-actions">
-                                    <button class="material-btn delete" onclick="event.stopPropagation();deleteMaterial(${i})" title="Remover">✕</button>
+                                    <button class="material-btn delete" data-action="del-mat" data-mat="${i}" title="Remover">✕</button>
                                 </div>
                             </div>
                         </div>`;
@@ -76,9 +76,9 @@
                 // Other types — whole card is clickable if it has a URL
                 const isUpload  = m.url && m.url.includes('firebasestorage');
                 const clickable = m.url && isSafeUrl(m.url);
-                const cardClick = clickable ? `onclick="openMaterial(${i})" role="link" tabindex="0" onkeydown="if(event.key==='Enter')openMaterial(${i})"` : '';
+                const cardAttrs = clickable ? `data-action="open-mat" data-mat="${i}" role="link" tabindex="0"` : '';
                 return `
-                    <div class="material-item${clickable ? ' clickable-card' : ''}" ${cardClick}>
+                    <div class="material-item${clickable ? ' clickable-card' : ''}" ${cardAttrs}>
                         <span class="material-icon">${getTypeIcon(m.type)}</span>
                         <div class="material-info">
                             <div class="material-label">${escapeHtml(m.label || m.url)}</div>
@@ -87,10 +87,24 @@
                         </div>
                         <div class="material-actions">
                             ${clickable ? `<span class="material-btn open" aria-hidden="true">↗</span>` : ''}
-                            <button class="material-btn delete" onclick="event.stopPropagation();deleteMaterial(${i})" title="Remover">✕</button>
+                            <button class="material-btn delete" data-action="del-mat" data-mat="${i}" title="Remover">✕</button>
                         </div>
                     </div>`;
             }).join('');
+            el.querySelectorAll('[data-action]').forEach(node => {
+                node.addEventListener('click', e => {
+                    const act = node.dataset.action;
+                    if (act === 'del-mat' || act === 'open-mat') e.stopPropagation();
+                    if (act === 'toggle-video') { toggleVideo(node); return; }
+                    const idx = parseInt(node.dataset.mat ?? node.dataset.idx);
+                    if (act === 'open-mat') openMaterial(idx);
+                    if (act === 'del-mat')  deleteMaterial(idx);
+                    if (act === 'open-pdf') openPdfModal(node.dataset.pdfUrl, node.dataset.pdfLabel);
+                });
+            });
+            el.querySelectorAll('[data-action="open-mat"]').forEach(node =>
+                node.addEventListener('keydown', e => { if (e.key === 'Enter') openMaterial(parseInt(node.dataset.mat)); })
+            );
         }
 
         function toggleVideo(header) {
@@ -230,7 +244,7 @@
                 pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',
                 xls:'application/vnd.ms-excel',
                 xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                txt:'text/plain', md:'text/markdown',
+                txt:'text/plain', md:'text/markdown', html:'text/html',
                 png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg',
                 gif:'image/gif', webp:'image/webp', zip:'application/zip'
             };
@@ -262,7 +276,7 @@
             try {
                 const typeMap = { pdf:'pdf', doc:'doc', docx:'doc', ppt:'slide', pptx:'slide',
                                    xls:'doc', xlsx:'doc', png:'outro', jpg:'outro', jpeg:'outro',
-                                   gif:'outro', webp:'outro', txt:'doc', md:'doc', zip:'outro' };
+                                   gif:'outro', webp:'outro', txt:'doc', md:'doc', html:'html', zip:'outro' };
                 const matType = typeMap[ext] || 'outro';
                 const matSize = `${(file.size/1024).toFixed(0)} KB`;
                 const matKey  = currentSessionKey || currentUCCode;
@@ -282,7 +296,9 @@
                 console.error('[Firestore] register material error:', e);
                 alert(`Ficheiro enviado mas erro ao registar: ${e.message}`);
             } finally {
-                zone.innerHTML = '📂 Arrastar ficheiro ou clicar para selecionar<input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.png,.jpg,.zip" onchange="handleFileSelect(event)">';
+                zone.innerHTML = '📂 Arrastar ficheiro ou clicar para selecionar<input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.png,.jpg,.zip,.html">';
+                const fi = zone.querySelector('#file-input');
+                if (fi) fi.addEventListener('change', e => handleFileSelect(e));
                 zone.style.pointerEvents = '';
             }
         }

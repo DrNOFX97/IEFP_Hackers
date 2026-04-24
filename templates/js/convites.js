@@ -120,12 +120,20 @@
                     ${inv.createdAt?.toDate ? ' · criado ' + escapeHtml(inv.createdAt.toDate().toLocaleDateString('pt-PT')) : ''}
                 </div>
                 <div class="invite-actions">
-                    <button class="invite-action-btn" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Link copiado!'))">📋 Copiar link</button>
-                    <button class="invite-action-btn" onclick="toggleQR(this,'${token}','${link}')">📷 QR Code</button>
-                    ${inv.active ? `<button class="invite-action-btn danger" onclick="revokeInvite('${token}')">🚫 Revogar</button>` : ''}
-                    <button class="invite-action-btn danger" onclick="deleteInvite('${token}')">🗑️ Apagar</button>
+                    <button class="invite-action-btn" data-copy-link>📋 Copiar link</button>
+                    <button class="invite-action-btn" data-qr-btn>📷 QR Code</button>
+                    ${inv.active ? `<button class="invite-action-btn danger" data-revoke-invite>🚫 Revogar</button>` : ''}
+                    <button class="invite-action-btn danger" data-del-invite>🗑️ Apagar</button>
                 </div>
                 <div class="invite-qr-wrap" id="qr-${token}" style="display:none;margin-top:0.8rem;"></div>`;
+            div.querySelector('[data-copy-link]')?.addEventListener('click', () =>
+                navigator.clipboard.writeText(link).then(() => toast('Link copiado!'))
+            );
+            div.querySelector('[data-qr-btn]')?.addEventListener('click', function() {
+                toggleQR(this, token, link);
+            });
+            div.querySelector('[data-revoke-invite]')?.addEventListener('click', () => revokeInvite(token));
+            div.querySelector('[data-del-invite]')?.addEventListener('click', () => deleteInvite(token));
             return div;
         }
 
