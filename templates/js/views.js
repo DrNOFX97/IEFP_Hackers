@@ -1,5 +1,5 @@
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','lab','cheatsheets','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','lab','cheatsheets','cybermap','definicoes'];
 
         function switchView(view) {
             if (currentView === 'definicoes' && view !== 'definicoes') {
@@ -52,6 +52,9 @@
                 document.getElementById('view-cheatsheets').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
                 if (!_csShadow) csSwitch('python');
+            } else if (view === 'cybermap') {
+                document.getElementById('view-cybermap').style.display = 'block';
+                monthSelectContainer.style.display = 'none';
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -76,7 +79,7 @@
             });
             // Highlight "Mais" button if current view is a secondary one
             const moreBtn = document.getElementById('mob-more-btn');
-            const moreViews = ['disciplinas','playground','definicoes'];
+            const moreViews = ['disciplinas','playground','cybermap','definicoes'];
             if (moreBtn) moreBtn.classList.toggle('active', moreViews.includes(navKey));
             // Sync "Mais" menu items active state
             document.querySelectorAll('.mob-more-item[data-view]').forEach(btn => {
