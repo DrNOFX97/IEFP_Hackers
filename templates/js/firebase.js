@@ -1,6 +1,6 @@
         // ── FIREBASE ────────────────────────────────────────────────────
         firebase.initializeApp({
-            apiKey:            "AIzaSyCa5bu1aM6N1kiV6m1gLo8zf2sKcvcr4o0",
+            apiKey:            "AIzaSyAU6CzykxWF76ZsVYN9pjQf41nc6VdD4fw",
             authDomain:        "ligafaro-8000.firebaseapp.com",
             projectId:         "ligafaro-8000",
             storageBucket:     "ligafaro-8000.firebasestorage.app",
