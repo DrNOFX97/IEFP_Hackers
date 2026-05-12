@@ -147,8 +147,16 @@
                             <button class="view-toggle-btn" id="btn-view-week" title="Vista semanal">▦</button>
                         </div>
                         <div class="pdf-group">
-                            <button class="btn-pdf" id="btn-pdf-lista">⬇ Lista</button>
-                            <button class="btn-pdf" id="btn-pdf-semanal">⬇ Semanal</button>
+                            <div class="pdf-btn-wrap">
+                                <button class="btn-pdf" id="btn-pdf-lista">⬇ Lista</button>
+                                <button class="btn-pdf btn-pdf-arrow" id="btn-pdf-lista-arrow" title="Escolher mês">▾</button>
+                                <div class="pdf-month-menu hidden" id="pdf-lista-menu"></div>
+                            </div>
+                            <div class="pdf-btn-wrap">
+                                <button class="btn-pdf" id="btn-pdf-semanal">⬇ Semanal</button>
+                                <button class="btn-pdf btn-pdf-arrow" id="btn-pdf-semanal-arrow" title="Escolher mês">▾</button>
+                                <div class="pdf-month-menu hidden" id="pdf-semanal-menu"></div>
+                            </div>
                         </div>
                     </div>
                 </div>

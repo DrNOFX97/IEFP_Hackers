@@ -109,6 +109,43 @@
             document.getElementById('btn-pdf-lista').addEventListener('click', function() { downloadListaPDF(this); });
             document.getElementById('btn-pdf-semanal').addEventListener('click', function() { downloadSemanalPDF(this); });
 
+            // PDF month dropdowns
+            function buildPdfMenus() {
+                ['lista', 'semanal'].forEach(type => {
+                    const menu = document.getElementById(`pdf-${type}-menu`);
+                    if (!menu) return;
+                    menu.innerHTML = HORARIOS.map((h, i) => {
+                        const label = h.mes_ano.charAt(0).toUpperCase() + h.mes_ano.slice(1);
+                        return `<button class="pdf-month-item" data-idx="${i}" data-type="${type}">${label}</button>`;
+                    }).join('');
+                    menu.addEventListener('click', e => {
+                        const item = e.target.closest('.pdf-month-item');
+                        if (!item) return;
+                        const idx  = parseInt(item.dataset.idx);
+                        const btn  = document.getElementById(`btn-pdf-${item.dataset.type}`);
+                        menu.classList.add('hidden');
+                        if (item.dataset.type === 'lista') downloadListaPDF(btn, idx);
+                        else downloadSemanalPDF(btn, idx);
+                    });
+                });
+            }
+            buildPdfMenus();
+
+            document.getElementById('btn-pdf-lista-arrow').addEventListener('click', e => {
+                e.stopPropagation();
+                document.getElementById('pdf-semanal-menu').classList.add('hidden');
+                document.getElementById('pdf-lista-menu').classList.toggle('hidden');
+            });
+            document.getElementById('btn-pdf-semanal-arrow').addEventListener('click', e => {
+                e.stopPropagation();
+                document.getElementById('pdf-lista-menu').classList.add('hidden');
+                document.getElementById('pdf-semanal-menu').classList.toggle('hidden');
+            });
+            document.addEventListener('click', () => {
+                document.getElementById('pdf-lista-menu').classList.add('hidden');
+                document.getElementById('pdf-semanal-menu').classList.add('hidden');
+            });
+
             // Disciplinas search
             document.getElementById('uc-search').addEventListener('input', e => filterUCs(e.target.value));
 

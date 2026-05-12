@@ -1,8 +1,8 @@
         // ── PDF DOWNLOAD ────────────────────────────────────────────────
-        function downloadListaPDF(btn) {
+        function downloadListaPDF(btn, monthIdx) {
             if (!window.jspdf) { alert('Biblioteca PDF ainda a carregar. Tenta novamente.'); return; }
             const { jsPDF } = window.jspdf;
-            const horario = HORARIOS[currentMonthIndex];
+            const horario = HORARIOS[monthIdx !== undefined ? monthIdx : currentMonthIndex];
             if (!horario) return;
 
             btn.classList.add('loading');
@@ -123,10 +123,10 @@
             }, 50);
         }
 
-        function downloadSemanalPDF(btn) {
+        function downloadSemanalPDF(btn, monthIdx) {
             if (!window.jspdf) { alert('Biblioteca PDF ainda a carregar. Tenta novamente.'); return; }
             const { jsPDF } = window.jspdf;
-            const horario = HORARIOS[currentMonthIndex];
+            const horario = HORARIOS[monthIdx !== undefined ? monthIdx : currentMonthIndex];
             if (!horario) return;
 
             btn.classList.add('loading');

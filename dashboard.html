@@ -918,7 +918,19 @@ opacity: 0.35;
         }
         .btn-pdf:active { transform: scale(0.97); }
         .btn-pdf.loading { opacity: 0.6; pointer-events: none; }
+        .btn-pdf-arrow { padding: 0.35rem 0.45rem; border-left: 1px solid rgba(0,255,65,0.2); }
         .pdf-group { display: flex; gap: 0.3rem; }
+        .pdf-btn-wrap { position: relative; display: flex; }
+        .pdf-month-menu { position: absolute; top: calc(100% + 4px); right: 0; z-index: 200;
+            background: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 8px; min-width: 140px; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            overflow: hidden; }
+        .pdf-month-menu.hidden { display: none; }
+        .pdf-month-item { display: block; width: 100%; text-align: left;
+            padding: 0.55rem 0.9rem; background: none; border: none;
+            color: var(--text-primary); cursor: pointer; font-size: 0.82rem;
+            font-family: 'Fira Code', monospace; transition: background 0.15s; }
+        .pdf-month-item:hover { background: rgba(0,255,65,0.1); color: #00ff41; }
         .schedule-toolbar {
             display: flex;
             align-items: center;
@@ -2942,8 +2954,16 @@ opacity: 0.35;
                             <button class="view-toggle-btn" id="btn-view-week" title="Vista semanal">▦</button>
                         </div>
                         <div class="pdf-group">
-                            <button class="btn-pdf" id="btn-pdf-lista">⬇ Lista</button>
-                            <button class="btn-pdf" id="btn-pdf-semanal">⬇ Semanal</button>
+                            <div class="pdf-btn-wrap">
+                                <button class="btn-pdf" id="btn-pdf-lista">⬇ Lista</button>
+                                <button class="btn-pdf btn-pdf-arrow" id="btn-pdf-lista-arrow" title="Escolher mês">▾</button>
+                                <div class="pdf-month-menu hidden" id="pdf-lista-menu"></div>
+                            </div>
+                            <div class="pdf-btn-wrap">
+                                <button class="btn-pdf" id="btn-pdf-semanal">⬇ Semanal</button>
+                                <button class="btn-pdf btn-pdf-arrow" id="btn-pdf-semanal-arrow" title="Escolher mês">▾</button>
+                                <div class="pdf-month-menu hidden" id="pdf-semanal-menu"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -6003,10 +6023,10 @@ SELECT * FROM utilizadores;
 
 
         // ── PDF DOWNLOAD ────────────────────────────────────────────────
-        function downloadListaPDF(btn) {
+        function downloadListaPDF(btn, monthIdx) {
             if (!window.jspdf) { alert('Biblioteca PDF ainda a carregar. Tenta novamente.'); return; }
             const { jsPDF } = window.jspdf;
-            const horario = HORARIOS[currentMonthIndex];
+            const horario = HORARIOS[monthIdx !== undefined ? monthIdx : currentMonthIndex];
             if (!horario) return;
 
             btn.classList.add('loading');
@@ -6127,10 +6147,10 @@ SELECT * FROM utilizadores;
             }, 50);
         }
 
-        function downloadSemanalPDF(btn) {
+        function downloadSemanalPDF(btn, monthIdx) {
             if (!window.jspdf) { alert('Biblioteca PDF ainda a carregar. Tenta novamente.'); return; }
             const { jsPDF } = window.jspdf;
-            const horario = HORARIOS[currentMonthIndex];
+            const horario = HORARIOS[monthIdx !== undefined ? monthIdx : currentMonthIndex];
             if (!horario) return;
 
             btn.classList.add('loading');
@@ -7690,6 +7710,42 @@ SELECT * FROM utilizadores;
             document.getElementById('btn-view-week').addEventListener('click', () => setScheduleView('week'));
             document.getElementById('btn-pdf-lista').addEventListener('click', function() { downloadListaPDF(this); });
             document.getElementById('btn-pdf-semanal').addEventListener('click', function() { downloadSemanalPDF(this); });
+
+            // PDF month dropdowns
+            function buildPdfMenus() {
+                ['lista', 'semanal'].forEach(type => {
+                    const menu = document.getElementById(`pdf-${type}-menu`);
+                    if (!menu) return;
+                    menu.innerHTML = HORARIOS.map((h, i) => {
+                        const label = h.mes_ano.charAt(0).toUpperCase() + h.mes_ano.slice(1);
+                        return `<button class="pdf-month-item" data-idx="${i}" data-type="${type}">${label}</button>`;
+                    }).join('');
+                    menu.addEventListener('click', e => {
+                        const item = e.target.closest('.pdf-month-item');
+                        if (!item) return;
+                        const idx = parseInt(item.dataset.idx);
+                        const btn = document.getElementById(`btn-pdf-${item.dataset.type}`);
+                        menu.classList.add('hidden');
+                        if (item.dataset.type === 'lista') downloadListaPDF(btn, idx);
+                        else downloadSemanalPDF(btn, idx);
+                    });
+                });
+            }
+            buildPdfMenus();
+            document.getElementById('btn-pdf-lista-arrow').addEventListener('click', e => {
+                e.stopPropagation();
+                document.getElementById('pdf-semanal-menu').classList.add('hidden');
+                document.getElementById('pdf-lista-menu').classList.toggle('hidden');
+            });
+            document.getElementById('btn-pdf-semanal-arrow').addEventListener('click', e => {
+                e.stopPropagation();
+                document.getElementById('pdf-lista-menu').classList.add('hidden');
+                document.getElementById('pdf-semanal-menu').classList.toggle('hidden');
+            });
+            document.addEventListener('click', () => {
+                document.getElementById('pdf-lista-menu').classList.add('hidden');
+                document.getElementById('pdf-semanal-menu').classList.add('hidden');
+            });
 
             // Disciplinas search
             document.getElementById('uc-search').addEventListener('input', e => filterUCs(e.target.value));

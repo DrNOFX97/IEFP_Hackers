@@ -632,7 +632,19 @@
         }
         .btn-pdf:active { transform: scale(0.97); }
         .btn-pdf.loading { opacity: 0.6; pointer-events: none; }
+        .btn-pdf-arrow { padding: 0.35rem 0.45rem; border-left: 1px solid rgba(0,255,65,0.2); }
         .pdf-group { display: flex; gap: 0.3rem; }
+        .pdf-btn-wrap { position: relative; display: flex; }
+        .pdf-month-menu { position: absolute; top: calc(100% + 4px); right: 0; z-index: 200;
+            background: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 8px; min-width: 140px; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            overflow: hidden; }
+        .pdf-month-menu.hidden { display: none; }
+        .pdf-month-item { display: block; width: 100%; text-align: left;
+            padding: 0.55rem 0.9rem; background: none; border: none;
+            color: var(--text-primary); cursor: pointer; font-size: 0.82rem;
+            font-family: 'Fira Code', monospace; transition: background 0.15s; }
+        .pdf-month-item:hover { background: rgba(0,255,65,0.1); color: #00ff41; }
         .schedule-toolbar {
             display: flex;
             align-items: center;
