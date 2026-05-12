@@ -619,6 +619,37 @@ def main():
     print(f"Dashboard gerado em 'dashboard.html' com {len(horarios)} meses e {len(uc_list)} UCs!")
     print("Para ver o resultado, abre o 'dashboard.html' num navegador.")
 
+    update_csp_hash('dashboard.html', 'firebase.json')
+
+
+def update_csp_hash(html_path='dashboard.html', firebase_path='firebase.json'):
+    if not os.path.exists(html_path) or not os.path.exists(firebase_path):
+        return
+
+    content = open(html_path, encoding='utf-8').read()
+
+    # Encontrar scripts inline (sem atributo src)
+    scripts = _re.findall(r'<script(?![^>]*\bsrc\b)[^>]*>(.*?)</script>', content, _re.DOTALL)
+    if not scripts:
+        print("Aviso: nenhum script inline encontrado em dashboard.html.")
+        return
+
+    # O dashboard tem um único script inline grande — usar o maior
+    script_text = max(scripts, key=len)
+    raw = script_text.encode('utf-8')
+    digest = hashlib.sha384(raw).digest()
+    new_hash = 'sha384-' + base64.b64encode(digest).decode()
+
+    firebase_text = open(firebase_path, encoding='utf-8').read()
+    updated = _re.sub(r'sha384-[A-Za-z0-9+/=]+', new_hash, firebase_text, count=1)
+
+    if updated == firebase_text:
+        print("CSP hash já está atualizado.")
+        return
+
+    open(firebase_path, 'w', encoding='utf-8').write(updated)
+    print(f"CSP hash atualizado em firebase.json: {new_hash[:40]}...")
+
 
 if __name__ == '__main__':
     main()
