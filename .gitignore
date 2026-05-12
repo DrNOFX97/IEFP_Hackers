@@ -3,6 +3,7 @@
 
 # ── Instruções internas / ferramentas ───────────────────────────
 CLAUDE.md
+DEPLOY.md
 .claude/
 .playwright-mcp/
 cloudrun/
