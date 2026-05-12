@@ -106,10 +106,7 @@
             document.getElementById('schedule-filter').addEventListener('input', e => filterHorario(e.target.value));
             document.getElementById('btn-view-cards').addEventListener('click', () => setScheduleView('cards'));
             document.getElementById('btn-view-week').addEventListener('click', () => setScheduleView('week'));
-            document.getElementById('btn-pdf-lista').addEventListener('click', function() { downloadListaPDF(this); });
-            document.getElementById('btn-pdf-semanal').addEventListener('click', function() { downloadSemanalPDF(this); });
-
-            // PDF month dropdowns
+            // PDF month dropdowns — botão abre dropdown, download só via seleção de mês
             function buildPdfMenus() {
                 ['lista', 'semanal'].forEach(type => {
                     const menu = document.getElementById(`pdf-${type}-menu`);
@@ -130,13 +127,12 @@
                 });
             }
             buildPdfMenus();
-
-            document.getElementById('btn-pdf-lista-arrow').addEventListener('click', e => {
+            document.getElementById('btn-pdf-lista').addEventListener('click', e => {
                 e.stopPropagation();
                 document.getElementById('pdf-semanal-menu').classList.add('hidden');
                 document.getElementById('pdf-lista-menu').classList.toggle('hidden');
             });
-            document.getElementById('btn-pdf-semanal-arrow').addEventListener('click', e => {
+            document.getElementById('btn-pdf-semanal').addEventListener('click', e => {
                 e.stopPropagation();
                 document.getElementById('pdf-lista-menu').classList.add('hidden');
                 document.getElementById('pdf-semanal-menu').classList.toggle('hidden');

@@ -2955,13 +2955,11 @@ opacity: 0.35;
                         </div>
                         <div class="pdf-group">
                             <div class="pdf-btn-wrap">
-                                <button class="btn-pdf" id="btn-pdf-lista">⬇ Lista</button>
-                                <button class="btn-pdf btn-pdf-arrow" id="btn-pdf-lista-arrow" title="Escolher mês">▾</button>
+                                <button class="btn-pdf" id="btn-pdf-lista">⬇ Lista ▾</button>
                                 <div class="pdf-month-menu hidden" id="pdf-lista-menu"></div>
                             </div>
                             <div class="pdf-btn-wrap">
-                                <button class="btn-pdf" id="btn-pdf-semanal">⬇ Semanal</button>
-                                <button class="btn-pdf btn-pdf-arrow" id="btn-pdf-semanal-arrow" title="Escolher mês">▾</button>
+                                <button class="btn-pdf" id="btn-pdf-semanal">⬇ Semanal ▾</button>
                                 <div class="pdf-month-menu hidden" id="pdf-semanal-menu"></div>
                             </div>
                         </div>
@@ -7708,10 +7706,7 @@ SELECT * FROM utilizadores;
             document.getElementById('schedule-filter').addEventListener('input', e => filterHorario(e.target.value));
             document.getElementById('btn-view-cards').addEventListener('click', () => setScheduleView('cards'));
             document.getElementById('btn-view-week').addEventListener('click', () => setScheduleView('week'));
-            document.getElementById('btn-pdf-lista').addEventListener('click', function() { downloadListaPDF(this); });
-            document.getElementById('btn-pdf-semanal').addEventListener('click', function() { downloadSemanalPDF(this); });
-
-            // PDF month dropdowns
+            // PDF month dropdowns — botão abre dropdown, download só via seleção de mês
             function buildPdfMenus() {
                 ['lista', 'semanal'].forEach(type => {
                     const menu = document.getElementById(`pdf-${type}-menu`);
@@ -7732,12 +7727,12 @@ SELECT * FROM utilizadores;
                 });
             }
             buildPdfMenus();
-            document.getElementById('btn-pdf-lista-arrow').addEventListener('click', e => {
+            document.getElementById('btn-pdf-lista').addEventListener('click', e => {
                 e.stopPropagation();
                 document.getElementById('pdf-semanal-menu').classList.add('hidden');
                 document.getElementById('pdf-lista-menu').classList.toggle('hidden');
             });
-            document.getElementById('btn-pdf-semanal-arrow').addEventListener('click', e => {
+            document.getElementById('btn-pdf-semanal').addEventListener('click', e => {
                 e.stopPropagation();
                 document.getElementById('pdf-lista-menu').classList.add('hidden');
                 document.getElementById('pdf-semanal-menu').classList.toggle('hidden');
