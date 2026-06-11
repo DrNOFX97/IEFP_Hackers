@@ -146,6 +146,7 @@
                     });
                 });
             });
+            sessions.sort((a, b) => a.data.localeCompare(b.data));
             return sessions;
         }
 

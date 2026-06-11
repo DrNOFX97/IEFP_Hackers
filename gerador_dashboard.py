@@ -451,6 +451,7 @@ def main():
                     horarios.append(h_data['horario'])
         except Exception as e:
             print(f"Erro ao ler {hf}: {e}")
+    horarios.sort(key=lambda h: h['dias'][0]['data'] if h.get('dias') else '')
 
     # 3. Load Cronograma
     cronograma = {}
