@@ -1,3 +1,6 @@
+        // Datas em que TODAS as aulas são remotas (exceções pontuais)
+        const REMOTE_DATE_EXCEPTIONS = new Set(['2026-06-12']);
+
         // ── MERGE TIME SLOTS ────────────────────────────────────────────
         function mergeTimeSlots(aulas) {
             if (!aulas || aulas.length === 0) return [];
@@ -88,10 +91,10 @@
                    (aula.formador  || '').toLowerCase().includes(q);
         }
 
-        function buildAulaCardHtml(aula, state, matched) {
+        function buildAulaCardHtml(aula, state, matched, diaData) {
             const isClickable   = UC_MAP[aula.uc] ? 'clickable' : '';
             const dimClass      = (scheduleFilter && !matched) ? 'filtered-out' : '';
-            const isRemote      = (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
+            const isRemote      = (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto') || REMOTE_DATE_EXCEPTIONS.has(diaData);
             const remoteClass   = isRemote ? 'remote' : '';
             const remoteBadge   = isRemote
                 ? `<div class="aula-uc badge remote" style="margin-top:0;">🌐 Remoto</div>` : '';
@@ -169,7 +172,7 @@
                     mergedAulas.forEach(aula => {
                         const matched = aulaMatchesFilter(aula, filter);
                         if (matched) dayMatches = true;
-                        aulasHtml += buildAulaCardHtml(aula, getAulaState(dia.data, aula.hora), matched);
+                        aulasHtml += buildAulaCardHtml(aula, getAulaState(dia.data, aula.hora), matched, dia.data);
                     });
                 } else if (dia.nota) {
                     dayMatches = !filter;
@@ -270,7 +273,7 @@
                             const dimCls     = (filter && !matched) ? 'filtered-out' : '';
                             const clickCls   = UC_MAP[aula.uc] ? 'clickable' : '';
                             const clickAttr  = UC_MAP[aula.uc] ? `data-uc-sched="${aula.uc}"` : '';
-                            const isRemote   = (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
+                            const isRemote   = (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto') || REMOTE_DATE_EXCEPTIONS.has(dia.data);
                             const remoteCls  = isRemote ? 'remote' : '';
                             const remoteBadge = isRemote ? `<span class="badge remote" style="font-size:0.62rem;padding:0.1rem 0.4rem;margin-top:3px;display:inline-block;">🌐 Remoto</span>` : '';
                             bodyHtml += `
