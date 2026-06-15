@@ -1,5 +1,5 @@
         // Datas em que TODAS as aulas são remotas (exceções pontuais)
-        const REMOTE_DATE_EXCEPTIONS = new Set(['2026-06-12']);
+        const REMOTE_DATE_EXCEPTIONS = new Set(['2026-06-12', '2026-06-17']);
 
         // ── MERGE TIME SLOTS ────────────────────────────────────────────
         function mergeTimeSlots(aulas) {
