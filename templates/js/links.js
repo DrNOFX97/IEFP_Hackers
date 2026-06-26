@@ -12,7 +12,7 @@
                 category: 'Aulas',
                 icon: '🖥️',
                 items: [
-                    { label: 'Aula Remota — UC01480', url: 'https://teams.microsoft.com/meet/331541268621778?p=pdLByitRNPVg7Q9qD7', desc: 'Teams — Analisar Evidências de Ataques Cibernéticos' },
+                    { label: 'Aula Remota — UC01480', url: 'https://teams.microsoft.com/meet/399104828226834?p=fY6apO1YYqKAwYHtaf', desc: 'Teams — Analisar Evidências de Ataques Cibernéticos' },
                 ]
             },
             {
