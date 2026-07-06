@@ -7,6 +7,10 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" integrity="sha384-fCAW/rDWORTbQXSiB7mOg0QtQ5c+r0f544y6XoKjuVva0nMBlCpNUjiFeG5iMdS3" crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" integrity="sha384-sEVIly94UBRLKWdkYoPpSG7GD/e79YHMrxVyZaOk712Ga7+EAw6w1EFi+xBzBdd+" crossorigin="anonymous"></script>
@@ -260,11 +264,20 @@
                     <!-- Notes column -->
                     <div class="panel notes-panel">
                         <div class="notes-toolbar">
-                            <h2 style="margin-bottom:0; font-size:1.1rem;">📝 Apontamentos</h2>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <h2 style="margin:0;font-size:1.1rem;">📝 Apontamentos</h2>
+                                <div class="notes-tabs">
+                                    <button class="notes-tab active" id="notes-tab-edit" onclick="switchNotesTab('edit')">✏️ Editar</button>
+                                    <button class="notes-tab" id="notes-tab-preview" onclick="switchNotesTab('preview')">👁 Ver</button>
+                                </div>
+                            </div>
                             <span class="notes-saved-indicator" id="session-notes-saved">✓ Guardado</span>
                         </div>
-                        <textarea class="notes-textarea" id="session-notes-textarea"
-                            placeholder="Apontamentos desta sessão…&#10;&#10;Guardado automaticamente."></textarea>
+                        <div class="notes-edit-pane">
+                            <textarea class="notes-textarea" id="session-notes-textarea"
+                                placeholder="Apontamentos desta sessão…&#10;&#10;Suporta **Markdown**, *itálico*, `código`, tabelas, listas.&#10;LaTeX inline: $E=mc^2$ · bloco: $$\int_0^\infty f(x)\,dx$$&#10;&#10;Cola imagens com Ctrl+V · Guardado automaticamente."></textarea>
+                        </div>
+                        <div class="notes-preview-pane" id="notes-preview-pane"></div>
                     </div>
 
                     <!-- Materials column -->

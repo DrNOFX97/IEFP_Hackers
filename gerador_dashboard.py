@@ -555,6 +555,20 @@ def main():
             # PIL not available — embed original as-is
             with open(logo_path, 'rb') as f:
                 logo_b64 = base64.b64encode(f.read()).decode()
+    else:
+        # logo_02.png está em .gitignore — tentar recuperar do dashboard.html existente
+        existing_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard.html')
+        if os.path.exists(existing_path):
+            with open(existing_path, 'r', encoding='utf-8') as _f:
+                _existing = _f.read()
+            _m = _re.search(r'data:image/png;base64,([A-Za-z0-9+/=]{100,})', _existing)
+            if _m:
+                logo_b64 = _m.group(1)
+                print("Aviso: logo_02.png não encontrado — logo recuperado do dashboard.html anterior.")
+            else:
+                print("Aviso: logo_02.png não encontrado e dashboard.html anterior não tem logo. O logo ficará vazio.")
+        else:
+            print("Aviso: logo_02.png não encontrado. O logo ficará vazio.")
     html = html.replace('__INJECT_LOGO_B64__', logo_b64)
 
     # 7. Compute SHA-384 of inline script block → update CSP in firebase.json

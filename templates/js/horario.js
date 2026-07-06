@@ -381,7 +381,9 @@
             const ta = document.getElementById('session-notes-textarea');
             ta.value = '';
             ta.oninput = () => autoSaveSessionNote(key, ta.value);
+            ta.onpaste = (e) => handleNotesPaste(e);
             document.getElementById('session-notes-saved').classList.remove('visible');
+            switchNotesTab('edit');
             document.getElementById('session-materials-list').innerHTML =
                 '<div class="no-materials">⏳ A carregar...</div>';
 
@@ -409,6 +411,80 @@
                 const doc = await db.collection('notes').doc(`${uid}_${key}`).get();
                 return doc.exists ? (doc.data().content || '') : '';
             } catch(e) { return ''; }
+        }
+
+        function switchNotesTab(tab) {
+            const editPane    = document.querySelector('.notes-edit-pane');
+            const previewPane = document.getElementById('notes-preview-pane');
+            const tabEdit     = document.getElementById('notes-tab-edit');
+            const tabPreview  = document.getElementById('notes-tab-preview');
+            if (!editPane || !previewPane) return;
+            if (tab === 'preview') {
+                editPane.style.display = 'none';
+                previewPane.style.display = '';
+                tabEdit.classList.remove('active');
+                tabPreview.classList.add('active');
+                renderNotesPreview();
+            } else {
+                editPane.style.display = '';
+                previewPane.style.display = 'none';
+                tabEdit.classList.add('active');
+                tabPreview.classList.remove('active');
+            }
+        }
+
+        function renderNotesPreview() {
+            const ta      = document.getElementById('session-notes-textarea');
+            const preview = document.getElementById('notes-preview-pane');
+            if (!ta || !preview) return;
+            const html = (typeof marked !== 'undefined')
+                ? marked.parse(ta.value || '', { breaks: true, gfm: true })
+                : `<pre>${escapeHtml(ta.value)}</pre>`;
+            preview.innerHTML = html;
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(preview, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$',  right: '$',  display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        async function handleNotesPaste(e) {
+            const items   = Array.from(e.clipboardData?.items || []);
+            const imgItem = items.find(it => it.type.startsWith('image/'));
+            if (!imgItem) return;
+            e.preventDefault();
+            const file = imgItem.getAsFile();
+            if (!file) return;
+            const uid = auth.currentUser?.uid;
+            if (!uid) return;
+            const ta  = document.getElementById('session-notes-textarea');
+            const oldPlaceholder = ta.placeholder;
+            ta.placeholder = '⏳ A carregar imagem…';
+            ta.disabled = true;
+            try {
+                const ext  = file.type.split('/')[1] || 'png';
+                const ref  = storage.ref(`uc-files/${uid}/paste_${Date.now()}.${ext}`);
+                const snap = await ref.put(file, { contentType: file.type });
+                const url  = await snap.ref.getDownloadURL();
+                const start = ta.selectionStart;
+                const end   = ta.selectionEnd;
+                const imgMd = `![imagem](${url})`;
+                ta.value = ta.value.slice(0, start) + imgMd + ta.value.slice(end);
+                ta.selectionStart = ta.selectionEnd = start + imgMd.length;
+                ta.dispatchEvent(new Event('input'));
+            } catch (err) {
+                console.error('Erro ao colar imagem:', err);
+            } finally {
+                ta.placeholder = oldPlaceholder;
+                ta.disabled = false;
+                ta.focus();
+            }
         }
 
         function autoSaveSessionNote(key, value) {
