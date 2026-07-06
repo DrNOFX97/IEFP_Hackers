@@ -155,6 +155,10 @@
             document.getElementById('uc-chat-input').addEventListener('keydown', e => ucChatKey(e));
             document.getElementById('uc-chat-send').addEventListener('click', () => ucChatSend());
 
+            // Notes tabs
+            document.getElementById('notes-tab-edit').addEventListener('click', () => switchNotesTab('edit'));
+            document.getElementById('notes-tab-preview').addEventListener('click', () => switchNotesTab('preview'));
+
             // Session detail
             document.getElementById('back-btn-session-detail').addEventListener('click', () => goBackFromSession());
             document.getElementById('session-mat-url').addEventListener('input', function() {
