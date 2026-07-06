@@ -421,7 +421,7 @@
             if (!editPane || !previewPane) return;
             if (tab === 'preview') {
                 editPane.style.display = 'none';
-                previewPane.style.display = '';
+                previewPane.style.display = 'block';
                 tabEdit.classList.remove('active');
                 tabPreview.classList.add('active');
                 renderNotesPreview();
