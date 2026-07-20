@@ -20,9 +20,8 @@
         // ── AULAS REMOTAS ────────────────────────────────────────────────
         const REMOTE_CLASS_LINKS = [
             { label: 'Classroom Ivan', icon: '🎓', url: 'https://classroom.google.com/u/0/c/ODY2NDE0NTcxNTgy', desc: 'Google Classroom — Ivan Gonçalves' },
-            { label: 'Aula Remota — UC01480', icon: '🖥️', url: 'https://teams.microsoft.com/meet/399104828226834?p=fY6apO1YYqKAwYHtaf', desc: 'Teams — Analisar Evidências de Ataques Cibernéticos (Paulo)' },
-            { label: 'Paulo — UC01491', icon: '🖥️', url: 'https://teams.microsoft.com/meet/331537855758981?p=NVsHzhfcmC7Y6KkInd', desc: 'Teams — Projetar e Administrar Sistemas de Bases de Dados' },
             { label: 'Ivan — UC00633', icon: '🖥️', url: 'https://teams.microsoft.com/meet/33253500560744?p=466FEhUS1OB5QYThge', desc: 'Teams — Instalar e Parametrizar Sistemas Operativos de Servidor' },
+            { label: 'Paulo — UC01491', icon: '🖥️', url: 'https://teams.microsoft.com/meet/331537855758981?p=NVsHzhfcmC7Y6KkInd', desc: 'Teams — Projetar e Administrar Sistemas de Bases de Dados' },
         ];
 
         function dashLinksRender() {
