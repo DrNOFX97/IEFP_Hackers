@@ -61,6 +61,7 @@
             setupFileDrop();
             renderDashboardGreeting();
             dashLinksRender();
+            dashRemoteLinksRender();
             renderTurma();
 
             if (HORARIOS.length > 0) {

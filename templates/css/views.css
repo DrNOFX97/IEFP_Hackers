@@ -51,6 +51,7 @@
         .dash-link-icon { font-size: 0.95rem; line-height: 1; }
         .dash-link-label { font-weight: 500; }
         .dash-link-arrow { font-size: 0.75rem; color: var(--text-secondary); margin-left: 0.1rem; }
+        .dash-link-chip-pending { opacity: 0.5; cursor: not-allowed; }
 
         /* Hoje + Amanhã side by side */
         .hoje-amanha-grid {
