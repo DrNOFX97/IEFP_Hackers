@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UDP – User Datagram Protocol</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0d0f0d;
+    --surface:  #141814;
+    --surface2: #1a1f1a;
+    --border:   #2a302a;
+    --text:     #d8e8d0;
+    --muted:    #5a6e58;
+    --accent:   #7ec850;
+    --accent2:  #b8ff6e;
+    --danger:   #ff5e3a;
+    --danger-bg:#1f100c;
+    --danger-border: #5a2010;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    min-height: 100vh;
+    padding: 2.5rem 1.5rem 5rem;
+    overflow-x: hidden;
+  }
+
+  /* scan-line overlay */
+  body::after {
+    content:'';
+    position:fixed; inset:0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,.18) 2px,
+      rgba(0,0,0,.18) 4px
+    );
+    pointer-events:none; z-index:0;
+  }
+
+  .container { max-width:920px; margin:0 auto; position:relative; z-index:1; }
+
+  /* ─── HEADER ─── */
+  header {
+    margin-bottom: 3rem;
+    animation: fadeDown .6s ease both;
+  }
+  .header-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.2rem; margin-bottom: 1.2rem;
+  }
+  .eyebrow {
+    font-family: 'Roboto Mono', monospace;
+    font-size: .65rem; letter-spacing: .2em;
+    color: var(--muted); text-transform: uppercase; margin-bottom: .5rem;
+  }
+  h1 {
+    font-size: clamp(3rem, 9vw, 6.5rem);
+    font-weight: 800; letter-spacing: -.02em; line-height: .95;
+    color: var(--accent2);
+    text-shadow: 0 0 40px rgba(126,200,80,.25);
+  }
+  h1 small {
+    display: block; font-size: clamp(.9rem, 2.5vw, 1.3rem);
+    font-weight: 300; letter-spacing: .05em; color: var(--muted);
+    margin-top: .3rem;
+  }
+  .rfc-badge {
+    font-family: 'Roboto Mono', monospace; font-size: .65rem;
+    padding: .4rem .9rem; border: 1px solid var(--accent);
+    color: var(--accent); border-radius: 3px; white-space: nowrap;
+    align-self: flex-start;
+  }
+
+  /* stat pills row */
+  .stat-row {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+    animation: fadeUp .5s .15s ease both;
+  }
+  .stat-pill {
+    font-family: 'Roboto Mono', monospace; font-size: .68rem;
+    padding: .3rem .8rem; border-radius: 2px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .stat-pill .pill-label { color: var(--muted); font-size: .58rem; }
+  .stat-pill .pill-val   { color: var(--accent2); font-weight: 500; }
+  .stat-pill.neg .pill-val { color: var(--danger); }
+
+  /* ─── DATAGRAMA VISUAL ─── */
+  .section-title {
+    font-family: 'Roboto Mono', monospace; font-size: .65rem;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .datagram-wrap {
+    margin-bottom: 3rem;
+    animation: fadeUp .5s .25s ease both;
+  }
+  .datagram {
+    display: grid;
+    grid-template-columns: repeat(32, 1fr);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: 'Roboto Mono', monospace;
+    font-size: .6rem;
+  }
+
+  .bit-ruler {
+    grid-column: 1 / -1;
+    display: grid; grid-template-columns: repeat(32, 1fr);
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .bit-ruler span {
+    text-align: center; padding: .2rem 0;
+    color: var(--muted); font-size: .5rem;
+    border-right: 1px solid rgba(255,255,255,.04);
+  }
+  .bit-ruler span:last-child { border-right: none; }
+
+  .field {
+    padding: .55rem .4rem;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: .15rem; cursor: default;
+    transition: background .2s;
+    position: relative;
+  }
+  .field:hover { background: rgba(126,200,80,.07); }
+  .field.active-field { background: rgba(126,200,80,.1); border-color: var(--accent) !important; z-index:2; }
+  .field:last-child { border-right: none; }
+
+  .field .fname { font-weight: 500; color: var(--accent2); font-size: .62rem; line-height:1.2; }
+  .field .fbits { color: var(--muted); font-size: .52rem; }
+  .field .fdesc { display:none; }
+
+  .f-porto-orig  { grid-column: span 16; background: rgba(78,205,196,.06); }
+  .f-porto-dest  { grid-column: span 16; background: rgba(78,205,196,.06); }
+  .f-comprimento { grid-column: span 16; background: rgba(255,209,102,.06); }
+  .f-checksum    { grid-column: span 16; background: rgba(255,209,102,.06); }
+  .f-dados       { grid-column: span 32; background: rgba(126,200,80,.04); min-height: 48px; }
+
+  /* field detail box */
+  .field-detail {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: .9rem 1.1rem;
+    margin-top: .6rem;
+    display: none;
+    animation: fadeUp .2s ease both;
+    font-size: .82rem;
+  }
+  .field-detail.show { display: block; }
+  .field-detail h4 {
+    font-family: 'Roboto Mono', monospace; font-size: .65rem;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: .5rem;
+  }
+  .field-detail p { color: #9ab890; line-height: 1.65; }
+
+  /* ─── CARACTERÍSTICAS ─── */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: .5rem; margin-bottom: 3rem;
+    animation: fadeUp .5s .3s ease both;
+  }
+  .feat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: .9rem 1rem;
+    display: flex; flex-direction: column; gap: .3rem;
+  }
+  .feat-card .ficon { font-size: 1.3rem; }
+  .feat-card .fname { font-size: .95rem; font-weight: 700; color: var(--accent2); }
+  .feat-card .fdesc { font-size: .78rem; color: var(--muted); line-height: 1.55; font-family: 'Roboto Mono', monospace; }
+  .feat-card.bad { border-color: var(--danger-border); }
+  .feat-card.bad .fname { color: var(--danger); }
+  .feat-card.good { border-color: rgba(126,200,80,.3); }
+  .feat-card.good .fname { color: var(--accent2); }
+
+  /* ─── USOS ─── */
+  .usos-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: .5rem; margin-bottom: 3rem;
+    animation: fadeUp .5s .35s ease both;
+  }
+  .uso-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: .8rem .9rem;
+  }
+  .uso-card .uicon { font-size: 1.2rem; margin-bottom: .3rem; }
+  .uso-card .uname { font-size: .9rem; font-weight: 700; color: var(--text); }
+  .uso-card .udesc { font-size: .72rem; color: var(--muted); margin-top: .2rem; line-height:1.4; font-family:'Roboto Mono', monospace; }
+  .uso-card .uproto { font-family: 'Roboto Mono', monospace; font-size: .6rem; color: var(--accent); margin-top: .3rem; }
+
+  /* ─── TCP vs UDP ─── */
+  .compare-table {
+    width: 100%; border-collapse: collapse;
+    margin-bottom: 3rem;
+    animation: fadeUp .5s .38s ease both;
+    font-size: .82rem;
+  }
+  .compare-table th {
+    font-family: 'Roboto Mono', monospace; font-size: .65rem;
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: .6rem 1rem; text-align: left;
+    background: var(--surface2); color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table th:nth-child(2) { color: var(--accent2); }
+  .compare-table th:nth-child(3) { color: #4dabf7; }
+  .compare-table td {
+    padding: .55rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: #9ab890;
+  }
+  .compare-table td:first-child { color: var(--muted); font-family:'Roboto Mono', monospace; font-size:.72rem; }
+  .compare-table tr:hover td { background: var(--surface2); }
+  .yes { color: var(--accent2) !important; }
+  .no  { color: var(--danger)  !important; }
+
+  /* ─── ATAQUES ─── */
+  .ataques-wrap {
+    margin-bottom: 3rem;
+    animation: fadeUp .5s .42s ease both;
+  }
+  .attack-card {
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    border-radius: 4px; padding: .9rem 1.1rem;
+    margin-bottom: .5rem;
+    display: grid; grid-template-columns: auto 1fr; gap: .5rem .9rem; align-items: start;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .attack-card:hover, .attack-card.open { border-color: var(--danger); background: rgba(255,94,58,.07); }
+  .attack-icon { font-size: 1.2rem; line-height:1.3; }
+  .attack-header { display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+  .attack-name { font-size: 1rem; font-weight: 700; color: var(--danger); }
+  .attack-severity {
+    font-family: 'Roboto Mono', monospace; font-size: .58rem;
+    padding: .1rem .4rem; border-radius: 2px;
+  }
+  .sev-critico { background: rgba(255,94,58,.2);  color: var(--danger); border:1px solid var(--danger-border); }
+  .sev-alto    { background: rgba(255,159,67,.15); color: #ff9f43;       border:1px solid rgba(255,159,67,.3); }
+  .sev-medio   { background: rgba(255,209,102,.15);color: #ffd166;       border:1px solid rgba(255,209,102,.3); }
+
+  .attack-body { display: none; margin-top: .5rem; }
+  .attack-card.open .attack-body { display: block; }
+  .attack-desc { font-size: .8rem; color: #8a9e88; line-height: 1.6; margin-bottom: .5rem; }
+  .attack-como { font-size: .78rem; color: #6a7e68; line-height: 1.55; }
+  .attack-como strong { color: #9ab890; font-family: 'Roboto Mono', monospace; font-size:.7rem; }
+  .attack-mitigacao {
+    margin-top: .6rem; padding: .5rem .8rem;
+    background: rgba(126,200,80,.05); border-left: 2px solid var(--accent);
+    font-size: .75rem; color: #7a9e78; line-height:1.55;
+  }
+  .attack-mitigacao strong { color: var(--accent); font-family:'Roboto Mono', monospace; font-size:.65rem; }
+
+  /* ANIMS */
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(14px)}  to{opacity:1;transform:translateY(0)} }
+
+  footer { text-align:center; margin-top:2rem; font-family:'Roboto Mono', monospace; font-size:.6rem; color:var(--muted); opacity:.5; }
+
+  @media(max-width:600px){
+    .features-grid{grid-template-columns:1fr 1fr;}
+    .datagram .fname{font-size:.55rem;}
+    h1{letter-spacing:-.03em;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-top">
+      <div>
+        <div class="eyebrow">Introdução às Redes de Computadores · Camada de Transporte</div>
+        <h1>UDP<small>User Datagram Protocol</small></h1>
+      </div>
+      <div class="rfc-badge">RFC 768 · 1980</div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-pill"><span class="pill-label">CAMADA OSI</span><span class="pill-val">4 – Transporte</span></div>
+      <div class="stat-pill"><span class="pill-label">CAMADA TCP/IP</span><span class="pill-val">3 – Transporte</span></div>
+      <div class="stat-pill"><span class="pill-label">PDU</span><span class="pill-val">Datagrama</span></div>
+      <div class="stat-pill"><span class="pill-label">CABEÇALHO</span><span class="pill-val">8 bytes (fixo)</span></div>
+      <div class="stat-pill neg"><span class="pill-label">LIGAÇÃO</span><span class="pill-val">Não orientado</span></div>
+      <div class="stat-pill neg"><span class="pill-label">FIABILIDADE</span><span class="pill-val">Sem garantias</span></div>
+    </div>
+  </header>
+
+  <!-- ESTRUTURA DO DATAGRAMA -->
+  <div class="datagram-wrap">
+    <div class="section-title">Estrutura do Datagrama UDP</div>
+    <div class="datagram" id="datagram">
+      <div class="bit-ruler" id="ruler"></div>
+      <div class="field f-porto-orig"  data-id="orig">
+        <span class="fname">Porto de Origem</span>
+        <span class="fbits">16 bits · opcional</span>
+      </div>
+      <div class="field f-porto-dest"  data-id="dest">
+        <span class="fname">Porto de Destino</span>
+        <span class="fbits">16 bits · obrigatório</span>
+      </div>
+      <div class="field f-comprimento" data-id="comp">
+        <span class="fname">Comprimento</span>
+        <span class="fbits">16 bits · mín. 8</span>
+      </div>
+      <div class="field f-checksum"    data-id="chk">
+        <span class="fname">Checksum</span>
+        <span class="fbits">16 bits · opcional IPv4</span>
+      </div>
+      <div class="field f-dados"       data-id="dados">
+        <span class="fname">Dados (Payload)</span>
+        <span class="fbits">0–65 507 bytes</span>
+      </div>
+    </div>
+    <div class="field-detail" id="field-detail">
+      <h4 id="fd-title"></h4>
+      <p id="fd-desc"></p>
+    </div>
+  </div>
+
+  <!-- CARACTERÍSTICAS -->
+  <div class="section-title">Características</div>
+  <div class="features-grid">
+    <div class="feat-card good"><div class="ficon">⚡</div><div class="fname">Baixa Latência</div><div class="fdesc">Sem handshake nem confirmações — os dados são enviados imediatamente.</div></div>
+    <div class="feat-card good"><div class="ficon">🪶</div><div class="fname">Cabeçalho Mínimo</div><div class="fdesc">Apenas 8 bytes fixos vs. 20–60 bytes do TCP. Overhead mínimo.</div></div>
+    <div class="feat-card good"><div class="ficon">📡</div><div class="fname">Broadcast / Multicast</div><div class="fdesc">Suporta envio para múltiplos destinos simultaneamente — impossível em TCP.</div></div>
+    <div class="feat-card good"><div class="ficon">🔄</div><div class="fname">Sem Controlo de Fluxo</div><div class="fdesc">A aplicação controla a taxa de envio — ideal para streaming em tempo real.</div></div>
+    <div class="feat-card bad"><div class="ficon">❌</div><div class="fname">Sem Entrega Garantida</div><div class="fdesc">Datagramas podem ser perdidos, duplicados ou chegarem fora de ordem.</div></div>
+    <div class="feat-card bad"><div class="ficon">🔀</div><div class="fname">Sem Ordenação</div><div class="fdesc">Não há numeração de sequência. A ordenação é responsabilidade da aplicação.</div></div>
+    <div class="feat-card bad"><div class="ficon">🕵️</div><div class="fname">Sem Ligação</div><div class="fdesc">Não existe estado de ligação — qualquer anfitrião pode enviar datagramas.</div></div>
+    <div class="feat-card good"><div class="ficon">🎛️</div><div class="fname">Stateless</div><div class="fdesc">Sem tabelas de estado — escalável para milhões de clientes (ex: DNS).</div></div>
+  </div>
+
+  <!-- USOS COMUNS -->
+  <div class="section-title">Onde é Usado o UDP</div>
+  <div class="usos-grid">
+    <div class="uso-card"><div class="uicon">🌐</div><div class="uname">DNS</div><div class="udesc">Resolução de nomes de domínio. Rápido, uma pergunta / uma resposta.</div><div class="uproto">Porto 53</div></div>
+    <div class="uso-card"><div class="uicon">📡</div><div class="uname">Streaming</div><div class="udesc">Vídeo e áudio em tempo real. Perda de frames tolerável.</div><div class="uproto">RTP / RTSP</div></div>
+    <div class="uso-card"><div class="uicon">🎮</div><div class="uname">Jogos Online</div><div class="udesc">Actualizações de estado rápidas. Latência &gt; fiabilidade.</div><div class="uproto">Portos variáveis</div></div>
+    <div class="uso-card"><div class="uicon">📺</div><div class="uname">VoIP / Vídeo</div><div class="udesc">Chamadas de voz e vídeo. Atraso inaceitável, perda tolerável.</div><div class="uproto">SIP / H.323</div></div>
+    <div class="uso-card"><div class="uicon">⏰</div><div class="uname">NTP</div><div class="udesc">Sincronização de tempo. Simples pedido/resposta.</div><div class="uproto">Porto 123</div></div>
+    <div class="uso-card"><div class="uicon">🔧</div><div class="uname">SNMP</div><div class="udesc">Gestão de dispositivos de rede. Polling periódico.</div><div class="uproto">Porto 161/162</div></div>
+    <div class="uso-card"><div class="uicon">📂</div><div class="uname">TFTP</div><div class="udesc">Transferência de ficheiros simples (ex: boot PXE).</div><div class="uproto">Porto 69</div></div>
+    <div class="uso-card"><div class="uicon">🔑</div><div class="uname">DHCP</div><div class="udesc">Atribuição automática de configuração IP.</div><div class="uproto">Porto 67/68</div></div>
+    <div class="uso-card"><div class="uicon">🔒</div><div class="uname">QUIC / HTTP/3</div><div class="udesc">Próxima geração web — fiabilidade implementada sobre UDP.</div><div class="uproto">Porto 443</div></div>
+  </div>
+
+  <!-- TCP vs UDP -->
+  <div class="section-title">UDP vs TCP</div>
+  <table class="compare-table">
+    <thead>
+      <tr><th>Característica</th><th>UDP</th><th>TCP</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Orientado à ligação</td><td class="no">Não</td><td class="yes">Sim (3-way handshake)</td></tr>
+      <tr><td>Entrega garantida</td><td class="no">Não</td><td class="yes">Sim (ACKs + retransmissão)</td></tr>
+      <tr><td>Ordenação de dados</td><td class="no">Não</td><td class="yes">Sim (nº de sequência)</td></tr>
+      <tr><td>Controlo de fluxo</td><td class="no">Não</td><td class="yes">Sim (janela deslizante)</td></tr>
+      <tr><td>Controlo de congestionamento</td><td class="no">Não</td><td class="yes">Sim (CWND, slow start)</td></tr>
+      <tr><td>Cabeçalho</td><td class="yes">8 bytes (fixo)</td><td class="no">20–60 bytes (variável)</td></tr>
+      <tr><td>Velocidade / Latência</td><td class="yes">Muito rápido</td><td class="no">Mais lento</td></tr>
+      <tr><td>Broadcast / Multicast</td><td class="yes">Sim</td><td class="no">Não</td></tr>
+      <tr><td>Estado da ligação</td><td class="yes">Stateless</td><td class="no">Stateful</td></tr>
+      <tr><td>Ideal para</td><td>Streaming, DNS, jogos, VoIP</td><td>HTTP, FTP, SSH, SMTP</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ATAQUES -->
+  <div class="ataques-wrap">
+    <div class="section-title">Ataques Associados ao UDP</div>
+    <div id="ataques-container"></div>
+  </div>
+
+  <footer>UDP · RFC 768 · J. Postel · Agosto 1980 · Material didáctico — Introdução às Redes de Computadores</footer>
+</div>
+
+<script>
+// Bit ruler
+const ruler = document.getElementById('ruler');
+for(let i=0;i<32;i++){
+  const s = document.createElement('span');
+  s.textContent = i+1;
+  ruler.appendChild(s);
+}
+
+// Field detail data
+const fieldData = {
+  orig:  { title:"Porto de Origem (16 bits)", desc:"Identifica o porto do processo emissor. Campo opcional — pode ser preenchido com zeros (0x0000) se não for necessária uma resposta. Valores de 0 a 65 535. Os portos bem conhecidos (0–1023) são atribuídos pela IANA." },
+  dest:  { title:"Porto de Destino (16 bits)", desc:"Identifica o porto do processo receptor no anfitrião de destino. Campo obrigatório — define qual o serviço ou aplicação que deve receber o datagrama. Ex: porto 53 para DNS, 67/68 para DHCP, 123 para NTP." },
+  comp:  { title:"Comprimento (16 bits)", desc:"Especifica o comprimento total do datagrama UDP em bytes, incluindo o cabeçalho de 8 bytes e o payload. Valor mínimo: 8 (datagrama sem dados). Valor máximo: 65 535 bytes (limitado pelo campo de 16 bits)." },
+  chk:   { title:"Checksum (16 bits)", desc:"Verificação de integridade do cabeçalho e dados. Calculado sobre um pseudo-cabeçalho IP + cabeçalho UDP + dados. Em IPv4 é opcional (zeros = desactivado). Em IPv6 é obrigatório pois o IPv6 não tem checksum próprio." },
+  dados: { title:"Dados / Payload (variável)", desc:"Conteúdo útil transportado pelo datagrama, fornecido pela camada de aplicação. Não há segmentação automática — se o payload ultrapassar o MTU da rede (tipicamente 1500 bytes em Ethernet), o IP fragmenta o datagrama. O tamanho máximo do payload é 65 507 bytes (65 535 − 8 bytes de cabeçalho UDP − 20 bytes de cabeçalho IPv4)." }
+};
+
+document.querySelectorAll('.field').forEach(f => {
+  f.addEventListener('click', () => {
+    const id = f.dataset.id;
+    if(!id || !fieldData[id]) return;
+    const detail = document.getElementById('field-detail');
+    const wasOpen = f.classList.contains('active-field') && detail.classList.contains('show');
+    document.querySelectorAll('.field').forEach(x => x.classList.remove('active-field'));
+    if(wasOpen){ detail.classList.remove('show'); return; }
+    f.classList.add('active-field');
+    document.getElementById('fd-title').textContent = fieldData[id].title;
+    document.getElementById('fd-desc').textContent  = fieldData[id].desc;
+    detail.classList.add('show');
+  });
+});
+
+// Attacks
+const ataques = [
+  {
+    icon:"🌊", nome:"UDP Flood (DoS/DDoS)", sev:"critico",
+    desc:"Envio massivo de datagramas UDP para portas aleatórias do alvo. Como o UDP não tem estado de ligação, o receptor tenta processar cada datagrama — se não existir nenhum serviço na porta, responde com um ICMP 'Destination Unreachable'. O volume de pedidos e respostas ICMP satura a largura de banda e os recursos do sistema.",
+    como:"O atacante (ou uma botnet) envia milhões de datagramas por segundo com IPs de origem falsificados (spoofing). O alvo fica sobrecarregado tentando responder. Ferramentas comuns: hping3, LOIC, Mirai (botnets IoT).",
+    mitigacao:"Rate limiting de pacotes UDP por fonte, inspecção stateful de UDP (firewall), filtragem de tráfego de entrada com IP de origem inválido (BCP38/uRPF), blackhole routing e serviços anti-DDoS (Cloudflare, Akamai)."
+  },
+  {
+    icon:"🪞", nome:"Amplificação UDP (Reflexão e Amplificação)", sev:"critico",
+    desc:"O atacante envia pequenos pedidos UDP com o IP de origem falsificado (IP da vítima) para servidores legítimos que respondem com respostas muito maiores. O factor de amplificação pode ser enorme: DNS (~28–54×), NTP (~556×), SSDP (~30×), memcached (~51 000×). O resultado é um DDoS volumétrico devastador.",
+    como:"Ex: pedido DNS ANY de 40 bytes → resposta de 3000+ bytes. O atacante usa apenas uma pequena largura de banda para gerar um ataque de terabits por segundo contra a vítima, usando reflectores involuntários.",
+    mitigacao:"Desactivar serviços UDP desnecessários expostos à Internet, configurar resolvedores DNS como não-recursivos para IPs externos, actualizar NTP (modo monlist desactivado), bloquear tráfego de entrada com IP de origem falsificado (BCP38)."
+  },
+  {
+    icon:"🎭", nome:"UDP Spoofing", sev:"alto",
+    desc:"Como o UDP não verifica a identidade do emissor, é trivial falsificar o endereço IP de origem num datagrama. Permite ao atacante: ocultar a sua identidade, realizar ataques de reflexão/amplificação, envenenar caches DNS ou contornar controlos de acesso baseados em IP.",
+    como:"Utilização de raw sockets para construir datagramas UDP com qualquer IP de origem. Em sistemas Linux/BSD, requer privilégios de root. Amplamente usado como base para outros ataques UDP.",
+    mitigacao:"Implementação de BCP38 (uRPF) nos routers de borda para filtrar pacotes com IPs de origem inválidos. Autenticação de protocolos (ex: DNSSEC para DNS, NTPv4 com autenticação)."
+  },
+  {
+    icon:"🧨", nome:"DNS Amplification / DNS Flood", sev:"critico",
+    desc:"Exploração específica do UDP/53 (DNS). No DNS Amplification, pedidos com IP falsificado são enviados para resolvedores abertos, que respondem com grandes respostas para a vítima. No DNS Flood, volumes massivos de pedidos DNS legítimos sobrecarregam o servidor DNS alvo, causando indisponibilidade do serviço de resolução de nomes.",
+    como:"DNS ANY ou TXT queries geram respostas grandes (até 4096 bytes com EDNS0). Resolvedores recursivos abertos são os reflectores. Botnets com milhares de nós aumentam o volume exponencialmente.",
+    mitigacao:"Desactivar resolvedores DNS recursivos abertos, limitar taxa de respostas DNS (DNS RRL), implementar DNSSEC, monitorizar volumes anómalos de queries DNS, usar anycast para distribuir a carga."
+  },
+  {
+    icon:"⏰", nome:"NTP Amplification (Modo monlist)", sev:"alto",
+    desc:"Exploração do comando 'monlist' do protocolo NTP (UDP/123), que devolve os últimos 600 clientes que contactaram o servidor — uma resposta de ~48 KB para um pedido de ~40 bytes (factor 556×). Foi um dos ataques DDoS mais devastadores de 2013–2014.",
+    como:"O atacante envia pedidos 'GET MON_LIST' com IP falsificado da vítima para servidores NTP vulneráveis. O servidor NTP responde com centenas de pacotes UDP para a vítima. Ferramentas: ntpdc, scripts Python.",
+    mitigacao:"Actualizar ntpd para versão ≥4.2.7p26 (monlist desactivado por defeito), adicionar 'noquery' e 'nopeer' às configurações NTP, bloquear UDP/123 de entrada em servidores que não necessitam de ser servidores NTP públicos."
+  },
+  {
+    icon:"📡", nome:"SSDP Amplification (UPnP)", sev:"alto",
+    desc:"Exploração do protocolo SSDP (Simple Service Discovery Protocol, UDP/1900) usado pelo UPnP em dispositivos domésticos (routers, smart TVs, impressoras). Pedidos M-SEARCH com IP falsificado geram respostas ~30× maiores. Milhões de dispositivos IoT expostos na Internet são reflectores potenciais.",
+    como:"Pedido SSDP M-SEARCH de ~30 bytes → resposta de ~900 bytes por dispositivo vulnerável. Scanners como Shodan ajudam a identificar dispositivos UPnP expostos. Botnets IoT (ex: Mirai) exploram estes dispositivos.",
+    mitigacao:"Desactivar UPnP em routers e dispositivos quando não necessário, bloquear UDP/1900 de entrada na firewall perimetral, actualizar firmware de dispositivos IoT, segmentar redes IoT em VLANs separadas."
+  },
+  {
+    icon:"🔄", nome:"UDP Session Hijacking", sev:"medio",
+    desc:"Como o UDP não tem estado de ligação nem números de sequência, um atacante na posição de intermediário (MitM) pode injectar datagramas falsos numa comunicação UDP em curso. Especialmente relevante em protocolos como TFTP, RIP, ou comunicações DNS sem DNSSEC.",
+    como:"O atacante monitoriza o tráfego UDP para conhecer IPs e portos em uso, depois envia datagramas forjados com os parâmetros correctos antes da resposta legítima. Em redes locais (LAN), combina-se com ARP Spoofing para posicionamento MitM.",
+    mitigacao:"Usar TLS/DTLS sobre UDP para cifra e autenticação, implementar DNSSEC para DNS, utilizar números aleatórios imprevisíveis (nonces) nos protocolos de aplicação, segmentação de rede e monitorização de tráfego."
+  },
+  {
+    icon:"💀", nome:"Memcached Amplification", sev:"critico",
+    desc:"O servidor de cache Memcached (UDP/11211) pode ser explorado com um factor de amplificação de até 51 000×. Em 2018, o serviço GitHub sofreu um ataque de 1,35 Tbps usando esta técnica — o maior DDoS registado na época. A causa: servidores Memcached expostos à Internet sem qualquer autenticação.",
+    como:"Um pedido UDP de 15 bytes para um servidor Memcached vulnerável pode gerar uma resposta de 750 KB. Com centenas de servidores reflectores, um atacante com poucos Mbps gera ataques de Tbps.",
+    mitigacao:"Nunca expor o Memcached à Internet (firewall ou bind apenas a 127.0.0.1), desactivar o protocolo UDP no Memcached (-U 0), monitorizar exposições com Shodan, aplicar rate limiting de UDP/11211."
+  },
+];
+
+const sevLabel = { critico:"Crítico", alto:"Alto", medio:"Médio" };
+const container = document.getElementById('ataques-container');
+
+ataques.forEach(a => {
+  const card = document.createElement('div');
+  card.className = 'attack-card';
+  card.innerHTML = `
+    <div class="attack-icon">${a.icon}</div>
+    <div>
+      <div class="attack-header">
+        <span class="attack-name">${a.nome}</span>
+        <span class="attack-severity sev-${a.sev}">${sevLabel[a.sev]}</span>
+      </div>
+      <div class="attack-body">
+        <p class="attack-desc">${a.desc}</p>
+        <p class="attack-como"><strong>// COMO FUNCIONA</strong><br>${a.como}</p>
+        <div class="attack-mitigacao"><strong>// MITIGAÇÃO</strong><br>${a.mitigacao}</div>
+      </div>
+    </div>
+  `;
+  card.addEventListener('click', () => card.classList.toggle('open'));
+  container.appendChild(card);
+});
+</script>
+</body>
+</html>

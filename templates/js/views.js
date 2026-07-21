@@ -1,5 +1,5 @@
         // ── VIEW SWITCHING ──────────────────────────────────────────────
-        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','lab','cheatsheets','cybermap','definicoes'];
+        const ALL_VIEWS = ['dashboard','horario','disciplinas','turma','uc-detail','session-detail','playground','chat','lab','cheatsheets','redes','cybermap','definicoes'];
 
         function switchView(view) {
             if (currentView === 'definicoes' && view !== 'definicoes') {
@@ -52,6 +52,9 @@
                 document.getElementById('view-cheatsheets').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
                 if (!_csShadow) csSwitch('python');
+            } else if (view === 'redes') {
+                document.getElementById('view-redes').style.display = 'flex';
+                monthSelectContainer.style.display = 'none';
             } else if (view === 'cybermap') {
                 document.getElementById('view-cybermap').style.display = 'block';
                 monthSelectContainer.style.display = 'none';
@@ -74,6 +77,7 @@
             document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.view === navKey);
             });
+            document.getElementById('nav-toggle-redes')?.classList.toggle('active', navKey === 'redes');
             document.querySelectorAll('.mob-nav-btn[data-view]').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.view === navKey);
             });

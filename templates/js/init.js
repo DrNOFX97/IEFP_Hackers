@@ -99,6 +99,12 @@
                 const btn = e.target.closest('[data-view]');
                 if (btn) switchView(btn.dataset.view);
             });
+            redesRenderMenu();
+            document.getElementById('nav-toggle-redes').addEventListener('click', () => redesToggleMenu());
+            document.getElementById('nav-submenu-redes').addEventListener('click', e => {
+                const btn = e.target.closest('[data-redes]');
+                if (btn) redesOpen(btn.dataset.redes);
+            });
             document.getElementById('nav-signout-btn').addEventListener('click', () => auth.signOut());
             document.getElementById('nav-mobile-toggle').addEventListener('click', () => navSidebarOpen());
             document.getElementById('nav-sidebar-overlay').addEventListener('click', () => navSidebarClose());

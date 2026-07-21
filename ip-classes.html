@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classes de Endereços IP</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0e0e12;
+    --surface: #14141a;
+    --s2:      #1c1c24;
+    --border:  #2a2a38;
+    --text:    #e8e8f0;
+    --muted:   #6060780;
+    --mut:     #606078;
+
+    --ca: #f4a261; /* Classe A – laranja */
+    --cb: #2ec4b6; /* Classe B – teal */
+    --cc: #e63946; /* Classe C – vermelho */
+    --cd: #a8dadc; /* Classe D – azul claro */
+    --ce: #8338ec; /* Classe E – roxo */
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 2.5rem 1.5rem 5rem;
+    overflow-x: hidden;
+  }
+
+  /* Subtle dot grid */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events:none; z-index:0;
+  }
+
+  .container { max-width: 980px; margin:0 auto; position:relative; z-index:1; }
+
+  /* ── HEADER ── */
+  header {
+    margin-bottom: 3.5rem;
+    animation: fadeDown .6s ease both;
+  }
+  .eyebrow {
+    font-size: .62rem; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--mut); margin-bottom: .7rem;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 900; line-height: .95; letter-spacing: -.02em;
+    color: #fff;
+  }
+  h1 span { color: var(--ca); }
+  .subtitle {
+    margin-top: .9rem; font-size: .78rem; color: var(--mut);
+    max-width: 560px; line-height: 1.65;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── ADDRESS SPACE BAR ── */
+  .space-section { margin-bottom: 3rem; animation: fadeUp .5s .15s ease both; }
+  .section-label {
+    font-size: .6rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--mut); margin-bottom: .8rem;
+    display:flex; align-items:center; gap:.6rem;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .space-bar {
+    width: 100%; height: 48px; border-radius: 6px;
+    overflow: hidden; display: flex; border: 1px solid var(--border);
+    margin-bottom: .5rem;
+  }
+  .space-seg {
+    display:flex; align-items:center; justify-content:center;
+    font-size: .65rem; font-weight:700; color:#000;
+    transition: filter .2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .space-seg:hover { filter: brightness(1.2); }
+  .space-seg span { pointer-events:none; white-space:nowrap; overflow:hidden; }
+
+  .seg-a { background: var(--ca); width: 50%; }
+  .seg-b { background: var(--cb); width: 25%; }
+  .seg-c { background: var(--cc); width: 12.5%; }
+  .seg-d { background: var(--cd); width: 6.25%; }
+  .seg-e { background: var(--ce); width: 6.25%; color:#fff; }
+
+  .space-legend {
+    display:flex; flex-wrap:wrap; gap:.6rem;
+    font-size: .62rem; color: var(--mut);
+  }
+  .sl-item { display:flex; align-items:center; gap:.35rem; }
+  .sl-dot { width:8px; height:8px; border-radius:2px; }
+
+  /* ── CLASSES GRID ── */
+  .classes-grid {
+    display:flex; flex-direction:column; gap:8px;
+    margin-bottom: 3rem;
+  }
+
+  .class-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+    animation: slideIn .5s ease both;
+  }
+  .class-card:hover { border-color: var(--class-color); }
+  .class-card.open  {
+    border-color: var(--class-color);
+    box-shadow: 0 0 0 1px var(--class-color), 0 8px 40px rgba(0,0,0,.5);
+  }
+
+  .class-header {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    align-items: center;
+    min-height: 72px;
+  }
+  .class-letter {
+    display:flex; align-items:center; justify-content:center;
+    background: var(--class-color);
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem; font-weight: 900;
+    color: #000; height:100%;
+    min-width: 72px;
+  }
+  .class-letter.light { color:#fff; }
+
+  .class-info { padding: .9rem 1.1rem; }
+  .class-title { font-size: .95rem; font-weight: 700; color: var(--class-color); margin-bottom:.2rem; }
+  .class-range {
+    font-size: .72rem; color: var(--mut);
+    display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+  }
+  .range-val { color: var(--text); font-weight:500; }
+
+  .class-stats {
+    display:flex; flex-direction:column; align-items:flex-end;
+    gap:.3rem; padding:0 1rem;
+  }
+  .stat-chip {
+    font-size: .6rem; padding:.18rem .55rem; border-radius:20px;
+    background: rgba(255,255,255,.06); border:1px solid var(--border);
+    white-space:nowrap;
+  }
+  .stat-chip .sv { color: var(--class-color); font-weight:700; }
+
+  /* ── DETAIL PANEL ── */
+  .class-detail {
+    max-height:0; overflow:hidden;
+    transition: max-height .45s ease, opacity .3s ease;
+    opacity:0;
+  }
+  .class-card.open .class-detail { max-height:1200px; opacity:1; }
+
+  .detail-body {
+    border-top: 1px dashed var(--border);
+    padding: 1.2rem 1.3rem;
+    background: color-mix(in srgb, var(--class-color) 4%, var(--surface));
+  }
+
+  /* bit structure diagram */
+  .bit-diagram {
+    display:flex; width:100%; height:38px;
+    border-radius:4px; overflow:hidden; border:1px solid var(--border);
+    margin-bottom:1rem; font-size:.6rem;
+  }
+  .bd-seg {
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:2px;
+  }
+  .bd-net  { background: color-mix(in srgb, var(--class-color) 35%, #000); color:#fff; }
+  .bd-host { background: rgba(255,255,255,.07); color: var(--mut); }
+  .bd-mcast{ background: color-mix(in srgb, var(--class-color) 25%, #000); color:#fff; }
+  .bd-res  { background: rgba(255,255,255,.04); color: var(--mut); }
+  .bd-label { font-weight:700; font-size:.62rem; }
+  .bd-bits  { font-size:.52rem; opacity:.7; }
+
+  .detail-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:.8rem 2rem;
+    margin-bottom:1rem;
+  }
+  .ds h4 {
+    font-size:.58rem; letter-spacing:.12em; text-transform:uppercase;
+    color: var(--class-color); margin-bottom:.4rem;
+    padding-bottom:.25rem; border-bottom:1px solid var(--border);
+  }
+  .ds p, .ds li { font-size:.78rem; color:#9090a8; line-height:1.65; }
+  .ds ul { padding-left:1rem; }
+  .ds .val { color: var(--text); font-weight:500; }
+
+  .privados-list {
+    display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.4rem;
+  }
+  .priv-chip {
+    font-size:.65rem; padding:.15rem .5rem; border-radius:3px;
+    background: var(--s2); border:1px solid var(--border); color: var(--text);
+  }
+
+  /* special addresses box */
+  .special-box {
+    background: var(--s2); border:1px solid var(--border);
+    border-radius:6px; padding:.8rem 1rem; margin-top:.8rem;
+  }
+  .special-box h4 {
+    font-size:.58rem; letter-spacing:.12em; text-transform:uppercase;
+    color: var(--mut); margin-bottom:.6rem;
+  }
+  .special-row {
+    display:grid; grid-template-columns:1fr 2fr;
+    gap:.25rem .8rem; font-size:.72rem;
+    margin-bottom:.25rem; align-items:start;
+  }
+  .special-row .sr-addr { color: var(--class-color); font-weight:600; }
+  .special-row .sr-desc { color:#8888a0; }
+
+  /* ── ENDEREÇOS PRIVADOS TABLE ── */
+  .private-section {
+    margin-bottom:3rem;
+    animation: fadeUp .5s .35s ease both;
+  }
+  .private-table {
+    width:100%; border-collapse:collapse; font-size:.78rem;
+  }
+  .private-table th {
+    font-size:.58rem; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--mut); padding:.55rem .9rem; text-align:left;
+    background:var(--s2); border-bottom:1px solid var(--border);
+  }
+  .private-table td {
+    padding:.55rem .9rem; border-bottom:1px solid var(--border);
+    color:#9090a8;
+  }
+  .private-table tr:hover td { background:var(--s2); }
+  .private-table .addr { color:var(--text); font-weight:500; }
+  .private-table .cls  { font-weight:700; }
+
+  /* ── CALCULADORA ── */
+  .calc-section {
+    margin-bottom:3rem;
+    animation: fadeUp .5s .4s ease both;
+  }
+  .calc-box {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:1.2rem;
+  }
+  .calc-input-row {
+    display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1rem;
+  }
+  .calc-input {
+    flex:1; min-width:200px;
+    background:var(--s2); border:1px solid var(--border);
+    color:var(--text); font-family:'JetBrains Mono', monospace;
+    font-size:.85rem; padding:.55rem .8rem; border-radius:4px;
+    outline:none; transition:border-color .2s;
+  }
+  .calc-input:focus { border-color: var(--ca); }
+  .calc-input::placeholder { color:var(--mut); }
+  .calc-btn {
+    background:var(--ca); color:#000; border:none;
+    font-family:'JetBrains Mono', monospace; font-size:.78rem;
+    font-weight:700; padding:.55rem 1.2rem; border-radius:4px;
+    cursor:pointer; transition:filter .2s; white-space:nowrap;
+  }
+  .calc-btn:hover { filter:brightness(1.15); }
+  .calc-result {
+    background:var(--s2); border:1px solid var(--border);
+    border-radius:6px; padding:.9rem 1rem;
+    display:none;
+  }
+  .calc-result.show { display:block; }
+  .cr-grid {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+    gap:.5rem .8rem;
+  }
+  .cr-item .cr-label { font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); margin-bottom:.2rem; }
+  .cr-item .cr-val   { font-size:.82rem; color:var(--text); font-weight:500; }
+  .cr-item .cr-val.highlight { color:var(--ca); }
+  #calc-error { color:var(--cc); font-size:.75rem; margin-top:.5rem; display:none; }
+
+  /* ANIMS */
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(14px)}  to{opacity:1;transform:translateY(0)} }
+  @keyframes slideIn  { from{opacity:0;transform:translateX(-14px)} to{opacity:1;transform:translateX(0)} }
+
+  .class-card:nth-child(1){animation-delay:.05s}
+  .class-card:nth-child(2){animation-delay:.1s}
+  .class-card:nth-child(3){animation-delay:.15s}
+  .class-card:nth-child(4){animation-delay:.2s}
+  .class-card:nth-child(5){animation-delay:.25s}
+
+  footer { text-align:center; margin-top:3rem; font-size:.6rem; color:var(--mut); opacity:.5; }
+
+  @media(max-width:600px){
+    .detail-grid{grid-template-columns:1fr;}
+    .class-header{grid-template-columns:52px 1fr;}
+    .class-stats{display:none;}
+    .seg-a span,.seg-b span,.seg-c span,.seg-d span,.seg-e span{font-size:.5rem;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">Introdução às Redes de Computadores · Endereçamento IPv4</div>
+    <h1>Classes de<br><span>Endereços IP</span></h1>
+    <p class="subtitle">O espaço de endereçamento IPv4 de 32 bits (4 294 967 296 endereços) foi dividido em 5 classes (A–E) pelo RFC 791. Clica numa classe para ver todos os detalhes.</p>
+  </header>
+
+  <!-- BARRA DO ESPAÇO DE ENDEREÇAMENTO -->
+  <div class="space-section">
+    <div class="section-label">Distribuição do Espaço IPv4 (0.0.0.0 → 255.255.255.255)</div>
+    <div class="space-bar">
+      <div class="space-seg seg-a" title="Classe A"><span>A · 50%</span></div>
+      <div class="space-seg seg-b" title="Classe B"><span>B · 25%</span></div>
+      <div class="space-seg seg-c" title="Classe C"><span>C · 12.5%</span></div>
+      <div class="space-seg seg-d" title="Classe D"><span>D</span></div>
+      <div class="space-seg seg-e" title="Classe E"><span>E</span></div>
+    </div>
+    <div class="space-legend">
+      <div class="sl-item"><div class="sl-dot" style="background:var(--ca)"></div>Classe A (0.0.0.0–127.255.255.255)</div>
+      <div class="sl-item"><div class="sl-dot" style="background:var(--cb)"></div>Classe B (128.0.0.0–191.255.255.255)</div>
+      <div class="sl-item"><div class="sl-dot" style="background:var(--cc)"></div>Classe C (192.0.0.0–223.255.255.255)</div>
+      <div class="sl-item"><div class="sl-dot" style="background:var(--cd)"></div>Classe D – Multicast (224–239)</div>
+      <div class="sl-item"><div class="sl-dot" style="background:var(--ce)"></div>Classe E – Reservado (240–255)</div>
+    </div>
+  </div>
+
+  <!-- CLASSES -->
+  <div class="section-label" style="margin-bottom:.8rem">As 5 Classes</div>
+  <div class="classes-grid" id="classes-grid"></div>
+
+  <!-- ENDEREÇOS PRIVADOS -->
+  <div class="private-section">
+    <div class="section-label">Endereços Privados (RFC 1918)</div>
+    <table class="private-table">
+      <thead>
+        <tr><th>Classe</th><th>Intervalo</th><th>Notação CIDR</th><th>Nº de Endereços</th><th>Uso Típico</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cls" style="color:var(--ca)">A</td>
+          <td class="addr">10.0.0.0 – 10.255.255.255</td>
+          <td class="addr">10.0.0.0/8</td>
+          <td>16 777 216</td>
+          <td>Grandes empresas, data centres</td>
+        </tr>
+        <tr>
+          <td class="cls" style="color:var(--cb)">B</td>
+          <td class="addr">172.16.0.0 – 172.31.255.255</td>
+          <td class="addr">172.16.0.0/12</td>
+          <td>1 048 576</td>
+          <td>Médias empresas, VPNs</td>
+        </tr>
+        <tr>
+          <td class="cls" style="color:var(--cc)">C</td>
+          <td class="addr">192.168.0.0 – 192.168.255.255</td>
+          <td class="addr">192.168.0.0/16</td>
+          <td>65 536</td>
+          <td>Redes domésticas, PMEs</td>
+        </tr>
+        <tr>
+          <td style="color:var(--mut)">–</td>
+          <td class="addr">127.0.0.0 – 127.255.255.255</td>
+          <td class="addr">127.0.0.0/8</td>
+          <td>16 777 216</td>
+          <td>Loopback (127.0.0.1 = localhost)</td>
+        </tr>
+        <tr>
+          <td style="color:var(--mut)">–</td>
+          <td class="addr">169.254.0.0 – 169.254.255.255</td>
+          <td class="addr">169.254.0.0/16</td>
+          <td>65 536</td>
+          <td>APIPA – auto-configuração sem DHCP</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CALCULADORA DE CLASSE -->
+  <div class="calc-section">
+    <div class="section-label">Identificador de Classe</div>
+    <div class="calc-box">
+      <p style="font-size:.75rem; color:var(--mut); margin-bottom:.9rem;">Introduz um endereço IPv4 para identificar a sua classe e principais características.</p>
+      <div class="calc-input-row">
+        <input class="calc-input" id="ip-input" type="text" placeholder="ex: 192.168.1.1  ou  10.0.0.1  ou  172.20.5.3" maxlength="15">
+        <button class="calc-btn" onclick="calcClass()">Analisar →</button>
+      </div>
+      <div class="calc-result" id="calc-result">
+        <div class="cr-grid" id="cr-grid"></div>
+      </div>
+      <div id="calc-error"></div>
+    </div>
+  </div>
+
+  <footer>Classes de Endereços IPv4 · RFC 791 · RFC 1918 · Material didáctico — Introdução às Redes de Computadores</footer>
+</div>
+
+<script>
+const classes = [
+  {
+    letra: "A", cor: "var(--ca)", lightText: false,
+    titulo: "Classe A — Redes Muito Grandes",
+    intervalo: "0.0.0.0 – 127.255.255.255",
+    primeiroBit: "0xxxxxxx (0–127)",
+    mascara: "255.0.0.0 (/8)",
+    redes: "128 (2⁷) — usáveis: 126",
+    hosts: "16 777 214 (2²⁴ − 2) por rede",
+    totalEnderecos: "2 147 483 648 (50% do espaço IPv4)",
+    descricao: "A classe A foi concebida para um número muito reduzido de organizações com redes enormes. O primeiro octeto identifica a rede (com o bit mais significativo fixo a 0) e os três octetos restantes identificam os anfitriões. Historicamente atribuída a grandes empresas e governos.",
+    privados: ["10.0.0.0/8"],
+    especiais: [
+      { addr:"0.0.0.0", desc:"Rota por defeito / endereço não especificado" },
+      { addr:"10.0.0.0/8", desc:"Rede privada (RFC 1918)" },
+      { addr:"127.0.0.1", desc:"Loopback — localhost" },
+      { addr:"127.0.0.0/8", desc:"Toda a gama 127.x.x.x é reservada para loopback" },
+    ],
+    bits: [
+      { label:"0 + Rede", bits:"8 bits", pct:25, tipo:"bd-net" },
+      { label:"Anfitrião", bits:"24 bits", pct:75, tipo:"bd-host" },
+    ],
+    usos: ["ISPs de grande dimensão","Grandes multinacionais","Entidades governamentais","Antigos blocos ARPANET"],
+  },
+  {
+    letra: "B", cor: "var(--cb)", lightText: false,
+    titulo: "Classe B — Redes Médias",
+    intervalo: "128.0.0.0 – 191.255.255.255",
+    primeiroBit: "10xxxxxx (128–191)",
+    mascara: "255.255.0.0 (/16)",
+    redes: "16 384 (2¹⁴)",
+    hosts: "65 534 (2¹⁶ − 2) por rede",
+    totalEnderecos: "1 073 741 824 (25% do espaço IPv4)",
+    descricao: "A classe B destina-se a organizações de dimensão média. Os dois primeiros octetos identificam a rede (com os dois bits mais significativos fixos a '10') e os dois octetos restantes identificam os anfitriões. Equilibra o número de redes com o número de anfitriões por rede.",
+    privados: ["172.16.0.0/12","172.16.0.0–172.31.255.255"],
+    especiais: [
+      { addr:"128.0.0.0", desc:"Primeiro endereço de Classe B" },
+      { addr:"169.254.0.0/16", desc:"APIPA — link-local (auto-configuração)" },
+      { addr:"172.16.0.0/12", desc:"Rede privada (RFC 1918)" },
+    ],
+    bits: [
+      { label:"10 + Rede", bits:"16 bits", pct:50, tipo:"bd-net" },
+      { label:"Anfitrião", bits:"16 bits", pct:50, tipo:"bd-host" },
+    ],
+    usos: ["Universidades","Médias e grandes empresas","Operadores regionais","Organismos públicos"],
+  },
+  {
+    letra: "C", cor: "var(--cc)", lightText: true,
+    titulo: "Classe C — Redes Pequenas",
+    intervalo: "192.0.0.0 – 223.255.255.255",
+    primeiroBit: "110xxxxx (192–223)",
+    mascara: "255.255.255.0 (/24)",
+    redes: "2 097 152 (2²¹)",
+    hosts: "254 (2⁸ − 2) por rede",
+    totalEnderecos: "536 870 912 (12,5% do espaço IPv4)",
+    descricao: "A classe C é a mais comum para redes de pequena dimensão. Os três primeiros octetos identificam a rede (bits iniciais '110') e apenas o último octeto identifica anfitriões, permitindo no máximo 254 anfitriões por rede. É a base das redes domésticas modernas.",
+    privados: ["192.168.0.0/16","192.168.0.0–192.168.255.255"],
+    especiais: [
+      { addr:"192.168.0.0/16", desc:"Rede privada mais comum (RFC 1918)" },
+      { addr:"192.0.2.0/24", desc:"TEST-NET — documentação e exemplos" },
+      { addr:"198.51.100.0/24", desc:"TEST-NET-2 — documentação" },
+      { addr:"203.0.113.0/24", desc:"TEST-NET-3 — documentação" },
+    ],
+    bits: [
+      { label:"110 + Rede", bits:"24 bits", pct:75, tipo:"bd-net" },
+      { label:"Anfitrião", bits:"8 bits", pct:25, tipo:"bd-host" },
+    ],
+    usos: ["Redes domésticas","Pequenas empresas","Roteadores SOHO","A maioria das redes Wi-Fi"],
+  },
+  {
+    letra: "D", cor: "var(--cd)", lightText: false,
+    titulo: "Classe D — Multicast",
+    intervalo: "224.0.0.0 – 239.255.255.255",
+    primeiroBit: "1110xxxx (224–239)",
+    mascara: "N/A — não tem máscara de rede",
+    redes: "N/A",
+    hosts: "N/A — não é unicast",
+    totalEnderecos: "268 435 456 (6,25% do espaço IPv4)",
+    descricao: "A classe D não é usada para endereçamento unicast convencional. Reservada exclusivamente para comunicações multicast — envio de um pacote para um grupo de receptores subscritos. Um emissor envia uma única cópia; os routers replicam apenas onde necessário. Base do IPTV, videoconferência e routing dinâmico.",
+    privados: [],
+    especiais: [
+      { addr:"224.0.0.1", desc:"Todos os anfitriões na rede local" },
+      { addr:"224.0.0.2", desc:"Todos os routers na rede local" },
+      { addr:"224.0.0.5", desc:"Todos os routers OSPF" },
+      { addr:"224.0.0.9", desc:"Todos os routers RIPv2" },
+      { addr:"239.0.0.0/8", desc:"Multicast de âmbito administrativo (privado)" },
+    ],
+    bits: [
+      { label:"1110 + Grupo Multicast", bits:"28 bits", pct:100, tipo:"bd-mcast" },
+    ],
+    usos: ["IPTV e streaming de vídeo","Videoconferência (H.323)","Protocolos de routing (OSPF, RIPv2, EIGRP)","Descoberta de serviços (mDNS, UPnP)"],
+  },
+  {
+    letra: "E", cor: "var(--ce)", lightText: true,
+    titulo: "Classe E — Reservado / Experimental",
+    intervalo: "240.0.0.0 – 255.255.255.255",
+    primeiroBit: "1111xxxx (240–255)",
+    mascara: "N/A — reservado",
+    redes: "N/A",
+    hosts: "N/A",
+    totalEnderecos: "268 435 456 (6,25% do espaço IPv4)",
+    descricao: "A classe E está completamente reservada para uso experimental e investigação pela IANA. Nenhum endereço desta gama é roteável na Internet pública. O endereço 255.255.255.255 é o endereço de broadcast limitado, usado para enviar mensagens a todos os anfitriões da rede local sem conhecer o endereço de rede.",
+    privados: [],
+    especiais: [
+      { addr:"255.255.255.255", desc:"Broadcast limitado — todos os anfitriões na rede local" },
+      { addr:"240.0.0.0/4", desc:"Reservado para uso experimental (IANA)" },
+    ],
+    bits: [
+      { label:"1111 + Reservado", bits:"28 bits", pct:100, tipo:"bd-res" },
+    ],
+    usos: ["Investigação e experimentação","Testes internos de protocolos","255.255.255.255 — broadcast limitado","Não utilizável em produção"],
+  },
+];
+
+// Render classes
+const grid = document.getElementById('classes-grid');
+classes.forEach(c => {
+  const card = document.createElement('div');
+  card.className = 'class-card';
+  card.style.setProperty('--class-color', c.cor);
+
+  const bitsHTML = c.bits.map(b =>
+    `<div class="bd-seg ${b.tipo}" style="width:${b.pct}%">
+       <span class="bd-label">${b.label}</span>
+       <span class="bd-bits">${b.bits}</span>
+     </div>`
+  ).join('');
+
+  const espHTML = c.especiais.map(e =>
+    `<div class="special-row">
+       <span class="sr-addr">${e.addr}</span>
+       <span class="sr-desc">${e.desc}</span>
+     </div>`
+  ).join('');
+
+  const privHTML = c.privados.length
+    ? c.privados.map(p=>`<span class="priv-chip">${p}</span>`).join('')
+    : '<span style="font-size:.75rem;color:var(--mut)">Nenhum</span>';
+
+  const usosHTML = c.usos.map(u=>`<li>${u}</li>`).join('');
+
+  card.innerHTML = `
+    <div class="class-header">
+      <div class="class-letter${c.lightText?' light':''}">${c.letra}</div>
+      <div class="class-info">
+        <div class="class-title">${c.titulo}</div>
+        <div class="class-range">
+          <span>Intervalo:</span>
+          <span class="range-val">${c.intervalo}</span>
+        </div>
+        <div class="class-range" style="margin-top:.2rem">
+          <span>Bits iniciais:</span>
+          <span class="range-val" style="color:var(--class-color)">${c.primeiroBit}</span>
+        </div>
+      </div>
+      <div class="class-stats">
+        <span class="stat-chip">Máscara: <span class="sv">${c.mascara}</span></span>
+        <span class="stat-chip">Redes: <span class="sv">${c.redes}</span></span>
+        <span class="stat-chip">Hosts/rede: <span class="sv">${c.hosts}</span></span>
+      </div>
+    </div>
+    <div class="class-detail">
+      <div class="detail-body">
+        <div class="bit-diagram">${bitsHTML}</div>
+        <p style="font-size:.8rem;color:#9090a8;line-height:1.65;margin-bottom:1rem;">${c.descricao}</p>
+        <div class="detail-grid">
+          <div class="ds">
+            <h4>Endereços Especiais</h4>
+            <div class="special-box" style="background:var(--s2)">${espHTML || '<p>Nenhum especificado.</p>'}</div>
+          </div>
+          <div class="ds">
+            <h4>Gama Privada (RFC 1918)</h4>
+            <div class="privados-list">${privHTML}</div>
+            <h4 style="margin-top:1rem">Usos Típicos</h4>
+            <ul>${usosHTML}</ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  card.addEventListener('click', e => {
+    if(e.target.closest('.special-box')) return;
+    card.classList.toggle('open');
+  });
+
+  grid.appendChild(card);
+});
+
+// Calculadora
+function calcClass(){
+  const raw = document.getElementById('ip-input').value.trim();
+  const err = document.getElementById('calc-error');
+  const res = document.getElementById('calc-result');
+  err.style.display='none'; res.classList.remove('show');
+
+  const parts = raw.split('.');
+  if(parts.length!==4 || parts.some(p=>isNaN(p)||p===''||+p<0||+p>255)){
+    err.textContent = '⚠ Endereço inválido. Formato esperado: A.B.C.D (ex: 192.168.1.1)';
+    err.style.display='block'; return;
+  }
+
+  const octets = parts.map(Number);
+  const first = octets[0];
+  let cls, cor, mascara, rede, hostsMax, tipo, privado='Não';
+
+  if(first>=0 && first<=127){
+    cls='A'; cor='var(--ca)'; mascara='255.0.0.0 (/8)';
+    rede=`${octets[0]}.0.0.0`; hostsMax='16 777 214'; tipo='Unicast';
+    if(first===10) privado='Sim (10.0.0.0/8)';
+    if(first===127) tipo='Loopback (reservado)';
+  } else if(first>=128 && first<=191){
+    cls='B'; cor='var(--cb)'; mascara='255.255.0.0 (/16)';
+    rede=`${octets[0]}.${octets[1]}.0.0`; hostsMax='65 534'; tipo='Unicast';
+    if(first===169 && octets[1]===254) tipo='APIPA / Link-local';
+    if(first>=172 && first<=172 && octets[1]>=16 && octets[1]<=31) privado='Sim (172.16.0.0/12)';
+  } else if(first>=192 && first<=223){
+    cls='C'; cor='var(--cc)'; mascara='255.255.255.0 (/24)';
+    rede=`${octets[0]}.${octets[1]}.${octets[2]}.0`; hostsMax='254'; tipo='Unicast';
+    if(first===192 && octets[1]===168) privado='Sim (192.168.0.0/16)';
+  } else if(first>=224 && first<=239){
+    cls='D'; cor='var(--cd)'; mascara='N/A'; rede='N/A'; hostsMax='N/A'; tipo='Multicast';
+  } else {
+    cls='E'; cor='var(--ce)'; mascara='N/A'; rede='N/A'; hostsMax='N/A'; tipo='Experimental / Reservado';
+    if(first===255) tipo='Broadcast limitado (255.255.255.255)';
+  }
+
+  // binary
+  const bin = octets.map(o=>o.toString(2).padStart(8,'0')).join('.');
+
+  const items = [
+    { label:'Endereço', val:raw },
+    { label:'Classe', val:`Classe ${cls}`, hi:true, color:cor },
+    { label:'Tipo', val:tipo },
+    { label:'Máscara Padrão', val:mascara },
+    { label:'Endereço de Rede', val:rede },
+    { label:'Anfitriões Máx.', val:hostsMax },
+    { label:'Endereço Privado', val:privado },
+    { label:'Binário', val:bin },
+  ];
+
+  document.getElementById('cr-grid').innerHTML = items.map(i=>
+    `<div class="cr-item">
+       <div class="cr-label">${i.label}</div>
+       <div class="cr-val${i.hi?' highlight':''}"${i.color?` style="color:${i.color}"`:''}>${i.val}</div>
+     </div>`
+  ).join('');
+
+  res.classList.add('show');
+}
+
+document.getElementById('ip-input').addEventListener('keydown', e => {
+  if(e.key==='Enter') calcClass();
+});
+</script>
+</body>
+</html>

@@ -87,6 +87,11 @@
                 <button class="nav-item" data-view="cheatsheets">
                     <span class="nav-item-icon">📋</span><span class="nav-item-label"> Cheatsheets</span>
                 </button>
+                <button class="nav-item nav-item-toggle" id="nav-toggle-redes" type="button">
+                    <span class="nav-item-icon">📡</span><span class="nav-item-label"> Redes</span>
+                    <span class="nav-item-chevron">▸</span>
+                </button>
+                <div class="nav-submenu" id="nav-submenu-redes"></div>
                 <button class="nav-item" data-view="cybermap">
                     <span class="nav-item-icon">🌐</span><span class="nav-item-label"> CyberMap</span>
                 </button>
@@ -345,6 +350,15 @@
                     <a id="cs-open-link" href="cheatsheet_python.html" target="_blank" style="margin-left:auto;padding:0.28rem 0.75rem;border-radius:999px;border:1px solid var(--border-color);color:var(--text-secondary);font-size:0.78rem;text-decoration:none;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;">↗ abrir em separador</a>
                 </div>
                 <div id="cs-host" style="border-radius:8px;overflow:hidden;min-height:80vh;"></div>
+            </div>
+
+            <!-- VIEW: REDES -->
+            <div id="view-redes" style="display:none;flex-direction:column;gap:1rem;padding:1.5rem 0;height:100%;">
+                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                    <h2 id="redes-title" style="margin:0;">📡 Redes</h2>
+                    <a id="redes-open-link" href="#" target="_blank" style="margin-left:auto;padding:0.28rem 0.75rem;border-radius:999px;border:1px solid var(--border-color);color:var(--text-secondary);font-size:0.78rem;text-decoration:none;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;">↗ abrir em separador</a>
+                </div>
+                <iframe id="redes-frame" style="flex:1;width:100%;border:none;border-radius:8px;min-height:80vh;background:#fff;" title="Redes"></iframe>
             </div>
 
             <!-- VIEW: CYBERMAP -->

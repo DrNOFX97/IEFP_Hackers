@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelo OSI – 7 Camadas de Referência</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --border: #1e2230;
+    --text: #e8eaf2;
+    --muted: #6b7080;
+    --accent: #4fd1c5;
+    --danger: #ff4d6d;
+    --danger-bg: rgba(255,77,109,.08);
+    --c1: #ff6b6b;
+    --c2: #ff9f43;
+    --c3: #ffd166;
+    --c4: #06d6a0;
+    --c5: #4ecdc4;
+    --c6: #4dabf7;
+    --c7: #9b5de5;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1.5rem 4rem;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(79,209,197,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,209,197,.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none; z-index: 0;
+  }
+  .container { max-width: 980px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header { text-align: center; margin-bottom: 3rem; animation: fadeDown .6s ease both; }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; letter-spacing: .2em; color: var(--accent); text-transform: uppercase; margin-bottom: .8rem; }
+  h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; color: #fff; }
+  h1 span { color: var(--accent); }
+  .subtitle { margin-top: .8rem; color: var(--muted); font-size: .95rem; font-weight: 400; }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap; animation: fadeUp .6s .2s ease both; }
+  .legend-item { display: flex; align-items: center; gap: .4rem; font-family: 'IBM Plex Mono', monospace; font-size: .7rem; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .legend-sq { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* STACK */
+  .stack { display: flex; flex-direction: column; gap: 6px; margin-bottom: 3rem; }
+
+  .layer {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    align-items: stretch;
+    border-radius: 10px; overflow: hidden; cursor: pointer;
+    border: 1px solid transparent;
+    transition: border-color .25s, transform .2s, box-shadow .2s;
+    animation: slideIn .5s ease both;
+  }
+  .layer:hover { transform: translateX(4px); box-shadow: -4px 0 24px rgba(0,0,0,.4); }
+  .layer.active {
+    border-color: var(--layer-color);
+    box-shadow: 0 0 0 1px var(--layer-color), 0 8px 32px rgba(0,0,0,.5);
+    transform: translateX(6px);
+  }
+  .layer-num {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--layer-color);
+    font-family: 'IBM Plex Mono', monospace; font-size: 1.4rem; font-weight: 500;
+    color: #000; min-width: 56px; padding: .8rem 0;
+  }
+  .layer-body {
+    background: var(--surface); padding: .9rem 1.2rem;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .layer-name { font-size: 1rem; font-weight: 700; color: var(--layer-color); letter-spacing: .01em; }
+  .layer-name-en { font-size: .75rem; font-weight: 400; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-top: 1px; }
+
+  .layer-badge {
+    display: flex; flex-direction: column; align-items: flex-end; justify-content: center;
+    gap: .35rem; padding: 0 1rem;
+    background: var(--surface);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border); border-radius: 0 10px 10px 0;
+  }
+  .badge-tag { font-family: 'IBM Plex Mono', monospace; font-size: .62rem; padding: .2rem .5rem; border-radius: 4px; white-space: nowrap; }
+  .badge-tag.anfitriao { color: #4dabf7; background: rgba(77,171,247,.1); }
+  .badge-tag.meios     { color: #ff9f43; background: rgba(255,159,67,.1); }
+  .badge-tag.ataques   { color: var(--danger); background: var(--danger-bg); }
+
+  /* DETAIL */
+  .detail { max-height: 0; overflow: hidden; transition: max-height .45s ease, opacity .3s ease; opacity: 0; }
+  .layer.active .detail { max-height: 900px; opacity: 1; }
+  .detail-inner {
+    background: color-mix(in srgb, var(--layer-color) 5%, var(--surface));
+    border-left: 3px solid var(--layer-color);
+    padding: 1.2rem 1.4rem; margin: 2px 0 0;
+    border-radius: 0 0 8px 8px; grid-column: 1 / -1;
+  }
+
+  .detail-tabs { display: flex; gap: 4px; margin-bottom: 1rem; }
+  .tab-btn {
+    font-family: 'IBM Plex Mono', monospace; font-size: .65rem; font-weight: 500;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: .3rem .75rem; border-radius: 6px; border: none; cursor: pointer;
+    background: rgba(255,255,255,.05); color: var(--muted);
+    transition: background .2s, color .2s;
+  }
+  .tab-btn.active { background: var(--layer-color); color: #000; }
+  .tab-btn.danger.active { background: var(--danger); color: #fff; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* INFO PANEL */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem 2rem; }
+  .detail-section h4 { font-family: 'IBM Plex Mono', monospace; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--layer-color); margin-bottom: .4rem; }
+  .detail-section p, .detail-section li { font-size: .82rem; color: #c0c4d4; line-height: 1.6; }
+  .detail-section ul { padding-left: 1.1rem; }
+  .pdu-chip { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: .72rem; font-weight: 500; padding: .15rem .55rem; border-radius: 20px; background: var(--layer-color); color: #000; margin-top: .2rem; }
+  .proto-list { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .3rem; }
+  .proto-chip { font-family: 'IBM Plex Mono', monospace; font-size: .65rem; padding: .15rem .45rem; border-radius: 4px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); color: #d0d4e8; }
+  .descricao-txt { margin-bottom: 1rem; font-size: .84rem; color: #c8ccde; line-height: 1.65; }
+
+  /* ATTACKS PANEL */
+  .attacks-grid { display: flex; flex-direction: column; gap: .5rem; }
+  .attack-card {
+    background: rgba(255,77,109,.05);
+    border: 1px solid rgba(255,77,109,.15);
+    border-radius: 8px; padding: .75rem 1rem;
+    display: grid; grid-template-columns: auto 1fr; gap: .5rem .8rem; align-items: start;
+  }
+  .attack-icon { font-size: 1rem; line-height: 1.4; }
+  .attack-name { font-size: .85rem; font-weight: 700; color: #ff8099; margin-bottom: .2rem; }
+  .attack-desc { font-size: .78rem; color: #9aa0b8; line-height: 1.55; }
+  .attack-severity {
+    font-family: 'IBM Plex Mono', monospace; font-size: .6rem;
+    padding: .1rem .4rem; border-radius: 10px; margin-left: .5rem;
+    vertical-align: middle;
+  }
+  .sev-critico  { background: rgba(255,77,109,.2);  color: #ff4d6d; }
+  .sev-alto     { background: rgba(255,159,67,.2);  color: #ff9f43; }
+  .sev-medio    { background: rgba(255,209,102,.2); color: #ffd166; }
+
+  /* INFO CARDS */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 2.5rem; animation: fadeUp .6s .5s ease both; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; }
+  .card h3 { font-size: .8rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); margin-bottom: .8rem; font-family: 'IBM Plex Mono', monospace; }
+  .card p { font-size: .82rem; color: #9aa0b8; line-height: 1.65; }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(16px);  } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideIn  { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+
+  .layer:nth-child(1){animation-delay:.05s} .layer:nth-child(2){animation-delay:.1s}
+  .layer:nth-child(3){animation-delay:.15s} .layer:nth-child(4){animation-delay:.2s}
+  .layer:nth-child(5){animation-delay:.25s} .layer:nth-child(6){animation-delay:.3s}
+  .layer:nth-child(7){animation-delay:.35s}
+
+  footer { text-align: center; margin-top: 3rem; font-family: 'IBM Plex Mono', monospace; font-size: .65rem; color: var(--muted); opacity: .5; }
+
+  @media (max-width: 640px) {
+    .detail-grid { grid-template-columns: 1fr; }
+    .layer { grid-template-columns: 44px 1fr; }
+    .layer-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">Introdução às Redes de Computadores</div>
+    <h1>Modelo <span>OSI</span></h1>
+    <p class="subtitle">Open Systems Interconnection — 7 Camadas de Referência · Clica numa camada para expandir</p>
+  </header>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#4dabf7"></div>Camada de Anfitrião</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff9f43"></div>Camada de Meios</div>
+    <div class="legend-item"><div class="legend-sq" style="background:rgba(255,77,109,.25); border:1px solid rgba(255,77,109,.4)"></div>Ataques associados</div>
+  </div>
+
+  <div class="stack" id="stack"></div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Encapsulamento</h3>
+      <p>Ao descer o modelo OSI no emissor, cada camada adiciona um cabeçalho (e por vezes um rodapé) — processo chamado <strong>encapsulamento</strong>. No receptor acontece o inverso: o <strong>desencapsulamento</strong>.</p>
+    </div>
+    <div class="card">
+      <h3>PDU por Camada</h3>
+      <p><strong>Dados</strong> (cam. 7–5) · <strong>Segmento</strong> (cam. 4) · <strong>Pacote</strong> (cam. 3) · <strong>Trama</strong> (cam. 2) · <strong>Bits</strong> (cam. 1). Cada unidade de dados do protocolo tem uma designação própria consoante a camada.</p>
+    </div>
+    <div class="card">
+      <h3>Defesa em Profundidade</h3>
+      <p>Em cibersegurança, a estratégia de <em>defesa em profundidade</em> pressupõe controlos de segurança em todas as camadas OSI — desde firewalls e IDS até à cifra de ponta-a-ponta e autenticação forte.</p>
+    </div>
+  </div>
+
+  <footer>Modelo OSI · ISO/IEC 7498-1 · Material didáctico — Introdução às Redes de Computadores</footer>
+</div>
+
+<script>
+const camadas = [
+  {
+    num: 7, nome: "Camada de Aplicação", nomeEn: "Application Layer",
+    cor: "var(--c7)", tipo: "anfitriao", tipotxt: "Camada de Anfitrião", pdu: "Dados",
+    descricao: "Interface directa com o utilizador final e as aplicações. Fornece serviços de rede como correio electrónico, transferência de ficheiros e acesso a páginas web. É a camada mais próxima do utilizador.",
+    funcoes: ["Identificar parceiros de comunicação","Determinar disponibilidade de recursos","Sincronizar a comunicação entre aplicações"],
+    protocolos: ["HTTP","HTTPS","FTP","SMTP","POP3","IMAP","DNS","DHCP","Telnet","SSH"],
+    ataques: [
+      { icon:"🎣", nome:"Phishing / Spear Phishing", sev:"critico", desc:"Engenharia social via e-mail ou páginas falsas que imitam serviços legítimos para roubar credenciais ou instalar malware." },
+      { icon:"💉", nome:"Injecção SQL / XSS / CSRF", sev:"critico", desc:"Exploração de vulnerabilidades em aplicações web: injecção de código malicioso em bases de dados (SQLi), execução de scripts no browser da vítima (XSS) ou acções não autorizadas em nome do utilizador (CSRF)." },
+      { icon:"🔑", nome:"Força Bruta / Credential Stuffing", sev:"alto", desc:"Tentativa sistemática de adivinhar palavras-passe ou reutilização de credenciais comprometidas para aceder a contas." },
+      { icon:"🦠", nome:"Malware / Ransomware", sev:"critico", desc:"Software malicioso entregue via aplicações (e-mail, browser, FTP) que cifra dados, exfiltra informação ou compromete o sistema." },
+      { icon:"🌐", nome:"DNS Spoofing / DNS Hijacking", sev:"alto", desc:"Manipulação das respostas DNS para redirigir utilizadores para servidores controlados pelo atacante, facilitando ataques de intermediário (MitM)." },
+      { icon:"📦", nome:"Ataques a APIs REST/SOAP", sev:"alto", desc:"Exploração de endpoints mal configurados, falta de autenticação, exposição de dados sensíveis ou lógica de negócio vulnerável em APIs modernas." },
+    ]
+  },
+  {
+    num: 6, nome: "Camada de Apresentação", nomeEn: "Presentation Layer",
+    cor: "var(--c6)", tipo: "anfitriao", tipotxt: "Camada de Anfitrião", pdu: "Dados",
+    descricao: "Garante que os dados enviados por um sistema possam ser lidos por outro. Trata da tradução de formatos, cifra e compressão dos dados.",
+    funcoes: ["Tradução de formatos de dados","Cifra e decifra (ex: SSL/TLS)","Compressão de dados"],
+    protocolos: ["SSL/TLS","JPEG","MPEG","GIF","ASCII","EBCDIC","XDR"],
+    ataques: [
+      { icon:"🔓", nome:"SSL Stripping", sev:"critico", desc:"O atacante intercepta a comunicação e força o cliente a usar HTTP em vez de HTTPS, expondo todo o tráfego em texto claro." },
+      { icon:"📜", nome:"Ataques a Certificados (MitM TLS)", sev:"critico", desc:"Uso de certificados falsos ou comprometidos para se interpor numa comunicação cifrada, permitindo decifrar e modificar o tráfego." },
+      { icon:"🗜️", nome:"CRIME / BREACH (Compressão + Cifra)", sev:"alto", desc:"Exploração da combinação de compressão e cifra para extrair segredos (ex: cookies de sessão) a partir de respostas HTTPS por análise do tamanho dos dados." },
+      { icon:"🧩", nome:"Ataques a Formatos de Dados", sev:"medio", desc:"Exploração de vulnerabilidades em parsers de formatos (XML, JSON, imagens) como XXE (XML External Entity) para exfiltrar ficheiros ou executar pedidos internos." },
+      { icon:"🔄", nome:"Downgrade de Protocolo", sev:"alto", desc:"Forçar a negociação para versões mais fracas de TLS/SSL (ex: SSLv3, TLS 1.0) vulneráveis a ataques como POODLE ou BEAST." },
+    ]
+  },
+  {
+    num: 5, nome: "Camada de Sessão", nomeEn: "Session Layer",
+    cor: "var(--c5)", tipo: "anfitriao", tipotxt: "Camada de Anfitrião", pdu: "Dados",
+    descricao: "Estabelece, gere e termina sessões entre aplicações. Permite a recuperação de sessões interrompidas através de pontos de sincronização.",
+    funcoes: ["Estabelecer e terminar sessões","Controlo de diálogo (simplex, semi-duplex, duplex integral)","Sincronização com pontos de retoma"],
+    protocolos: ["NetBIOS","RPC","PPTP","L2TP","SIP","H.323"],
+    ataques: [
+      { icon:"🍪", nome:"Session Hijacking (Sequestro de Sessão)", sev:"critico", desc:"Roubo do token/cookie de sessão de um utilizador autenticado para assumir a sua identidade sem necessidade de credenciais." },
+      { icon:"🔁", nome:"Session Fixation", sev:"alto", desc:"O atacante força uma vítima a usar um identificador de sessão conhecido antecipadamente, permitindo assumir o controlo após a autenticação." },
+      { icon:"🔃", nome:"Replay Attack", sev:"alto", desc:"Captura e reenvio de mensagens ou tokens de autenticação válidos para obter acesso não autorizado, explorando a ausência de nonces ou timestamps." },
+      { icon:"📞", nome:"SIP Abuse (VoIP)", sev:"medio", desc:"Exploração do protocolo SIP para escutas, falsificação de chamadas, desvio de chamadas ou ataques de negação de serviço em sistemas VoIP." },
+    ]
+  },
+  {
+    num: 4, nome: "Camada de Transporte", nomeEn: "Transport Layer",
+    cor: "var(--c4)", tipo: "anfitriao", tipotxt: "Camada de Anfitrião", pdu: "Segmento",
+    descricao: "Responsável pela entrega de dados ponto-a-ponto entre processos em anfitriões distintos. Garante fiabilidade, controlo de fluxo e multiplexagem por portas lógicas.",
+    funcoes: ["Segmentação e remontagem de dados","Controlo de fluxo e de erros","Multiplexagem por portas lógicas (0–65535)"],
+    protocolos: ["TCP","UDP","SCTP","DCCP"],
+    ataques: [
+      { icon:"🌊", nome:"SYN Flood (DoS/DDoS)", sev:"critico", desc:"Envio massivo de pacotes TCP SYN sem completar o handshake, esgotando a tabela de conexões semi-abertas do servidor até à indisponibilidade total." },
+      { icon:"🔪", nome:"TCP Session Hijacking", sev:"critico", desc:"Injecção de pacotes TCP com números de sequência correctos para assumir o controlo de uma sessão TCP estabelecida entre dois anfitriões." },
+      { icon:"🔍", nome:"Port Scanning", sev:"medio", desc:"Enumeração sistemática de portas TCP/UDP abertas (ex: com Nmap) para identificar serviços activos e possíveis vectores de ataque." },
+      { icon:"💣", nome:"UDP Flood", sev:"alto", desc:"Envio massivo de pacotes UDP para portas aleatórias, forçando o anfitrião a processar e responder com mensagens ICMP, saturando a largura de banda." },
+      { icon:"🪞", nome:"Ataques de Amplificação (UDP)", sev:"alto", desc:"Envio de pequenos pedidos UDP com IP de origem falsificado (ex: DNS, NTP, SSDP) para servidores que respondem com respostas muito maiores, amplificando o ataque contra a vítima." },
+    ]
+  },
+  {
+    num: 3, nome: "Camada de Rede", nomeEn: "Network Layer",
+    cor: "var(--c3)", tipo: "meios", tipotxt: "Camada de Meios", pdu: "Pacote",
+    descricao: "Determina o melhor caminho lógico para encaminhar pacotes entre redes distintas. Responsável pelo endereçamento lógico (IP) e pelo encaminhamento (routing).",
+    funcoes: ["Endereçamento lógico (IPv4 / IPv6)","Encaminhamento entre redes (routing)","Fragmentação e remontagem de pacotes"],
+    protocolos: ["IPv4","IPv6","ICMP","OSPF","BGP","RIP","ARP","IGMP"],
+    ataques: [
+      { icon:"🎭", nome:"IP Spoofing", sev:"critico", desc:"Falsificação do endereço IP de origem nos pacotes para ocultar a identidade do atacante, contornar filtros de acesso ou realizar ataques de amplificação." },
+      { icon:"🛣️", nome:"Manipulação de Routing (BGP Hijacking)", sev:"critico", desc:"Anúncio de rotas BGP falsas para redirigir o tráfego de Internet através de sistemas controlados pelo atacante, permitindo intercepção ou blackholing de tráfego." },
+      { icon:"🧊", nome:"ICMP Flood / Ping of Death / Smurf", sev:"alto", desc:"Ataques baseados em ICMP: envio massivo de pings (flood), pacotes ICMP malformados de tamanho excessivo (Ping of Death), ou amplificação via endereços de broadcast (Smurf)." },
+      { icon:"📡", nome:"OSPF/RIP Poisoning", sev:"alto", desc:"Injecção de actualizações de routing falsas em protocolos IGP para alterar as tabelas de encaminhamento e desviar o tráfego interno." },
+      { icon:"🔀", nome:"Fragmentação de Pacotes IP", sev:"medio", desc:"Divisão deliberada de pacotes em fragmentos para contornar sistemas de detecção de intrusão (IDS) e firewalls que não fazem reassembly completo." },
+    ]
+  },
+  {
+    num: 2, nome: "Camada de Ligação de Dados", nomeEn: "Data Link Layer",
+    cor: "var(--c2)", tipo: "meios", tipotxt: "Camada de Meios", pdu: "Trama",
+    descricao: "Garante a transferência fiável de dados entre dois nós directamente ligados. Divide-se em LLC (controlo lógico da ligação) e MAC (controlo de acesso ao meio).",
+    funcoes: ["Endereçamento físico (endereço MAC)","Delimitação e enquadramento de tramas","Detecção e correcção de erros (CRC)"],
+    protocolos: ["Ethernet","Wi-Fi (802.11)","PPP","HDLC","Frame Relay","ATM"],
+    ataques: [
+      { icon:"👻", nome:"ARP Spoofing / ARP Poisoning", sev:"critico", desc:"Envio de respostas ARP falsas para associar o endereço MAC do atacante ao IP de outro anfitrião (ex: gateway), permitindo interceptar todo o tráfego da rede local (MitM)." },
+      { icon:"🌊", nome:"MAC Flooding", sev:"alto", desc:"Envio massivo de tramas Ethernet com endereços MAC de origem aleatórios para encher a tabela CAM do switch, forçando-o a funcionar em modo de difusão (hub) e expondo o tráfego." },
+      { icon:"🏷️", nome:"VLAN Hopping", sev:"alto", desc:"Exploração de configurações de trunking (Switch Spoofing) ou duplo encapsulamento 802.1Q para aceder a VLANs às quais não se teria permissão." },
+      { icon:"🥸", nome:"MAC Spoofing", sev:"medio", desc:"Alteração do endereço MAC do atacante para contornar controlos de acesso baseados em MAC (port security, filtros de rede sem fios)." },
+      { icon:"📡", nome:"Ataques a Wi-Fi (802.11)", sev:"critico", desc:"Inclui redes falsas (Evil Twin / Rogue AP), desautenticação forçada (deauth flood), quebra de WEP/WPA2 por captura de handshake e ataque de dicionário, e ataques PMKID." },
+      { icon:"🔋", nome:"STP Manipulation", sev:"alto", desc:"Injecção de BPDUs com prioridade superior para assumir o papel de root bridge no protocolo Spanning Tree, permitindo desviar o tráfego da rede local." },
+    ]
+  },
+  {
+    num: 1, nome: "Camada Física", nomeEn: "Physical Layer",
+    cor: "var(--c1)", tipo: "meios", tipotxt: "Camada de Meios", pdu: "Bits",
+    descricao: "Define as especificações eléctricas, mecânicas e funcionais para a transmissão de bits brutos através de um meio físico: cabo de cobre, fibra óptica ou rádio.",
+    funcoes: ["Transmissão de bits (0s e 1s)","Definição de tensões, frequências e conectores","Modo de transmissão: simplex, semi-duplex, duplex integral"],
+    protocolos: ["RS-232","Ethernet (física)","USB","Bluetooth (físico)","DSL","RDIS","Fibra óptica"],
+    ataques: [
+      { icon:"🎧", nome:"Escuta Passiva (Sniffing Físico)", sev:"critico", desc:"Ligação física a um meio de transmissão (cabo de cobre, fibra óptica) ou captura de sinais electromagnéticos para interceptar dados em trânsito sem deixar rasto." },
+      { icon:"✂️", nome:"Corte / Sabotagem de Cabos", sev:"alto", desc:"Interrupção deliberada de cabos de rede ou fibra óptica para causar indisponibilidade do serviço. Pode ser acidental ou intencional (sabotagem de infra-estrutura crítica)." },
+      { icon:"📻", nome:"Interferência e Jamming (RF)", sev:"alto", desc:"Emissão de sinais de rádio frequência para bloquear ou degradar comunicações sem fios (Wi-Fi, Bluetooth, GSM), tornando-as inutilizáveis." },
+      { icon:"🔌", nome:"Acesso Físico Não Autorizado", sev:"critico", desc:"Ligação de dispositivos não autorizados à infra-estrutura (ex: keyloggers, rogue devices, taps de rede) para captura de dados ou acesso à rede interna." },
+      { icon:"⚡", nome:"Ataque por Pulso Electromagnético (EMP)", sev:"alto", desc:"Emissão de pulso electromagnético de alta intensidade para danificar ou destruir equipamento electrónico e de rede numa área geográfica." },
+    ]
+  }
+];
+
+const sevLabel = { critico: "Crítico", alto: "Alto", medio: "Médio" };
+
+const stack = document.getElementById('stack');
+
+camadas.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'layer';
+  el.style.setProperty('--layer-color', c.cor);
+
+  const ataquesBadge = `<span class="badge-tag ataques">⚠ ${c.ataques.length} ataques</span>`;
+  const tipoBadge = `<span class="badge-tag ${c.tipo}">${c.tipotxt}</span>`;
+
+  const funcoesHTML = c.funcoes.map(f => `<li>${f}</li>`).join('');
+  const protosHTML  = c.protocolos.map(p => `<span class="proto-chip">${p}</span>`).join('');
+  const ataquesHTML = c.ataques.map(a => `
+    <div class="attack-card">
+      <div class="attack-icon">${a.icon}</div>
+      <div>
+        <div class="attack-name">${a.nome} <span class="attack-severity sev-${a.sev}">${sevLabel[a.sev]}</span></div>
+        <div class="attack-desc">${a.desc}</div>
+      </div>
+    </div>
+  `).join('');
+
+  el.innerHTML = `
+    <div class="layer-num">${c.num}</div>
+    <div class="layer-body">
+      <div class="layer-name">${c.nome}</div>
+      <div class="layer-name-en">${c.nomeEn}</div>
+    </div>
+    <div class="layer-badge">${tipoBadge}${ataquesBadge}</div>
+    <div class="detail" style="grid-column:1/-1">
+      <div class="detail-inner">
+        <div class="detail-tabs">
+          <button class="tab-btn active" data-tab="info">📋 Descrição</button>
+          <button class="tab-btn danger" data-tab="ataques">⚠️ Ataques (${c.ataques.length})</button>
+        </div>
+        <div class="tab-panel active" data-panel="info">
+          <p class="descricao-txt">${c.descricao}</p>
+          <div class="detail-grid">
+            <div class="detail-section">
+              <h4>Funções Principais</h4>
+              <ul>${funcoesHTML}</ul>
+            </div>
+            <div class="detail-section">
+              <h4>Unidade de Dados (PDU)</h4>
+              <div><span class="pdu-chip">${c.pdu}</span></div>
+              <h4 style="margin-top:.8rem;">Protocolos / Normas</h4>
+              <div class="proto-list">${protosHTML}</div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="ataques">
+          <div class="attacks-grid">${ataquesHTML}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // toggle layer open/close
+  el.addEventListener('click', e => {
+    if (e.target.closest('.tab-btn')) return;
+    const estaActivo = el.classList.contains('active');
+    document.querySelectorAll('.layer').forEach(l => l.classList.remove('active'));
+    if (!estaActivo) el.classList.add('active');
+  });
+
+  // tab switching
+  el.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const tab = btn.dataset.tab;
+      el.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      el.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      el.querySelector(`[data-panel="${tab}"]`).classList.add('active');
+    });
+  });
+
+  stack.appendChild(el);
+});
+</script>
+</body>
+</html>

@@ -492,6 +492,7 @@ def main():
         'js/definicoes.js',
         'js/lab.js',
         'js/cheatsheets.js',
+        'js/redes.js',
         'js/links.js',
         'js/init.js',
     ]
