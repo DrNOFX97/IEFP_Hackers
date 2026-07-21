@@ -1,11 +1,11 @@
         // ── REDES (submenu) ─────────────────────────────────────────────
         const REDES_PAGES = [
-            { key: 'tcp-ip-model', icon: '📡', label: 'Modelo TCP/IP', file: 'tcp-ip-model.html' },
-            { key: 'osi-model', icon: '🧅', label: 'Modelo OSI', file: 'osi-model.html' },
-            { key: 'udp-model', icon: '📨', label: 'UDP', file: 'udp-model.html' },
-            { key: 'ip-classes', icon: '🔢', label: 'Classes de Endereços IP', file: 'ip-classes.html' },
-            { key: 'topologias-rede', icon: '🕸️', label: 'Topologias de Rede', file: 'topologias-rede.html' },
-            { key: 'switch-vlan-router', icon: '🔀', label: 'Switch · VLAN · Router', file: 'switch-vlan-router.html' },
+            { key: 'tcp-ip-model', icon: '📡', label: 'Modelo TCP/IP', file: 'redes/tcp-ip-model.html' },
+            { key: 'osi-model', icon: '🧅', label: 'Modelo OSI', file: 'redes/osi-model.html' },
+            { key: 'udp-model', icon: '📨', label: 'UDP', file: 'redes/udp-model.html' },
+            { key: 'ip-classes', icon: '🔢', label: 'Classes de Endereços IP', file: 'redes/ip-classes.html' },
+            { key: 'topologias-rede', icon: '🕸️', label: 'Topologias de Rede', file: 'redes/topologias-rede.html' },
+            { key: 'switch-vlan-router', icon: '🔀', label: 'Switch · VLAN · Router', file: 'redes/switch-vlan-router.html' },
         ];
 
         function redesRenderMenu() {
