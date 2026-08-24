@@ -1,25 +1,24 @@
 <#
 .SYNOPSIS
-    Deploy rápido e seguro: backup de data/, gera dashboard, commit, push e deploy Firebase.
+    Deploy rapido e seguro: backup de data/, gera dashboard, commit, push e deploy Firebase.
 
 .DESCRIPTION
-    Fluxo protegido para evitar o que já aconteceu antes (apagar/sobrescrever
-    data/*.json sem querer):
+    Fluxo protegido para evitar apagar/sobrescrever data/*.json sem querer:
       1. Faz backup de data/*.json para data/.backups/<timestamp>/ (nunca apaga nada)
       2. Corre o gerador (gerador_dashboard.py)
       3. Faz "git add" APENAS aos ficheiros gerados conhecidos (nunca "git add -A" / "git add .")
       4. Aborta se, por algum motivo, algo dentro de data/ tiver ficado staged
-      5. Mostra o diff resumido antes de comitar
-      6. Commit -> push -> firebase deploy (qualquer um destes passos pode ser saltado com switches)
+      5. Mostra o resumo do que vai ser comitado
+      6. Commit -> push -> firebase deploy (cada passo pode ser saltado com switches)
 
 .PARAMETER Message
-    Mensagem de commit (obrigatória).
+    Mensagem de commit (obrigatoria).
 
 .PARAMETER SkipPush
-    Não faz git push (só commit local).
+    Nao faz git push (so commit local).
 
 .PARAMETER SkipDeploy
-    Não faz firebase deploy (só commit/push).
+    Nao faz firebase deploy (so commit/push).
 
 .EXAMPLE
     .\deploy.ps1 -Message "feat: adicionar horario de setembro"
@@ -38,16 +37,17 @@ param(
 $ErrorActionPreference = "Stop"
 
 function Fail($msg) {
-    Write-Host "`n[ABORTADO] $msg" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "[ABORTADO] $msg" -ForegroundColor Red
     exit 1
 }
 
-# ── 0. Tem de correr na raiz do projeto ──────────────────────────
+# -- 0. Tem de correr na raiz do projeto --------------------------
 if (-not (Test-Path "gerador_dashboard.py")) {
-    Fail "Corre este script a partir da raiz do projeto (onde está gerador_dashboard.py)."
+    Fail "Corre este script a partir da raiz do projeto (onde esta gerador_dashboard.py)."
 }
 
-# ── 1. Backup de data/ ANTES de tocar em seja o que for ──────────
+# -- 1. Backup de data/ ANTES de tocar em seja o que for ----------
 if (Test-Path "data") {
     $ts = Get-Date -Format "yyyyMMdd_HHmmss"
     $backupDir = "data\.backups\$ts"
@@ -57,63 +57,71 @@ if (Test-Path "data") {
         Copy-Item "data\*.json" -Destination $backupDir
         Write-Host "[OK] Backup de $($jsonFiles.Count) ficheiro(s) de data/ em $backupDir" -ForegroundColor Green
     } else {
-        Write-Host "[AVISO] Pasta data/ existe mas está vazia — nada para backup." -ForegroundColor Yellow
+        Write-Host "[AVISO] Pasta data/ existe mas esta vazia - nada para backup." -ForegroundColor Yellow
     }
 } else {
-    Write-Host "[AVISO] Pasta data/ não encontrada. Confirma com o utilizador antes de continuar se achavas que existia." -ForegroundColor Yellow
+    Write-Host "[AVISO] Pasta data/ nao encontrada. Confirma com o utilizador se achavas que existia." -ForegroundColor Yellow
 }
 
-# ── 2. Gerar dashboard.html / admin.html ─────────────────────────
-Write-Host "`nA gerar dashboard..." -ForegroundColor Cyan
+# -- 2. Gerar dashboard.html / admin.html --------------------------
+Write-Host ""
+Write-Host "A gerar dashboard..." -ForegroundColor Cyan
 py gerador_dashboard.py
-if ($LASTEXITCODE -ne 0) { Fail "gerador_dashboard.py falhou — nada foi comitado." }
+if ($LASTEXITCODE -ne 0) { Fail "gerador_dashboard.py falhou - nada foi comitado." }
 
-# ── 3. Staging: SÓ ficheiros gerados conhecidos, nunca -A / . ────
+# -- 3. Staging: SO ficheiros gerados conhecidos, nunca -A / . ----
 $knownFiles = @("dashboard.html", "admin.html", "firebase.json") | Where-Object { Test-Path $_ }
 if (-not $knownFiles) { Fail "Nenhum dos ficheiros esperados (dashboard.html/admin.html/firebase.json) existe." }
 
 git add $knownFiles
 
-# ── 4. Rede de segurança: aborta se algo em data/ ficou staged ───
+# -- 4. Rede de seguranca: aborta se algo em data/ ficou staged ---
 $staged = git diff --cached --name-only
 $dataStaged = $staged | Where-Object { $_ -like "data/*" }
 if ($dataStaged) {
     git reset $knownFiles | Out-Null
-    Fail "Ficheiros dentro de data/ ficaram staged ($($dataStaged -join ', ')) — isto não deveria acontecer, pois data/ é git-ignored. Abortado sem alterar nada."
+    Fail "Ficheiros dentro de data/ ficaram staged ($($dataStaged -join ', ')) - isto nao deveria acontecer, pois data/ e git-ignored. Abortado sem alterar nada."
 }
 
-# ── 5. Nada para comitar? ─────────────────────────────────────────
+# -- 5. Nada para comitar? -----------------------------------------
 if (-not $staged) {
-    Write-Host "`nNada mudou em dashboard.html/admin.html/firebase.json — não há nada para comitar." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Nada mudou em dashboard.html/admin.html/firebase.json - nao ha nada para comitar." -ForegroundColor Yellow
     exit 0
 }
 
-Write-Host "`nFicheiros a comitar:" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Ficheiros a comitar:" -ForegroundColor Cyan
 git diff --cached --stat
 
-# ── 6. Commit ─────────────────────────────────────────────────────
+# -- 6. Commit -------------------------------------------------------
 git commit -m $Message
 if ($LASTEXITCODE -ne 0) { Fail "git commit falhou." }
 Write-Host "[OK] Commit criado." -ForegroundColor Green
 
-# ── 7. Push ────────────────────────────────────────────────────────
+# -- 7. Push -----------------------------------------------------------
 if (-not $SkipPush) {
-    Write-Host "`nA fazer push..." -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "A fazer push..." -ForegroundColor Cyan
     git push
-    if ($LASTEXITCODE -ne 0) { Fail "git push falhou (commit local mantém-se)." }
-    Write-Host "[OK] Push concluído." -ForegroundColor Green
+    if ($LASTEXITCODE -ne 0) { Fail "git push falhou (commit local mantem-se)." }
+    Write-Host "[OK] Push concluido." -ForegroundColor Green
 } else {
-    Write-Host "`n[SkipPush] Push saltado." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "[SkipPush] Push saltado." -ForegroundColor Yellow
 }
 
-# ── 8. Deploy Firebase ────────────────────────────────────────────
+# -- 8. Deploy Firebase --------------------------------------------------
 if (-not $SkipDeploy) {
-    Write-Host "`nA fazer deploy para Firebase Hosting..." -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "A fazer deploy para Firebase Hosting..." -ForegroundColor Cyan
     firebase deploy --only hosting --project ligafaro-8000
     if ($LASTEXITCODE -ne 0) { Fail "firebase deploy falhou." }
-    Write-Host "[OK] Deploy concluído -> https://iefp-hackers.web.app" -ForegroundColor Green
+    Write-Host "[OK] Deploy concluido -> https://iefp-hackers.web.app" -ForegroundColor Green
 } else {
-    Write-Host "`n[SkipDeploy] Deploy saltado." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "[SkipDeploy] Deploy saltado." -ForegroundColor Yellow
 }
 
-Write-Host "`nConcluído." -ForegroundColor Green
+Write-Host ""
+Write-Host "Concluido." -ForegroundColor Green

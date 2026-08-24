@@ -22,6 +22,10 @@
             { label: 'Classroom Ivan', icon: '🎓', url: 'https://classroom.google.com/u/0/c/ODY2NDE0NTcxNTgy', desc: 'Google Classroom — Ivan Gonçalves' },
             { label: 'Ivan — UC00633', icon: '🖥️', url: 'https://teams.microsoft.com/meet/33253500560744?p=466FEhUS1OB5QYThge', desc: 'Teams — Instalar e Parametrizar Sistemas Operativos de Servidor' },
             { label: 'Paulo — UC01491', icon: '🖥️', url: 'https://teams.microsoft.com/meet/331537855758981?p=NVsHzhfcmC7Y6KkInd', desc: 'Teams — Projetar e Administrar Sistemas de Bases de Dados' },
+            { label: 'Cláudia — UC00616 (sessões 7-9)', icon: '🖥️', url: 'https://teams.microsoft.com/meet/349243108787914?p=1zC9kN4zPIuFQgpeRZ', desc: 'Teams — Segurança e Saúde no Trabalho · Meeting ID: 349 243 108 787 914 · Passcode: JF7M6GX7' },
+            { label: 'Cláudia — UC00616 (sessões 10-16)', icon: '🖥️', url: 'https://teams.microsoft.com/meet/354207630536587?p=3Ihj7xMAnMFAA6CAyV', desc: 'Teams — Segurança e Saúde no Trabalho · Meeting ID: 354 207 630 536 587 · Passcode: mo2VJ6KJ' },
+            { label: 'Cláudia — UC00616 (sessões 17-19)', icon: '🖥️', url: 'https://teams.microsoft.com/meet/379487891570544?p=iLTtXc36Frm8PCAFn4', desc: 'Teams — Segurança e Saúde no Trabalho · Meeting ID: 379 487 891 570 544 · Passcode: Mw3df2XR' },
+            { label: 'Cláudia — UC00616 (sessões 20-25)', icon: '🖥️', url: 'https://teams.microsoft.com/meet/33822378235136?p=HxCJYZmFjAo0WP9VXl', desc: 'Teams — Segurança e Saúde no Trabalho · Meeting ID: 338 223 782 351 36 · Passcode: Hh2En2PF' },
         ];
 
         function dashLinksRender() {
