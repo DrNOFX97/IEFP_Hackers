@@ -187,9 +187,16 @@
             <div id="view-disciplinas">
                 <div class="disciplines-header">
                     <h2 style="margin-bottom:0;">Disciplinas</h2>
-                    <input type="text" class="uc-search" id="uc-search" placeholder="🔍  Pesquisar UC...">
+                    <div class="disciplines-controls">
+                        <input type="text" class="uc-search" id="uc-search" placeholder="🔍  Pesquisar UC...">
+                        <div class="view-toggle">
+                            <button class="view-toggle-btn active" id="btn-disc-view-cards" title="Vista cards">⊞</button>
+                            <button class="view-toggle-btn" id="btn-disc-view-list" title="Vista em lista">☰</button>
+                        </div>
+                    </div>
                 </div>
                 <div id="disciplines-grid"></div>
+                <div id="disciplines-list" style="display:none;"></div>
             </div>
 
             <!-- VIEW: PLAYGROUND -->

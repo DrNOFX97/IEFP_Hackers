@@ -4,6 +4,7 @@
             { key: 'osi-model', icon: '🧅', label: 'Modelo OSI', file: 'redes/osi-model.html' },
             { key: 'udp-model', icon: '📨', label: 'UDP', file: 'redes/udp-model.html' },
             { key: 'ip-classes', icon: '🔢', label: 'Classes de Endereços IP', file: 'redes/ip-classes.html' },
+            { key: 'sistemas-numericos', icon: '🧮', label: 'Sistemas Numéricos (Quiz + Conversor)', file: 'redes/sistemas-numericos.html' },
             { key: 'topologias-rede', icon: '🕸️', label: 'Topologias de Rede', file: 'redes/topologias-rede.html' },
             { key: 'switch-vlan-router', icon: '🔀', label: 'Switch · VLAN · Router', file: 'redes/switch-vlan-router.html' },
             { key: 'redes-computadores', icon: '🖧', label: 'Redes de Computadores (UC01478)', file: 'redes/redes-computadores.html' },

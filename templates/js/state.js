@@ -8,8 +8,9 @@
         let notesTimer          = null;
         let sessionNotesTimer   = null;
         let materialsCache      = {};   // key → array (ucCode or session key)
-        let scheduleFilter   = '';
-        let scheduleViewMode = 'cards';
+        let scheduleFilter      = '';
+        let scheduleViewMode    = 'cards';
+        let disciplinesViewMode = 'cards';
 
         // Chat state
         let chatUnsub    = null;   // global chat listener unsubscribe

@@ -109,6 +109,11 @@
             justify-content: space-between;
             margin-bottom: 1.5rem;
         }
+        .disciplines-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
 
         .uc-search {
             background: var(--surface-color);
@@ -197,6 +202,48 @@
             margin-left: 0.35rem; background: rgba(255,255,255,0.07);
             color: var(--text-secondary); font-size: 0.7rem; font-weight: 600;
             padding: 0.1rem 0.45rem; border-radius: 10px;
+        }
+
+        /* UC list (table) view */
+        .uc-list-table {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .uc-list-header, .uc-list-row {
+            display: grid;
+            grid-template-columns: minmax(160px, 1.8fr) minmax(130px, 1fr) 100px 100px 110px;
+            gap: 0.75rem;
+            align-items: center;
+            padding: 0.65rem 1rem;
+        }
+        .uc-list-header {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .uc-list-row {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .uc-list-row:last-child { border-bottom: none; }
+        .uc-list-row:hover { background: rgba(255,255,255,0.04); }
+        .uc-list-uc { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+        .uc-list-code { font-size: 0.72rem; font-weight: 700; color: var(--accent-color); letter-spacing: 0.04em; }
+        .uc-list-name { font-size: 0.85rem; color: var(--text-primary); overflow-wrap: break-word; }
+        .uc-list-formador { font-size: 0.85rem; color: var(--text-secondary); }
+        .uc-list-no-formador { color: var(--warning-color); font-size: 0.8rem; white-space: nowrap; }
+        .uc-list-hours { text-align: right; font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--text-primary); }
+        .uc-list-hours.uc-list-done { color: var(--success-color); }
+        .uc-list-summary {
+            margin-top: 0.75rem;
+            font-size: 0.82rem;
+            color: var(--warning-color);
         }
 
         /* ── UC DETAIL VIEW ── */

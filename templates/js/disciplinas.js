@@ -64,6 +64,81 @@
             </div>`;
         }
 
+        function setDisciplinesView(mode) {
+            disciplinesViewMode = mode;
+            document.getElementById('btn-disc-view-cards').classList.toggle('active', mode === 'cards');
+            document.getElementById('btn-disc-view-list').classList.toggle('active', mode === 'list');
+            document.getElementById('disciplines-grid').style.display = mode === 'cards' ? '' : 'none';
+            document.getElementById('disciplines-list').style.display = mode === 'list' ? '' : 'none';
+            renderDisciplines(document.getElementById('uc-search')?.value || '');
+        }
+
+        function renderDisciplinesListRow(uc) {
+            const { done, scheduled } = computeUCHours(uc.codigo);
+            const pendente = Math.max(0, scheduled - done);
+            const formadorHtml = uc.formador
+                ? escapeHtml(shortName(uc.formador))
+                : `<span class="uc-list-no-formador">⚠ por atribuir</span>`;
+
+            return `
+            <div class="uc-list-row" data-uc-open="${uc.codigo}">
+                <div class="uc-list-uc">
+                    <span class="uc-list-code">${uc.codigo}</span>
+                    <span class="uc-list-name">${escapeHtml(uc.descricao)}</span>
+                </div>
+                <div class="uc-list-formador">${formadorHtml}</div>
+                <div class="uc-list-hours uc-list-done" data-label="Realizadas">${done.toFixed(0)}h</div>
+                <div class="uc-list-hours" data-label="Agendadas">${pendente.toFixed(0)}h</div>
+                <div class="uc-list-hours" data-label="Total prog.">${scheduled.toFixed(0)}h</div>
+            </div>`;
+        }
+
+        function ucCompletionRank(uc) {
+            if (uc.codigo.startsWith('UC_PENDENTE')) return { group: 2 };
+            const { done, scheduled } = computeUCHours(uc.codigo);
+            // Sem formador ou ainda sem horas dadas → vai para o fim da lista
+            if (!uc.formador || done === 0) return { group: 1, scheduled };
+            const target = uc.carga_horaria || scheduled;
+            const ratio = target > 0 ? done / target : 0;
+            return { group: 0, ratio };
+        }
+
+        function sortDisciplinesForList(ucs) {
+            return ucs
+                .map(uc => ({ uc, rank: ucCompletionRank(uc) }))
+                .sort((a, b) => {
+                    if (a.rank.group !== b.rank.group) return a.rank.group - b.rank.group;
+                    if (a.rank.group === 0) return b.rank.ratio - a.rank.ratio;
+                    if (a.rank.group === 1) return (b.rank.scheduled || 0) - (a.rank.scheduled || 0);
+                    return a.uc.codigo.localeCompare(b.uc.codigo);
+                })
+                .map(x => x.uc);
+        }
+
+        function renderDisciplinesList(ucsUnsorted) {
+            const el = document.getElementById('disciplines-list');
+            const ucs = sortDisciplinesForList(ucsUnsorted);
+            const semFormador = ucs.filter(uc => !uc.formador).length;
+
+            const header = `
+            <div class="uc-list-header">
+                <div>UC</div>
+                <div>Formador</div>
+                <div class="uc-list-hours">Realizadas</div>
+                <div class="uc-list-hours">Agendadas</div>
+                <div class="uc-list-hours">Total prog.</div>
+            </div>`;
+
+            const summary = semFormador > 0
+                ? `<div class="uc-list-summary">⚠ ${semFormador} UC${semFormador !== 1 ? 's' : ''} sem formador atribuído</div>`
+                : '';
+
+            el.innerHTML = `<div class="uc-list-table">${header}${ucs.map(renderDisciplinesListRow).join('')}</div>${summary}`;
+            el.querySelectorAll('[data-uc-open]').forEach(row =>
+                row.addEventListener('click', () => { navStack.push(currentView); openUCDetail(row.dataset.ucOpen); })
+            );
+        }
+
         function renderDisciplines(filter) {
             const grid = document.getElementById('disciplines-grid');
             const q = (filter || '').toLowerCase();
@@ -75,7 +150,14 @@
             );
 
             if (filtered.length === 0) {
-                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">Nenhuma UC encontrada.</div>`;
+                const emptyHtml = `<div class="empty-state">Nenhuma UC encontrada.</div>`;
+                grid.innerHTML = emptyHtml;
+                document.getElementById('disciplines-list').innerHTML = emptyHtml;
+                return;
+            }
+
+            if (disciplinesViewMode === 'list') {
+                renderDisciplinesList(filtered);
                 return;
             }
 

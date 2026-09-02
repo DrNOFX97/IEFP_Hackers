@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprenda Conversão de Bases Numéricas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfeff',
+                            100: '#cffafe',
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            900: '#164e63',
+                        },
+                        dark: {
+                            bg: '#0b0f17',
+                            card: '#131c2e',
+                            border: '#1f2d47',
+                            accent: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0f17;
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2d47;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0891b2;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-brand-500 selection:text-white">
+
+    <header class="border-b border-dark-border bg-dark-card/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid me-0.5 fa-microchip text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide text-white">HexaBit <span class="text-brand-400 font-normal text-xs px-2 py-0.5 rounded-full bg-brand-900/50 border border-brand-500/30">Edu v1.0</span></h1>
+                    <p class="text-xs text-slate-400">Prática e Conversão de Sistemas Numéricos</p>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <nav class="flex bg-dark-bg p-1 rounded-xl border border-dark-border">
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-brand-400 bg-dark-card shadow">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>Exercícios</span>
+                </button>
+                <button onclick="switchTab('converter')" id="tab-converter" class="px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span>Conversor & Bits</span>
+                </button>
+                <button onclick="switchTab('reference')" id="tab-reference" class="px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-table"></i>
+                    <span>Tabela Rápida</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <section id="section-quiz" class="space-y-6">
+            <!-- Stats & Controls Bar -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-dark-card p-4 rounded-xl border border-dark-border flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Pontuação</div>
+                        <div id="score-val" class="text-2xl font-bold mono text-white">0</div>
+                    </div>
+                </div>
+
+                <div class="bg-dark-card p-4 rounded-xl border border-dark-border flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Sequência</div>
+                        <div id="streak-val" class="text-2xl font-bold mono text-white">0</div>
+                    </div>
+                </div>
+
+                <div class="bg-dark-card p-4 rounded-xl border border-dark-border flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Precisão</div>
+                        <div id="accuracy-val" class="text-2xl font-bold mono text-white">0%</div>
+                    </div>
+                </div>
+
+                <div class="bg-dark-card p-4 rounded-xl border border-dark-border flex items-center justify-center">
+                    <div class="w-full">
+                        <label class="block text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Dificuldade</label>
+                        <select id="difficulty-select" onchange="generateNewQuestion()" class="w-full bg-dark-bg border border-dark-border text-white text-sm rounded-lg p-2 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="easy">Fácil (0 a 15 - 4 bits)</option>
+                            <option value="medium" selected>Médio (0 a 255 - 8 bits)</option>
+                            <option value="hard">Difícil (0 a 65535 - 16 bits)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Card -->
+            <div class="bg-dark-card rounded-2xl border border-dark-border p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-24 -right-24 w-60 h-60 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-6">
+                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-400 uppercase tracking-wider">
+                        Desafio de Conversão
+                    </span>
+                    <button onclick="generateNewQuestion()" class="text-xs text-slate-400 hover:text-white transition flex items-center gap-1">
+                        <i class="fa-solid fa-arrows-rotate"></i> Pular Pergunta
+                    </button>
+                </div>
+
+                <!-- Question Prompt -->
+                <div class="text-center py-6 space-y-4">
+                    <p class="text-slate-300 text-lg">Converta o seguinte valor para a base indicada:</p>
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="bg-dark-bg border border-dark-border rounded-xl px-6 py-4 shadow-inner">
+                            <span id="question-value" class="text-3xl sm:text-5xl font-bold mono text-cyan-300 tracking-wider">---</span>
+                            <sub id="question-source-base" class="text-sm font-bold text-slate-400 ml-1">10</sub>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-slate-500 text-2xl"></i>
+                        <div class="bg-brand-900/30 border border-brand-500/30 rounded-xl px-6 py-4">
+                            <span id="question-target-name" class="text-2xl sm:text-4xl font-bold text-white uppercase">BINÁRIO</span>
+                            <sub id="question-target-base" class="text-sm font-bold text-brand-400 ml-1">2</sub>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Form -->
+                <form id="quiz-form" onsubmit="checkAnswer(event)" class="max-w-md mx-auto space-y-4">
+                    <div>
+                        <div class="relative">
+                            <input type="text" id="quiz-input" placeholder="Digite sua resposta..." autocomplete="off" required
+                                class="w-full bg-dark-bg border-2 border-dark-border focus:border-brand-500 rounded-xl px-4 py-3 text-xl mono text-white placeholder-slate-600 focus:outline-none transition shadow-inner">
+                            <button type="submit" id="btn-submit"
+                                class="absolute right-2 top-2 bottom-2 px-5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-semibold rounded-lg transition flex items-center gap-2 shadow-lg">
+                                <span>Verificar</span>
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <p id="quiz-hint-text" class="text-xs text-slate-500 mt-2 text-center">Dica: Hexadecimal aceita letras A-F (maiúsculas ou minúsculas)</p>
+                    </div>
+                </form>
+
+                <!-- Feedback Area -->
+                <div id="feedback-container" class="hidden max-w-2xl mx-auto mt-6 p-4 rounded-xl border text-sm space-y-3 transition-all duration-300">
+                    <div id="feedback-header" class="flex items-center gap-3 font-bold text-base"></div>
+                    <div id="feedback-explanation" class="text-slate-300 space-y-2 mono text-xs sm:text-sm bg-dark-bg p-4 rounded-lg border border-dark-border overflow-x-auto"></div>
+                    <div class="flex justify-end pt-2">
+                        <button onclick="generateNewQuestion()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-medium rounded-lg text-sm transition flex items-center gap-2">
+                            <span>Próximo Exercício</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-converter" class="space-y-6 hidden">
+            <div class="bg-dark-card rounded-2xl border border-dark-border p-6 md:p-8 shadow-2xl">
+                <h2 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-brand-400"></i> Conversor Multi-Base em Tempo Real
+                </h2>
+                <p class="text-slate-400 text-sm mb-6">Digite um valor em qualquer campo para converter instantaneamente para as outras bases.</p>
+
+                <!-- 4 Input Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <!-- Decimal -->
+                    <div class="bg-dark-bg p-4 rounded-xl border border-dark-border focus-within:border-brand-500 transition">
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex justify-between">
+                            <span>Decimal (Base 10)</span>
+                            <span class="text-brand-400">0-9</span>
+                        </label>
+                        <input type="text" id="conv-dec" oninput="convertFrom('dec')" placeholder="Ex: 255" class="w-full bg-transparent text-xl font-bold mono text-white focus:outline-none">
+                    </div>
+
+                    <!-- Binário -->
+                    <div class="bg-dark-bg p-4 rounded-xl border border-dark-border focus-within:border-brand-500 transition">
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex justify-between">
+                            <span>Binário (Base 2)</span>
+                            <span class="text-brand-400">0, 1</span>
+                        </label>
+                        <input type="text" id="conv-bin" oninput="convertFrom('bin')" placeholder="Ex: 11111111" class="w-full bg-transparent text-xl font-bold mono text-cyan-400 focus:outline-none">
+                    </div>
+
+                    <!-- Hexadecimal -->
+                    <div class="bg-dark-bg p-4 rounded-xl border border-dark-border focus-within:border-brand-500 transition">
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex justify-between">
+                            <span>Hexadecimal (Base 16)</span>
+                            <span class="text-brand-400">0-9, A-F</span>
+                        </label>
+                        <input type="text" id="conv-hex" oninput="convertFrom('hex')" placeholder="Ex: FF" class="w-full bg-transparent text-xl font-bold mono text-purple-400 focus:outline-none">
+                    </div>
+
+                    <!-- Octal -->
+                    <div class="bg-dark-bg p-4 rounded-xl border border-dark-border focus-within:border-brand-500 transition">
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex justify-between">
+                            <span>Octal (Base 8)</span>
+                            <span class="text-brand-400">0-7</span>
+                        </label>
+                        <input type="text" id="conv-oct" oninput="convertFrom('oct')" placeholder="Ex: 377" class="w-full bg-transparent text-xl font-bold mono text-emerald-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Bit Visualizer Widget -->
+                <div class="border-t border-dark-border pt-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-toggle-on text-brand-400"></i> Visualizador Interativo de Bits
+                            </h3>
+                            <p class="text-xs text-slate-400">Clique nos bits abaixo para alternar entre 0 e 1 e veja o valor recalculado.</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-dark-bg p-1 rounded-lg border border-dark-border self-start sm:self-auto">
+                            <button onclick="setBitMode(8)" id="btn-bit-8" class="px-3 py-1 rounded text-xs font-bold transition bg-brand-600 text-white">8-bits</button>
+                            <button onclick="setBitMode(16)" id="btn-bit-16" class="px-3 py-1 rounded text-xs font-bold transition text-slate-400 hover:text-white">16-bits</button>
+                        </div>
+                    </div>
+
+                    <!-- Bit Switches Container -->
+                    <div id="bit-switches-container" class="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-16 gap-2 overflow-x-auto py-2">
+                        <!-- Switches generated dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-reference" class="space-y-6 hidden">
+            <div class="bg-dark-card rounded-2xl border border-dark-border p-6 md:p-8 shadow-2xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-table text-brand-400"></i> Tabela de Referência Rápida (0 a 15)
+                        </h2>
+                        <p class="text-slate-400 text-sm">Consulte o mapeamento direto entre os quatro sistemas de numeração.</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-dark-border">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-dark-bg text-slate-300 uppercase text-xs font-mono">
+                            <tr>
+                                <th class="p-3 border-b border-dark-border">Decimal</th>
+                                <th class="p-3 border-b border-dark-border">Binário (4 bits)</th>
+                                <th class="p-3 border-b border-dark-border">Octal</th>
+                                <th class="p-3 border-b border-dark-border">Hexadecimal</th>
+                                <th class="p-3 border-b border-dark-border">Representação Visual</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reference-table-body" class="divide-y divide-dark-border mono">
+                            <!-- Rows generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-dark-border bg-dark-card py-4 text-center text-xs text-slate-500">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p>HexaBit Edu &copy; 2026 - Ferramenta Didática para Ciências da Computação</p>
+            <p class="flex items-center gap-1">
+                <span>Criado para aprendizado de sistemas digitais</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // App State
+        let currentQuiz = null;
+        let score = 0;
+        let streak = 0;
+        let totalAnswered = 0;
+        let correctAnswers = 0;
+        let currentBitMode = 8;
+        let activeBits = new Array(16).fill(0);
+
+        const bases = [
+            { name: 'Decimal', base: 10, prefix: '' },
+            { name: 'Binário', base: 2, prefix: '' },
+            { name: 'Octal', base: 8, prefix: '' },
+            { name: 'Hexadecimal', base: 16, prefix: '' }
+        ];
+
+        // --- NAVIGATION LOGIC ---
+        function switchTab(tab) {
+            ['quiz', 'converter', 'reference'].forEach(t => {
+                document.getElementById(`section-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-${t}`);
+                btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-slate-400 hover:text-white";
+            });
+
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.className = "px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-brand-400 bg-dark-card shadow border border-brand-500/20";
+        }
+
+        // --- QUIZ LOGIC ---
+        function generateNewQuestion() {
+            const diff = document.getElementById('difficulty-select').value;
+            let maxVal = 15;
+            if (diff === 'medium') maxVal = 255;
+            if (diff === 'hard') maxVal = 65535;
+
+            // Pick a random number
+            const targetVal = Math.floor(Math.random() * (maxVal + 1));
+
+            // Pick source base and target base (ensure they are different)
+            let srcIdx = Math.floor(Math.random() * bases.length);
+            let tgtIdx;
+            do {
+                tgtIdx = Math.floor(Math.random() * bases.length);
+            } while (tgtIdx === srcIdx);
+
+            const srcBase = bases[srcIdx];
+            const tgtBase = bases[tgtIdx];
+
+            currentQuiz = {
+                decimalValue: targetVal,
+                source: srcBase,
+                target: tgtBase,
+                sourceFormatted: targetVal.toString(srcBase.base).toUpperCase(),
+                correctAnswer: targetVal.toString(tgtBase.base).toUpperCase()
+            };
+
+            // Update UI
+            document.getElementById('question-value').innerText = currentQuiz.sourceFormatted;
+            document.getElementById('question-source-base').innerText = srcBase.base;
+            document.getElementById('question-target-name').innerText = tgtBase.name;
+            document.getElementById('question-target-base').innerText = tgtBase.base;
+
+            document.getElementById('quiz-input').value = '';
+            document.getElementById('feedback-container').classList.add('hidden');
+            document.getElementById('quiz-input').focus();
+        }
+
+        function checkAnswer(e) {
+            e.preventDefault();
+            const userInput = document.getElementById('quiz-input').value.trim().toUpperCase();
+            if (!userInput) return;
+
+            totalAnswered++;
+            const isCorrect = userInput === currentQuiz.correctAnswer;
+
+            const feedbackContainer = document.getElementById('feedback-container');
+            const feedbackHeader = document.getElementById('feedback-header');
+            const feedbackExp = document.getElementById('feedback-explanation');
+
+            feedbackContainer.classList.remove('hidden');
+
+            if (isCorrect) {
+                score += 10 + (streak * 2);
+                streak++;
+                correctAnswers++;
+                
+                feedbackContainer.className = "max-w-2xl mx-auto mt-6 p-4 rounded-xl border text-sm space-y-3 bg-emerald-950/40 border-emerald-500/40 text-emerald-200";
+                feedbackHeader.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i> <span>Resposta Correta! (+${10 + (streak-1)*2} pts)</span>`;
+            } else {
+                streak = 0;
+                feedbackContainer.className = "max-w-2xl mx-auto mt-6 p-4 rounded-xl border text-sm space-y-3 bg-rose-950/40 border-rose-500/40 text-rose-200";
+                feedbackHeader.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-400 text-xl"></i> <span>Resposta Incorreta. A resposta certa era: <strong class="mono underline">${currentQuiz.correctAnswer}</strong></span>`;
+            }
+
+            // Generate Step-by-Step Explanation
+            feedbackExp.innerHTML = generateExplanationHtml(currentQuiz);
+
+            // Update Stats
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('streak-val').innerText = streak;
+            document.getElementById('accuracy-val').innerText = Math.round((correctAnswers / totalAnswered) * 100) + '%';
+        }
+
+        function generateExplanationHtml(quiz) {
+            const val = quiz.decimalValue;
+            const srcBase = quiz.source.base;
+            const tgtBase = quiz.target.base;
+
+            let html = `<div class="font-sans font-bold text-slate-300 border-b border-dark-border pb-1 mb-2">Passo a Passo da Solução:</div>`;
+
+            // Case 1: Convert to Decimal
+            if (tgtBase === 10) {
+                html += `<p>Para converter de <strong>Base ${srcBase}</strong> para <strong>Decimal</strong>, multiplicamos cada dígito pela potência da base correspondente à sua posição:</p>`;
+                const str = quiz.sourceFormatted;
+                let terms = [];
+                for (let i = 0; i < str.length; i++) {
+                    const digitChar = str[str.length - 1 - i];
+                    const digitVal = parseInt(digitChar, srcBase);
+                    terms.unshift(`(${digitVal} × ${srcBase}<sup>${i}</sup>)`);
+                }
+                html += `<div class="text-cyan-400 my-1">${terms.join(' + ')}</div>`;
+                html += `<div>= ${quiz.correctAnswer}<sub>10</sub></div>`;
+            }
+            // Case 2: Convert from Decimal
+            else if (srcBase === 10) {
+                html += `<p>Para converter de <strong>Decimal</strong> para <strong>Base ${tgtBase}</strong>, realizamos divisões sucessivas por ${tgtBase} e pegamos os restos do último para o primeiro:</p>`;
+                let temp = val;
+                let steps = [];
+                if (temp === 0) steps.push(`0 ÷ ${tgtBase} = 0, resto 0`);
+                while (temp > 0) {
+                    let q = Math.floor(temp / tgtBase);
+                    let r = temp % tgtBase;
+                    let rChar = r.toString(tgtBase).toUpperCase();
+                    steps.push(`${temp} ÷ ${tgtBase} = ${q}, resto <strong>${rChar}</strong> (${r})`);
+                    temp = q;
+                }
+                html += `<ul class="list-disc pl-5 text-slate-400 my-1 space-y-0.5">` + steps.map(s => `<li>${s}</li>`).join('') + `</ul>`;
+                html += `<div>Leitura dos restos de baixo para cima: <strong class="text-cyan-400">${quiz.correctAnswer}<sub>${tgtBase}</sub></strong></div>`;
+            }
+            // Case 3: Binary <-> Hex / Octal shortcuts or general via Decimal
+            else if ((srcBase === 2 && (tgtBase === 16 || tgtBase === 8))) {
+                const groupSize = tgtBase === 16 ? 4 : 3;
+                html += `<p>Conversão direta agrupando os bits de <strong>${groupSize} em ${groupSize}</strong> da direita para a esquerda:</p>`;
+                let binPadded = val.toString(2);
+                while (binPadded.length % groupSize !== 0) binPadded = '0' + binPadded;
+                
+                let groups = [];
+                for (let i = 0; i < binPadded.length; i += groupSize) {
+                    let grp = binPadded.substr(i, groupSize);
+                    let grpVal = parseInt(grp, 2).toString(tgtBase).toUpperCase();
+                    groups.push(`${grp} ➔ ${grpVal}`);
+                }
+                html += `<div class="text-cyan-400 my-1">${groups.join(' | ')}</div>`;
+                html += `<div>Resultado: <strong class="text-brand-400">${quiz.correctAnswer}<sub>${tgtBase}</sub></strong></div>`;
+            }
+            else {
+                // General route via Decimal
+                html += `<p>1. Primeiro converta o valor para Decimal:</p>`;
+                html += `<div class="text-slate-400 pl-3"> ${quiz.sourceFormatted}<sub>${srcBase}</sub> = ${val}<sub>10</sub></div>`;
+                html += `<p class="mt-2">2. Em seguida, converta ${val}<sub>10</sub> para a Base ${tgtBase}:</p>`;
+                html += `<div class="text-brand-400 pl-3"> ${val}<sub>10</sub> = ${quiz.correctAnswer}<sub>${tgtBase}</sub></div>`;
+            }
+
+            return html;
+        }
+
+        function convertFrom(source) {
+            const decInput = document.getElementById('conv-dec');
+            const binInput = document.getElementById('conv-bin');
+            const hexInput = document.getElementById('conv-hex');
+            const octInput = document.getElementById('conv-oct');
+
+            let num = NaN;
+
+            if (source === 'dec') {
+                num = parseInt(decInput.value, 10);
+            } else if (source === 'bin') {
+                num = parseInt(binInput.value.replace(/[^01]/g, ''), 2);
+            } else if (source === 'hex') {
+                num = parseInt(hexInput.value.replace(/[^0-9a-fA-F]/g, ''), 16);
+            } else if (source === 'oct') {
+                num = parseInt(octInput.value.replace(/[^0-7]/g, ''), 8);
+            }
+
+            if (isNaN(num) || num < 0) {
+                if (source !== 'dec') decInput.value = '';
+                if (source !== 'bin') binInput.value = '';
+                if (source !== 'hex') hexInput.value = '';
+                if (source !== 'oct') octInput.value = '';
+                updateBitsFromNumber(0);
+                return;
+            }
+
+            // Cap maximum to avoid infinity/oversize issues in visualizer
+            if (num > 65535) num = 65535;
+
+            if (source !== 'dec') decInput.value = num.toString(10);
+            if (source !== 'bin') binInput.value = num.toString(2);
+            if (source !== 'hex') hexInput.value = num.toString(16).toUpperCase();
+            if (source !== 'oct') octInput.value = num.toString(8);
+
+            updateBitsFromNumber(num);
+        }
+
+        function renderBitSwitches() {
+            const container = document.getElementById('bit-switches-container');
+            container.innerHTML = '';
+
+            for (let i = currentBitMode - 1; i >= 0; i--) {
+                const bitVal = Math.pow(2, i);
+                const isActive = activeBits[i] === 1;
+
+                const switchEl = document.createElement('div');
+                switchEl.className = `flex flex-col items-center p-2 rounded-xl border cursor-pointer select-none transition-all ${
+                    isActive 
+                        ? 'bg-brand-600/20 border-brand-500 text-brand-400 shadow-lg shadow-brand-500/10' 
+                        : 'bg-dark-bg border-dark-border text-slate-500 hover:border-slate-600'
+                }`;
+                switchEl.onclick = () => toggleBit(i);
+
+                switchEl.innerHTML = `
+                    <span class="text-[10px] font-mono text-slate-400 mb-1">2<sup>${i}</sup></span>
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-lg mb-1 ${
+                        isActive ? 'bg-brand-500 text-white' : 'bg-dark-card text-slate-400'
+                    }">
+                        ${activeBits[i]}
+                    </div>
+                    <span class="text-[10px] font-mono text-slate-400">${bitVal}</span>
+                `;
+
+                container.appendChild(switchEl);
+            }
+        }
+
+        function toggleBit(index) {
+            activeBits[index] = activeBits[index] === 1 ? 0 : 1;
+            renderBitSwitches();
+            updateInputsFromBits();
+        }
+
+        function setBitMode(mode) {
+            currentBitMode = mode;
+            document.getElementById('btn-bit-8').className = mode === 8 
+                ? "px-3 py-1 rounded text-xs font-bold transition bg-brand-600 text-white" 
+                : "px-3 py-1 rounded text-xs font-bold transition text-slate-400 hover:text-white";
+            document.getElementById('btn-bit-16').className = mode === 16 
+                ? "px-3 py-1 rounded text-xs font-bold transition bg-brand-600 text-white" 
+                : "px-3 py-1 rounded text-xs font-bold transition text-slate-400 hover:text-white";
+            
+            renderBitSwitches();
+        }
+
+        function updateBitsFromNumber(num) {
+            for (let i = 0; i < 16; i++) {
+                activeBits[i] = (num & (1 << i)) ? 1 : 0;
+            }
+            renderBitSwitches();
+        }
+
+        function updateInputsFromBits() {
+            let total = 0;
+            for (let i = 0; i < currentBitMode; i++) {
+                if (activeBits[i] === 1) {
+                    total += Math.pow(2, i);
+                }
+            }
+
+            document.getElementById('conv-dec').value = total.toString(10);
+            document.getElementById('conv-bin').value = total.toString(2);
+            document.getElementById('conv-hex').value = total.toString(16).toUpperCase();
+            document.getElementById('conv-oct').value = total.toString(8);
+        }
+
+        function buildReferenceTable() {
+            const tbody = document.getElementById('reference-table-body');
+            tbody.innerHTML = '';
+
+            for (let i = 0; i <= 15; i++) {
+                const dec = i.toString(10);
+                const bin = i.toString(2).padStart(4, '0');
+                const oct = i.toString(8);
+                const hex = i.toString(16).toUpperCase();
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-dark-bg/50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 text-white font-bold">${dec}</td>
+                    <td class="p-3 text-cyan-400">${bin}</td>
+                    <td class="p-3 text-emerald-400">${oct}</td>
+                    <td class="p-3 text-purple-400 font-bold">${hex}</td>
+                    <td class="p-3">
+                        <div class="flex gap-1">
+                            ${bin.split('').map(b => `
+                                <span class="w-3 h-3 rounded-sm ${b === '1' ? 'bg-brand-500' : 'bg-dark-border'}"></span>
+                            `).join('')}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        window.onload = function() {
+            generateNewQuestion();
+            setBitMode(8);
+            buildReferenceTable();
+        };
+    </script>
+</body>
+</html>

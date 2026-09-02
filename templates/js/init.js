@@ -151,6 +151,8 @@
 
             // Disciplinas search
             document.getElementById('uc-search').addEventListener('input', e => filterUCs(e.target.value));
+            document.getElementById('btn-disc-view-cards').addEventListener('click', () => setDisciplinesView('cards'));
+            document.getElementById('btn-disc-view-list').addEventListener('click', () => setDisciplinesView('list'));
 
             // Playground lang buttons
             document.getElementById('pg-btn-python').addEventListener('click', () => pgNewTab('python'));
