@@ -6,6 +6,7 @@
             { key: 'ip-classes', icon: '🔢', label: 'Classes de Endereços IP', file: 'redes/ip-classes.html' },
             { key: 'topologias-rede', icon: '🕸️', label: 'Topologias de Rede', file: 'redes/topologias-rede.html' },
             { key: 'switch-vlan-router', icon: '🔀', label: 'Switch · VLAN · Router', file: 'redes/switch-vlan-router.html' },
+            { key: 'redes-computadores', icon: '🖧', label: 'Redes de Computadores (UC01478)', file: 'redes/redes-computadores.html' },
         ];
 
         function redesRenderMenu() {

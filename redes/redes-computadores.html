@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UC01478 · Configurar Redes de Computadores — Material de Estudo</title>
+<style>
+  :root {
+    --bg: #0f1729;
+    --bg-card: #152038;
+    --bg-card-hover: #1a2744;
+    --border: #243352;
+    --border-accent: #2dd4bf;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #2dd4bf;
+    --accent-cyan: #22d3ee;
+    --accent-dim: #1a9e8f;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --success: #34d399;
+    --mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+    --sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  /* Sidebar */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 260px;
+    height: 100vh;
+    background: #0a1020;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 100;
+    padding: 1.25rem 0;
+    transition: transform 0.25s ease;
+  }
+  .sidebar-header {
+    padding: 0 1.25rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.75rem;
+  }
+  .sidebar-header h1 {
+    font-size: 0.95rem;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .sidebar-header p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+  .nav-item {
+    display: block;
+    padding: 0.55rem 1.25rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  .nav-item:hover, .nav-item.active {
+    color: var(--accent);
+    background: rgba(45, 212, 191, 0.06);
+    border-left-color: var(--accent);
+  }
+  .nav-item span { font-family: var(--mono); font-size: 0.7rem; opacity: 0.7; margin-right: 0.4rem; }
+  /* Main */
+  .main {
+    margin-left: 260px;
+    padding: 2rem 2.5rem 4rem;
+    max-width: 960px;
+  }
+  section {
+    margin-bottom: 3.5rem;
+    scroll-margin-top: 1.5rem;
+  }
+  h2 {
+    font-size: 1.4rem;
+    color: var(--accent);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  h2 .aula-num {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    background: rgba(45, 212, 191, 0.15);
+    color: var(--accent);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+  }
+  h3 {
+    font-size: 1.05rem;
+    color: var(--accent-cyan);
+    margin: 1.75rem 0 0.75rem;
+  }
+  h4 {
+    font-size: 0.95rem;
+    color: var(--text);
+    margin: 1.25rem 0 0.5rem;
+  }
+  p, li { font-size: 0.925rem; }
+  ul, ol { padding-left: 1.4rem; margin: 0.5rem 0 1rem; }
+  li { margin-bottom: 0.35rem; }
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.1rem 1.25rem;
+    margin: 0.75rem 0;
+  }
+  .card:hover { border-color: #2a4060; }
+  .card-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  /* Glossary */
+  .glossary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+  }
+  .term {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+  }
+  .term dt {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+  .term dd {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 0.75rem 0 1.25rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+  th {
+    background: rgba(45, 212, 191, 0.08);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+  td { background: var(--bg-card); }
+  td.mono, th.mono { font-family: var(--mono); }
+  tr:hover td { background: var(--bg-card-hover); }
+  /* Code / mono */
+  .mono, code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+  }
+  code {
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--accent-cyan);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+  pre {
+    background: #0a1020;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.15rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.55;
+    margin: 0.75rem 0;
+  }
+  pre .comment { color: #64748b; }
+  pre .key { color: var(--accent); }
+  pre .val { color: var(--accent-cyan); }
+  /* Interactive tools */
+  .tool {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin: 1rem 0 1.5rem;
+  }
+  .tool-title {
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .tool-title svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; }
+  .input-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+  }
+  label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+  }
+  input[type="text"], input[type="number"], select {
+    background: #0a1020;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: 5px;
+    width: 100%;
+    max-width: 160px;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  button {
+    background: rgba(45, 212, 191, 0.15);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    padding: 0.45rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  button:hover { background: rgba(45, 212, 191, 0.25); }
+  .bit-row {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    margin: 0.5rem 0;
+  }
+  .bit {
+    width: 42px;
+    text-align: center;
+  }
+  .bit .weight {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+  }
+  .bit input {
+    width: 42px;
+    text-align: center;
+    padding: 0.35rem 0;
+    max-width: none;
+  }
+  .result-box {
+    background: #0a1020;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    min-height: 2.5rem;
+  }
+  .result-box .highlight { color: var(--accent); }
+  .steps {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    line-height: 1.7;
+  }
+  .steps strong { color: var(--text); }
+  /* Search */
+  .search-box {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  .search-box input {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 2.2rem;
+  }
+  .search-box svg {
+    position: absolute;
+    left: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    stroke: var(--text-muted);
+    fill: none;
+  }
+  /* VF */
+  .vf-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .vf-item:last-child { border-bottom: none; }
+  .vf-badge {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .vf-v { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+  .vf-f { background: rgba(248, 113, 113, 0.15); color: var(--danger); }
+  /* OSI layers */
+  .osi-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 1rem 0;
+  }
+  .osi-layer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
+  }
+  .osi-num {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    width: 1.5rem;
+    font-weight: 700;
+  }
+  .osi-name { font-weight: 600; min-width: 140px; font-size: 0.9rem; }
+  .osi-func { font-size: 0.82rem; color: var(--text-muted); }
+  /* Mobile */
+  .menu-toggle {
+    display: none;
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 200;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+  }
+  @media (max-width: 800px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1.25rem 1rem 3rem; }
+    .menu-toggle { display: flex; }
+    .overlay.open { display: block; }
+    .glossary-grid { grid-template-columns: 1fr; }
+    table { font-size: 0.78rem; }
+    th, td { padding: 0.4rem 0.5rem; }
+  }
+  /* Helpers */
+  .note {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    border-left: 3px solid var(--accent-dim);
+    padding-left: 0.75rem;
+    margin: 0.75rem 0;
+  }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 600px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    background: rgba(34, 211, 238, 0.12);
+    color: var(--accent-cyan);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Menu">
+  <svg width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+</button>
+<div class="overlay" id="overlay"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1>UC01478 · Redes</h1>
+    <p>Material de estudo interativo</p>
+  </div>
+  <a class="nav-item" href="#aula01"><span>01</span> Fundamentos</a>
+  <a class="nav-item" href="#aula02"><span>02</span> Camadas e binário</a>
+  <a class="nav-item" href="#aula04"><span>04</span> Subnetting</a>
+  <a class="nav-item" href="#aula07"><span>07</span> Caminho dos dados</a>
+  <a class="nav-item" href="#aula08"><span>08</span> Transporte e segurança</a>
+  <a class="nav-item" href="#protocolos"><span>—</span> Protocolos</a>
+  <a class="nav-item" href="#ferramentas"><span>⚙</span> Ferramentas</a>
+</nav>
+
+<main class="main">
+
+<!-- ========== AULA 01 ========== -->
+<section id="aula01">
+  <h2><span class="aula-num">Aula 01</span> Fundamentos e rede do computador</h2>
+
+  <h3>Glossário</h3>
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input type="text" id="searchAula01" placeholder="Filtrar termos…" oninput="filterGlossary('searchAula01','glossAula01')">
+  </div>
+  <div class="glossary-grid" id="glossAula01">
+    <div class="term" data-term="lan"><dt>LAN</dt><dd>Local Area Network — rede local, limitada a um edifício ou campus (ex: rede de uma escola ou escritório).</dd></div>
+    <div class="term" data-term="wan"><dt>WAN</dt><dd>Wide Area Network — rede de longa distância que interliga várias LANs (ex: a Internet).</dd></div>
+    <div class="term" data-term="nic"><dt>NIC</dt><dd>Network Interface Card — placa de rede (com fios ou sem fios) que liga o computador ao meio físico.</dd></div>
+    <div class="term" data-term="switch"><dt>Switch</dt><dd>Equipamento que interliga dispositivos na mesma rede local, encaminhando frames com base no MAC.</dd></div>
+    <div class="term" data-term="router"><dt>Router</dt><dd>Equipamento que interliga redes diferentes e encaminha pacotes entre elas (acesso à Internet).</dd></div>
+    <div class="term" data-term="ap"><dt>AP</dt><dd>Access Point — ponto de acesso sem fios que permite a ligação Wi-Fi à rede local.</dd></div>
+    <div class="term" data-term="rj45"><dt>RJ45</dt><dd>Conector standard de 8 contactos usado em cabos de par entrançado (Ethernet).</dd></div>
+    <div class="term" data-term="ip"><dt>IP</dt><dd>Internet Protocol — endereço lógico que identifica um dispositivo na rede (IPv4: 4 octetos).</dd></div>
+    <div class="term" data-term="mascara"><dt>Máscara de sub-rede</dt><dd>Define que parte do IP é rede e que parte é host (ex: 255.255.255.0 → /24).</dd></div>
+    <div class="term" data-term="gateway"><dt>Gateway</dt><dd>Porta de saída para outras redes; normalmente o router da LAN.</dd></div>
+    <div class="term" data-term="dns"><dt>DNS</dt><dd>Domain Name System — traduz nomes de domínio em endereços IP.</dd></div>
+    <div class="term" data-term="dhcp"><dt>DHCP</dt><dd>Dynamic Host Configuration Protocol — atribui automaticamente IP, máscara, gateway e DNS.</dd></div>
+    <div class="term" data-term="mac"><dt>MAC</dt><dd>Media Access Control — endereço físico único da placa de rede (6 octetos hexadecimais).</dd></div>
+    <div class="term" data-term="par"><dt>Par entrançado</dt><dd>Cabo de cobre com 4 pares de fios torcidos (UTP/STP); categorias Cat5e, Cat6, etc.</dd></div>
+  </div>
+
+  <h3>LAN vs WAN</h3>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">LAN</div>
+      <ul>
+        <li>Alcance limitado (casa, escritório, escola)</li>
+        <li>Alta velocidade, baixa latência</li>
+        <li>Administração local</li>
+        <li>Exemplos: rede doméstica Wi-Fi, rede de um departamento</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">WAN</div>
+      <ul>
+        <li>Cobertura geográfica vasta</li>
+        <li>Velocidade variável, maior latência</li>
+        <li>Operadores de telecomunicações</li>
+        <li>Exemplos: Internet, ligação entre filiais de uma empresa</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Componentes principais</h3>
+  <div class="card">
+    <ul>
+      <li><strong>NIC</strong> — liga o computador à rede (com fios ou sem fios)</li>
+      <li><strong>Switch</strong> — liga equipamentos na <em>mesma</em> rede local; trabalha com endereços MAC</li>
+      <li><strong>Router</strong> — liga <em>redes diferentes</em> e dá acesso à Internet; trabalha com endereços IP</li>
+      <li><strong>AP (Access Point)</strong> — dá ligação sem fios (Wi-Fi) à rede local</li>
+    </ul>
+  </div>
+
+  <h3>Cablagem</h3>
+  <div class="card">
+    <p><strong>Meio:</strong> cobre (par entrançado UTP/STP) · <strong>Conector:</strong> RJ45</p>
+    <p style="margin-top:0.5rem"><strong>Categorias comuns:</strong></p>
+    <ul>
+      <li><code>Cat5e</code> — até 1 Gbps, 100 m</li>
+      <li><code>Cat6</code> — até 10 Gbps (55 m) / 1 Gbps (100 m)</li>
+    </ul>
+    <p style="margin-top:0.5rem"><strong>Normas de terminação:</strong> T568A e T568B (diferença: troca dos pares verde e laranja)</p>
+  </div>
+  <table>
+    <thead>
+      <tr><th>Pin</th><th>T568A</th><th>T568B</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mono">1</td><td>Branco-Verde</td><td>Branco-Laranja</td></tr>
+      <tr><td class="mono">2</td><td>Verde</td><td>Laranja</td></tr>
+      <tr><td class="mono">3</td><td>Branco-Laranja</td><td>Branco-Verde</td></tr>
+      <tr><td class="mono">4</td><td>Azul</td><td>Azul</td></tr>
+      <tr><td class="mono">5</td><td>Branco-Azul</td><td>Branco-Azul</td></tr>
+      <tr><td class="mono">6</td><td>Laranja</td><td>Verde</td></tr>
+      <tr><td class="mono">7</td><td>Branco-Castanho</td><td>Branco-Castanho</td></tr>
+      <tr><td class="mono">8</td><td>Castanho</td><td>Castanho</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Regra prática: usar a <strong>mesma norma</strong> em ambas as extremidades (cabo direto). Misturar A e B cria um cabo crossover.</p>
+
+  <h3>Leitura de <code>ipconfig /all</code></h3>
+  <pre><span class="comment"># Exemplo de saída relevante</span>
+<span class="key">Endereço IPv4</span> . . . . . . . . . : <span class="val">10.0.5.42</span>
+<span class="key">Máscara de Sub-rede</span> . . . . . . : <span class="val">255.255.255.0</span>
+<span class="key">Gateway Padrão</span> . . . . . . . . : <span class="val">10.0.5.1</span>
+<span class="key">Servidores DNS</span> . . . . . . . . : <span class="val">10.0.5.1</span>
+<span class="key">Endereço Físico</span> . . . . . . . . : <span class="val">5C-3A-1D-77-9B-02</span></pre>
+  <div class="card">
+    <ul>
+      <li><strong>IP 10.0.5.42</strong> — endereço deste computador na rede</li>
+      <li><strong>Máscara 255.255.255.0</strong> (/24) — 256 endereços totais, rede 10.0.5.0</li>
+      <li><strong>Gateway 10.0.5.1</strong> — router de saída para outras redes / Internet</li>
+      <li><strong>DNS 10.0.5.1</strong> — servidor que traduz nomes em IPs</li>
+      <li><strong>MAC 5C-3A-1D-77-9B-02</strong> — endereço físico da NIC</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== AULA 02 ========== -->
+<section id="aula02">
+  <h2><span class="aula-num">Aula 02</span> Camadas e sistema binário</h2>
+
+  <h3>Porquê pensar por camadas?</h3>
+  <div class="card">
+    <p>Analogia da carta: o conteúdo (mensagem) é colocado num envelope (endereço), que vai para um saco postal (transporte), depois para um camião (rede física). Cada “camada” trata apenas da sua responsabilidade. O mesmo acontece nas redes: cada camada acrescenta ou remove a sua própria informação (encapsulamento).</p>
+  </div>
+
+  <h3>Modelo OSI (7 camadas)</h3>
+  <div class="osi-stack">
+    <div class="osi-layer"><span class="osi-num">7</span><span class="osi-name">Aplicação</span><span class="osi-func">Interface com o utilizador / aplicações (HTTP, FTP, DNS…)</span></div>
+    <div class="osi-layer"><span class="osi-num">6</span><span class="osi-name">Apresentação</span><span class="osi-func">Tradução, compressão e encriptação dos dados</span></div>
+    <div class="osi-layer"><span class="osi-num">5</span><span class="osi-name">Sessão</span><span class="osi-func">Estabelece, gere e termina sessões entre aplicações</span></div>
+    <div class="osi-layer"><span class="osi-num">4</span><span class="osi-name">Transporte</span><span class="osi-func">Entrega fiável (TCP) ou rápida (UDP); portas; segmentação</span></div>
+    <div class="osi-layer"><span class="osi-num">3</span><span class="osi-name">Rede</span><span class="osi-func">Endereçamento lógico (IP) e encaminhamento entre redes</span></div>
+    <div class="osi-layer"><span class="osi-num">2</span><span class="osi-name">Ligação de dados</span><span class="osi-func">Endereçamento físico (MAC); frames; deteção de erros</span></div>
+    <div class="osi-layer"><span class="osi-num">1</span><span class="osi-name">Física</span><span class="osi-func">Bits no meio físico (cabo, rádio, fibra)</span></div>
+  </div>
+
+  <h3>Modelo TCP/IP (4 camadas) e correspondência</h3>
+  <table>
+    <thead>
+      <tr><th>TCP/IP</th><th>OSI correspondente</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Aplicação</td><td>Aplicação + Apresentação + Sessão</td></tr>
+      <tr><td>Transporte</td><td>Transporte</td></tr>
+      <tr><td>Internet</td><td>Rede</td></tr>
+      <tr><td>Acesso à rede</td><td>Ligação de dados + Física</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Encapsulamento</h3>
+  <div class="card">
+    <p style="font-family:var(--mono); font-size:0.9rem; text-align:center;">
+      Data → <strong>Segment</strong> (Transporte) → <strong>Packet</strong> (Rede) → <strong>Frame</strong> (Ligação de dados) → Bits (Física)
+    </p>
+    <p class="note" style="margin-top:0.75rem">Na receção a ordem é inversa: bits → frame → packet → segment → data.</p>
+  </div>
+
+  <h3>Sistema binário e IP</h3>
+  <div class="card">
+    <ul>
+      <li><strong>Bit</strong> — unidade mínima (0 ou 1)</li>
+      <li><strong>Byte / octeto</strong> — 8 bits</li>
+      <li>Endereço IPv4 = <strong>4 octetos</strong> (ex: 192.168.1.20)</li>
+      <li>Pesos dos 8 bits: <code>128  64  32  16  8  4  2  1</code></li>
+      <li>Limites de um octeto: <code>00000000</code> = 0 … <code>11111111</code> = 255 (256 valores)</li>
+    </ul>
+  </div>
+
+  <h4>Conversão decimal → binário (subtração dos pesos)</h4>
+  <div class="card">
+    <p>Exemplo: <strong>192</strong></p>
+    <pre>192 ≥ 128? Sim → 1  (192−128=64)
+ 64 ≥  64? Sim → 1  (64−64=0)
+  0 ≥  32? Não → 0
+  0 ≥  16? Não → 0
+  0 ≥   8? Não → 0
+  0 ≥   4? Não → 0
+  0 ≥   2? Não → 0
+  0 ≥   1? Não → 0
+Resultado: <span class="val">11000000</span></pre>
+  </div>
+
+  <h4>Conversão binário → decimal (soma dos pesos ativos)</h4>
+  <div class="card">
+    <p>Exemplo: <strong>10101100</strong></p>
+    <pre>1×128 + 0×64 + 1×32 + 0×16 + 1×8 + 1×4 + 0×2 + 0×1
+= 128 + 32 + 8 + 4 = <span class="val">172</span></pre>
+  </div>
+
+  <h4>Exemplo completo de IP</h4>
+  <pre>192.168.1.20  →  11000000 . 10101000 . 00000001 . 00010100</pre>
+
+  <h3>Operação AND bit a bit</h3>
+  <div class="card">
+    <p>Tabela verdade: o resultado só é <strong>1</strong> quando <em>ambos</em> os bits são 1.</p>
+    <table style="max-width:280px">
+      <thead><tr><th>A</th><th>B</th><th>A AND B</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td></tr>
+        <tr><td class="mono">0</td><td class="mono">1</td><td class="mono">0</td></tr>
+        <tr><td class="mono">1</td><td class="mono">0</td><td class="mono">0</td></tr>
+        <tr><td class="mono">1</td><td class="mono">1</td><td class="mono">1</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.75rem"><strong>Aplicação prática:</strong> IP AND máscara = endereço de rede</p>
+    <pre>IP:      192.168.1.20   →  11000000.10101000.00000001.00010100
+Máscara: 255.255.255.0  →  11111111.11111111.11111111.00000000
+AND:     192.168.1.0    →  11000000.10101000.00000001.00000000</pre>
+  </div>
+
+  <h3>Protocolos por camada</h3>
+  <table>
+    <thead>
+      <tr><th>Camada</th><th>Protocolos</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Transporte</td><td class="mono">TCP, UDP</td></tr>
+      <tr><td>Aplicação / Web</td><td class="mono">HTTP, HTTPS, FTP, SSH, DNS, DHCP, SMTP, POP3, IMAP</td></tr>
+      <tr><td>Rede / Enlace</td><td class="mono">IP, ICMP, ARP</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ========== AULA 04 ========== -->
+<section id="aula04">
+  <h2><span class="aula-num">Aula 04</span> Subnetting</h2>
+
+  <h3>Fórmulas-chave</h3>
+  <div class="card">
+    <ul>
+      <li><strong>Número de subnets</strong> = 2<sup>b</sup> &nbsp;(b = bits emprestados à parte de host)</li>
+      <li><strong>Número de hosts por subnet</strong> = 2<sup>n</sup> − 2 &nbsp;(n = bits de host restantes; −2 = network + broadcast)</li>
+      <li><strong>Salto (block size)</strong> = 2<sup>(bits de host)</sup></li>
+    </ul>
+  </div>
+
+  <h3>Exercício 1 — 192.168.10.0/24 em 4 subnets (/26)</h3>
+  <div class="card">
+    <p>Bits emprestados: 2 → 2² = 4 subnets · Bits de host: 6 → salto = 2⁶ = 64 · Máscara: 255.255.255.192</p>
+  </div>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Network ID</th><th>1º host</th><th>Último host</th><th>Broadcast</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0</td><td class="mono">192.168.10.0</td><td class="mono">192.168.10.1</td><td class="mono">192.168.10.62</td><td class="mono">192.168.10.63</td></tr>
+      <tr><td>1</td><td class="mono">192.168.10.64</td><td class="mono">192.168.10.65</td><td class="mono">192.168.10.126</td><td class="mono">192.168.10.127</td></tr>
+      <tr><td>2</td><td class="mono">192.168.10.128</td><td class="mono">192.168.10.129</td><td class="mono">192.168.10.190</td><td class="mono">192.168.10.191</td></tr>
+      <tr><td>3</td><td class="mono">192.168.10.192</td><td class="mono">192.168.10.193</td><td class="mono">192.168.10.254</td><td class="mono">192.168.10.255</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Exercício 2 — 192.168.10.0/24 em 8 subnets (/27)</h3>
+  <div class="card">
+    <p>Bits emprestados: 3 → 2³ = 8 subnets · Bits de host: 5 → salto = 2⁵ = 32 · Máscara: 255.255.255.224</p>
+  </div>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Network ID</th><th>1º host</th><th>Último host</th><th>Broadcast</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0</td><td class="mono">192.168.10.0</td><td class="mono">192.168.10.1</td><td class="mono">192.168.10.30</td><td class="mono">192.168.10.31</td></tr>
+      <tr><td>1</td><td class="mono">192.168.10.32</td><td class="mono">192.168.10.33</td><td class="mono">192.168.10.62</td><td class="mono">192.168.10.63</td></tr>
+      <tr><td>2</td><td class="mono">192.168.10.64</td><td class="mono">192.168.10.65</td><td class="mono">192.168.10.94</td><td class="mono">192.168.10.95</td></tr>
+      <tr><td>3</td><td class="mono">192.168.10.96</td><td class="mono">192.168.10.97</td><td class="mono">192.168.10.126</td><td class="mono">192.168.10.127</td></tr>
+      <tr><td>4</td><td class="mono">192.168.10.128</td><td class="mono">192.168.10.129</td><td class="mono">192.168.10.158</td><td class="mono">192.168.10.159</td></tr>
+      <tr><td>5</td><td class="mono">192.168.10.160</td><td class="mono">192.168.10.161</td><td class="mono">192.168.10.190</td><td class="mono">192.168.10.191</td></tr>
+      <tr><td>6</td><td class="mono">192.168.10.192</td><td class="mono">192.168.10.193</td><td class="mono">192.168.10.222</td><td class="mono">192.168.10.223</td></tr>
+      <tr><td>7</td><td class="mono">192.168.10.224</td><td class="mono">192.168.10.225</td><td class="mono">192.168.10.254</td><td class="mono">192.168.10.255</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Exercício 3 — 10.10.10.0/24 em 2 subnets (/25)</h3>
+  <div class="card">
+    <p>Bits emprestados: 1 → 2¹ = 2 subnets · Bits de host: 7 → salto = 2⁷ = 128 · Máscara: 255.255.255.128</p>
+  </div>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Network ID</th><th>1º host</th><th>Último host</th><th>Broadcast</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0</td><td class="mono">10.10.10.0</td><td class="mono">10.10.10.1</td><td class="mono">10.10.10.126</td><td class="mono">10.10.10.127</td></tr>
+      <tr><td>1</td><td class="mono">10.10.10.128</td><td class="mono">10.10.10.129</td><td class="mono">10.10.10.254</td><td class="mono">10.10.10.255</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Identificar a que subnet pertence um host</h3>
+  <div class="card">
+    <p>Com máscara /26 (salto 64), o host <code>192.168.10.100</code>:</p>
+    <ul>
+      <li>0–63 → subnet 0</li>
+      <li>64–127 → subnet 1 ← <strong>pertence aqui</strong> (Network 192.168.10.64)</li>
+      <li>128–191 → subnet 2</li>
+      <li>192–255 → subnet 3</li>
+    </ul>
+    <p class="note">Método rápido: dividir o último octeto pelo salto e arredondar para baixo → 100 ÷ 64 = 1 (resto 36) → subnet 1.</p>
+  </div>
+</section>
+
+<!-- ========== AULA 07 ========== -->
+<section id="aula07">
+  <h2><span class="aula-num">Aula 07</span> O caminho dos dados</h2>
+
+  <h3>Funções essenciais</h3>
+  <div class="glossary-grid">
+    <div class="term"><dt>DNS</dt><dd>Traduz nomes de domínio em endereços IP.</dd></div>
+    <div class="term"><dt>DHCP</dt><dd>Atribui automaticamente IP, máscara, gateway e DNS.</dd></div>
+    <div class="term"><dt>Gateway</dt><dd>Saída para outras redes (normalmente o router).</dd></div>
+    <div class="term"><dt>ARP</dt><dd>Traduz IP em MAC dentro da rede local.</dd></div>
+    <div class="term"><dt>ICMP</dt><dd>Diagnóstico e relato de erros (usado pelo ping).</dd></div>
+  </div>
+
+  <h3>Percurso de um pedido (ordem)</h3>
+  <div class="card">
+    <ol>
+      <li><strong>DNS</strong> traduz o nome (ex: www.exemplo.pt) no IP de destino</li>
+      <li>O computador aplica a <strong>máscara</strong> para verificar se o destino é local</li>
+      <li>Se <em>não</em> for local → envia o pacote para o <strong>gateway</strong></li>
+      <li>Os <strong>routers</strong> encaminham salto a salto até ao destino</li>
+    </ol>
+  </div>
+
+  <h3>Tabela de routing e rota mais específica</h3>
+  <div class="card">
+    <p>Exemplo de tabela:</p>
+    <table>
+      <thead>
+        <tr><th>Destino</th><th>Máscara</th><th>Gateway</th><th>Notas</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">192.168.1.0</td><td class="mono">255.255.255.0</td><td class="mono">On-link</td><td>Entrega direta na LAN</td></tr>
+        <tr><td class="mono">10.0.0.0</td><td class="mono">255.0.0.0</td><td class="mono">192.168.1.254</td><td>Rede 10 via outro router</td></tr>
+        <tr><td class="mono">0.0.0.0</td><td class="mono">0.0.0.0</td><td class="mono">192.168.1.1</td><td>Default route (Internet)</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.75rem"><strong>Regra:</strong> escolhe-se sempre a rota <em>mais específica</em> (maior comprimento de prefixo).</p>
+    <table>
+      <thead>
+        <tr><th>Destino</th><th>Rota escolhida</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">192.168.1.20</td><td>192.168.1.0/24 → entrega direta</td></tr>
+        <tr><td class="mono">10.5.5.5</td><td>10.0.0.0/8 → via 192.168.1.254</td></tr>
+        <tr><td class="mono">8.8.8.8</td><td>0.0.0.0/0 → via 192.168.1.1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Utilitários nativos</h3>
+  <table>
+    <thead>
+      <tr><th>Comando</th><th>Função</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mono">nslookup &lt;nome&gt;</td><td>Traduz nome → IP (consulta DNS)</td></tr>
+      <tr><td class="mono">arp -a</td><td>Mostra a tabela IP ↔ MAC (cache ARP)</td></tr>
+      <tr><td class="mono">route print<br>netstat -r</td><td>Mostra a tabela de routing</td></tr>
+      <tr><td class="mono">ping &lt;destino&gt;</td><td>Testa se o destino responde (ICMP)</td></tr>
+      <tr><td class="mono">tracert &lt;destino&gt;</td><td>Mostra os routers no caminho</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ========== AULA 08 ========== -->
+<section id="aula08">
+  <h2><span class="aula-num">Aula 08</span> Transporte e segurança</h2>
+
+  <h3>Portas bem conhecidas</h3>
+  <table>
+    <thead>
+      <tr><th>Serviço</th><th>Porta</th><th>Protocolo</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>HTTP</td><td class="mono">80</td><td>TCP</td></tr>
+      <tr><td>HTTPS</td><td class="mono">443</td><td>TCP</td></tr>
+      <tr><td>FTP</td><td class="mono">21</td><td>TCP</td></tr>
+      <tr><td>SMTP</td><td class="mono">25</td><td>TCP</td></tr>
+      <tr><td>DNS</td><td class="mono">53</td><td>UDP/TCP</td></tr>
+      <tr><td>SSH</td><td class="mono">22</td><td>TCP</td></tr>
+      <tr><td>RDP</td><td class="mono">3389</td><td>TCP</td></tr>
+      <tr><td>POP3</td><td class="mono">110</td><td>TCP</td></tr>
+    </tbody>
+  </table>
+
+  <h3>TCP vs UDP</h3>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">TCP</div>
+      <ul>
+        <li>Entrega fiável e ordenada</li>
+        <li>Reenvio em caso de perda</li>
+        <li>Handshake (ligação estabelecida)</li>
+        <li>Usar para: ficheiros, páginas web, email</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">UDP</div>
+      <ul>
+        <li>Envio rápido, sem garantia</li>
+        <li>Sem reenvio nem ordem</li>
+        <li>Sem handshake</li>
+        <li>Usar para: vídeo em direto, DNS, jogos</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Conceitos-chave</h3>
+  <div class="glossary-grid">
+    <div class="term"><dt>Socket</dt><dd>Combinação IP + porta que identifica uma extremidade de uma ligação.</dd></div>
+    <div class="term"><dt>Three-way handshake</dt><dd>Processo de estabelecimento TCP: SYN → SYN-ACK → ACK.</dd></div>
+    <div class="term"><dt>Firewall</dt><dd>Filtra tráfego segundo regras (permite ou bloqueia portas/protocolos/IPs).</dd></div>
+  </div>
+
+  <h3>Segurança e cablagem — Verdadeiro / Falso</h3>
+  <div class="card">
+    <div class="vf-item"><span class="vf-badge vf-v">V</span> Encriptação torna os dados ilegíveis a quem não está autorizado.</div>
+    <div class="vf-item"><span class="vf-badge vf-f">F</span> Cabo CCA é recomendado para PoE. <em style="color:var(--text-muted)">(Não — o cobre puro é o recomendado; CCA tem maior resistência e aquece.)</em></div>
+    <div class="vf-item"><span class="vf-badge vf-v">V</span> O firewall filtra o tráfego, permitindo apenas o que está autorizado.</div>
+    <div class="vf-item"><span class="vf-badge vf-f">F</span> Usar a mesma password em todos os serviços é boa prática.</div>
+    <div class="vf-item"><span class="vf-badge vf-v">V</span> A segmentação em VLANs ajuda a isolar e proteger a rede.</div>
+  </div>
+</section>
+
+<!-- ========== PROTOCOLOS ========== -->
+<section id="protocolos">
+  <h2><span class="aula-num">—</span> Protocolos em detalhe</h2>
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input type="text" id="searchProto" placeholder="Filtrar protocolos…" oninput="filterGlossary('searchProto','glossProto')">
+  </div>
+  <div class="glossary-grid" id="glossProto">
+    <div class="term" data-term="http https"><dt>HTTP / HTTPS</dt><dd>Transferência de hipertexto (páginas web). O HTTPS acrescenta encriptação (TLS) sobre o HTTP.</dd></div>
+    <div class="term" data-term="ftp ftps"><dt>FTP / FTPS</dt><dd>Transferência de ficheiros. Utiliza duas ligações TCP (controlo + dados). O FTPS acrescenta segurança (TLS).</dd></div>
+    <div class="term" data-term="ssh"><dt>SSH</dt><dd>Shell remoto seguro. Exemplo prático: ligação Windows → Debian na porta 22 (<code>ssh utilizador@ip</code>).</dd></div>
+    <div class="term" data-term="dns"><dt>DNS</dt><dd>Tradução de nomes em IPs. Analogia: lista telefónica da Internet.</dd></div>
+    <div class="term" data-term="dhcp"><dt>DHCP</dt><dd>Atribuição automática de IP, máscara, gateway e DNS ao cliente.</dd></div>
+    <div class="term" data-term="smtp"><dt>SMTP</dt><dd>Protocolo de envio de email (Simple Mail Transfer Protocol).</dd></div>
+    <div class="term" data-term="pop3"><dt>POP3</dt><dd>Descarrega o email do servidor e remove-o (pensado para um só dispositivo).</dd></div>
+    <div class="term" data-term="imap"><dt>IMAP</dt><dd>Mantém o email sincronizado no servidor (nuvem) entre vários dispositivos.</dd></div>
+    <div class="term" data-term="tcp"><dt>TCP</dt><dd>Entrega fiável e ordenada, com reenvio em caso de perda de segmentos.</dd></div>
+    <div class="term" data-term="udp"><dt>UDP</dt><dd>Envio rápido sem garantia de entrega nem de ordem; sem handshake.</dd></div>
+    <div class="term" data-term="ip"><dt>IP</dt><dd>Endereçamento único de cada dispositivo; opera na camada 3 do OSI (Rede).</dd></div>
+    <div class="term" data-term="icmp"><dt>ICMP</dt><dd>Diagnóstico e relato de erros. Sem autenticação (pode ser usado em ataques). Base do <code>ping</code>.</dd></div>
+    <div class="term" data-term="arp"><dt>ARP</dt><dd>Traduz IP em MAC na rede local. Processo: pergunta em broadcast → resposta em unicast. Comando: <code>arp -a</code>.</dd></div>
+    <div class="term" data-term="ntp"><dt>NTP</dt><dd>Sincronização de relógios via UTC. Porta UDP 123.</dd></div>
+  </div>
+</section>
+
+<!-- ========== FERRAMENTAS ========== -->
+<section id="ferramentas">
+  <h2><span class="aula-num">⚙</span> Ferramentas interativas</h2>
+
+  <!-- Conversor decimal ↔ binário -->
+  <div class="tool">
+    <div class="tool-title">
+      <svg viewBox="0 0 24 24" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M6 16h4"/></svg>
+      Conversor decimal ↔ binário (8 bits)
+    </div>
+    <div class="input-row">
+      <div>
+        <label>Decimal (0–255)</label>
+        <input type="number" id="decIn" min="0" max="255" value="192" oninput="decToBin()">
+      </div>
+      <div>
+        <label>Binário</label>
+        <input type="text" id="binIn" maxlength="8" value="11000000" oninput="binToDec()" style="max-width:120px">
+      </div>
+    </div>
+    <div class="bit-row" id="bitWeights">
+      <!-- filled by JS -->
+    </div>
+    <div class="result-box" id="convResult"></div>
+    <div class="steps" id="convSteps"></div>
+  </div>
+
+  <!-- Calculadora AND -->
+  <div class="tool">
+    <div class="tool-title">
+      <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>
+      Calculadora AND bit a bit (um octeto)
+    </div>
+    <div class="input-row">
+      <div>
+        <label>Octeto A (ex: IP)</label>
+        <input type="number" id="andA" min="0" max="255" value="20" oninput="calcAnd()">
+      </div>
+      <div>
+        <label>Octeto B (ex: máscara)</label>
+        <input type="number" id="andB" min="0" max="255" value="0" oninput="calcAnd()">
+      </div>
+    </div>
+    <div class="result-box" id="andResult"></div>
+    <div class="steps" id="andSteps"></div>
+  </div>
+
+  <!-- Calculadora de subnetting -->
+  <div class="tool">
+    <div class="tool-title">
+      <svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Calculadora de subnetting (/24)
+    </div>
+    <div class="input-row">
+      <div>
+        <label>IP base (rede /24)</label>
+        <input type="text" id="subBase" value="192.168.10.0" style="max-width:150px">
+      </div>
+      <div>
+        <label>N.º de subnets pretendido</label>
+        <select id="subCount" onchange="calcSubnet()">
+          <option value="2">2 (/25)</option>
+          <option value="4" selected>4 (/26)</option>
+          <option value="8">8 (/27)</option>
+          <option value="16">16 (/28)</option>
+          <option value="32">32 (/29)</option>
+          <option value="64">64 (/30)</option>
+        </select>
+      </div>
+      <button onclick="calcSubnet()">Calcular</button>
+    </div>
+    <div class="result-box" id="subInfo" style="margin-bottom:0.75rem"></div>
+    <div id="subTable" style="overflow-x:auto"></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ===== Mobile menu ===== */
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+const menuToggle = document.getElementById('menuToggle');
+menuToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+});
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('open');
+  overlay.classList.remove('open');
+});
+document.querySelectorAll('.nav-item').forEach(a => {
+  a.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+});
+
+/* ===== Active nav on scroll ===== */
+const sections = document.querySelectorAll('section');
+const navItems = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const id = e.target.id;
+      const link = document.querySelector(`.nav-item[href="#${id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+/* ===== Glossary filter ===== */
+function filterGlossary(inputId, gridId) {
+  const q = document.getElementById(inputId).value.toLowerCase().trim();
+  document.querySelectorAll(`#${gridId} .term`).forEach(t => {
+    const text = (t.dataset.term || '') + ' ' + t.textContent;
+    t.style.display = text.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+/* ===== Binary converter ===== */
+const WEIGHTS = [128, 64, 32, 16, 8, 4, 2, 1];
+
+function renderBitWeights(bits) {
+  const row = document.getElementById('bitWeights');
+  row.innerHTML = WEIGHTS.map((w, i) => `
+    <div class="bit">
+      <div class="weight">${w}</div>
+      <input type="text" maxlength="1" value="${bits[i]}" data-i="${i}"
+        oninput="bitChanged(this)" style="color:${bits[i]==='1' ? 'var(--accent)' : 'var(--text-muted)'}">
+    </div>`).join('');
+}
+
+function bitChanged(el) {
+  let v = el.value.replace(/[^01]/g, '');
+  if (v.length > 1) v = v.slice(-1);
+  el.value = v || '0';
+  el.style.color = el.value === '1' ? 'var(--accent)' : 'var(--text-muted)';
+  const bits = [...document.querySelectorAll('#bitWeights input')].map(i => i.value || '0');
+  const bin = bits.join('');
+  const dec = parseInt(bin, 2);
+  document.getElementById('binIn').value = bin;
+  document.getElementById('decIn').value = dec;
+  showConv(dec, bin, true);
+}
+
+function decToBin() {
+  let d = parseInt(document.getElementById('decIn').value, 10);
+  if (isNaN(d) || d < 0) d = 0;
+  if (d > 255) d = 255;
+  document.getElementById('decIn').value = d;
+  const bin = d.toString(2).padStart(8, '0');
+  document.getElementById('binIn').value = bin;
+  renderBitWeights(bin.split(''));
+  showConv(d, bin, true);
+}
+
+function binToDec() {
+  let b = document.getElementById('binIn').value.replace(/[^01]/g, '').slice(0, 8);
+  document.getElementById('binIn').value = b;
+  b = b.padStart(8, '0');
+  const d = parseInt(b, 2) || 0;
+  document.getElementById('decIn').value = d;
+  renderBitWeights(b.split(''));
+  showConv(d, b, false);
+}
+
+function showConv(dec, bin, fromDec) {
+  document.getElementById('convResult').innerHTML =
+    `<span class="highlight">${dec}</span> = <span class="highlight">${bin}</span>`;
+  let steps = '';
+  if (fromDec) {
+    let rem = dec;
+    const parts = [];
+    WEIGHTS.forEach(w => {
+      if (rem >= w) { parts.push(`1×${w}`); rem -= w; }
+      else parts.push(`0×${w}`);
+    });
+    steps = parts.join(' + ') + ` = <strong>${dec}</strong>`;
+  } else {
+    const parts = bin.split('').map((b, i) => b === '1' ? WEIGHTS[i] : null).filter(Boolean);
+    steps = parts.length ? parts.join(' + ') + ` = <strong>${dec}</strong>` : '0';
+  }
+  document.getElementById('convSteps').innerHTML = steps;
+}
+
+/* init converter */
+renderBitWeights('11000000'.split(''));
+showConv(192, '11000000', true);
+
+/* ===== AND calculator ===== */
+function toBin8(n) {
+  return (n & 255).toString(2).padStart(8, '0');
+}
+
+function calcAnd() {
+  let a = parseInt(document.getElementById('andA').value, 10) || 0;
+  let b = parseInt(document.getElementById('andB').value, 10) || 0;
+  a = Math.max(0, Math.min(255, a));
+  b = Math.max(0, Math.min(255, b));
+  const res = a & b;
+  const ba = toBin8(a), bb = toBin8(b), br = toBin8(res);
+  document.getElementById('andResult').innerHTML =
+    `<span class="highlight">${a}</span> AND <span class="highlight">${b}</span> = <span class="highlight">${res}</span>`;
+  document.getElementById('andSteps').innerHTML = `
+    <div style="font-family:var(--mono); line-height:1.8">
+      A: ${ba}<br>
+      B: ${bb}<br>
+      &nbsp;&nbsp; --------<br>
+      R: <strong style="color:var(--accent)">${br}</strong> = ${res}
+    </div>`;
+}
+calcAnd();
+
+/* ===== Subnetting calculator ===== */
+function calcSubnet() {
+  const baseStr = document.getElementById('subBase').value.trim();
+  const parts = baseStr.split('.').map(Number);
+  if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) {
+    document.getElementById('subInfo').textContent = 'IP inválido. Use formato x.x.x.0';
+    document.getElementById('subTable').innerHTML = '';
+    return;
+  }
+  const count = parseInt(document.getElementById('subCount').value, 10);
+  const bits = Math.log2(count);
+  if (!Number.isInteger(bits)) {
+    document.getElementById('subInfo').textContent = 'Número de subnets deve ser potência de 2.';
+    return;
+  }
+  const hostBits = 8 - bits;
+  const salto = Math.pow(2, hostBits);
+  const maskLast = 256 - salto;
+  const cidr = 24 + bits;
+  const base = parts[0] + '.' + parts[1] + '.' + parts[2] + '.';
+
+  document.getElementById('subInfo').innerHTML =
+    `Máscara: <span class="highlight">255.255.255.${maskLast}</span> (/${cidr}) · ` +
+    `Salto: <span class="highlight">${salto}</span> · ` +
+    `Hosts/subnet: <span class="highlight">${salto - 2}</span>`;
+
+  let rows = '';
+  for (let i = 0; i < count; i++) {
+    const net = i * salto;
+    const first = net + 1;
+    const last = net + salto - 2;
+    const bcast = net + salto - 1;
+    rows += `<tr>
+      <td>${i}</td>
+      <td class="mono">${base}${net}</td>
+      <td class="mono">${base}${first}</td>
+      <td class="mono">${base}${last}</td>
+      <td class="mono">${base}${bcast}</td>
+    </tr>`;
+  }
+  document.getElementById('subTable').innerHTML = `
+    <table>
+      <thead><tr><th>#</th><th>Network ID</th><th>1º host</th><th>Último host</th><th>Broadcast</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+calcSubnet();
+</script>
+</body>
+</html>
