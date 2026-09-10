@@ -1,0 +1,992 @@
+﻿{
+    "instituicao":  "Centro de Emprego e FormaÃ§Ã£o Profissional de Faro",
+    "modalidade":  "Cursos de EspecializaÃ§Ã£o TecnolÃ³gica - CET",
+    "designacao":  "TÃ©cnico/a Especialista em CiberseguranÃ§a",
+    "codigo_financeiro":  "481110E0007",
+    "codigo_administrativo":  "11650885",
+    "nivel":  5,
+    "mes_ano":  "junho 2026",
+    "horario_diario":  "09:00-17:00",
+    "dias":  [
+                 {
+                     "data":  "2026-06-01",
+                     "dia_semana":  "SEG",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC01476",
+                                       "descricao":  "Implementar a LegislaÃ§Ã£o Relativa Ã  CiberseguranÃ§a",
+                                       "formador":  "Luis Manuel Ferreira De Melo E Horta"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC01476",
+                                       "descricao":  "Implementar a LegislaÃ§Ã£o Relativa Ã  CiberseguranÃ§a",
+                                       "formador":  "Luis Manuel Ferreira De Melo E Horta"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-02",
+                     "dia_semana":  "TER",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-03",
+                     "dia_semana":  "QUA",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-04",
+                     "dia_semana":  "QUI",
+                     "nota":  "Feriado Nacional â€” Corpus Christi",
+                     "aulas":  [
+
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-05",
+                     "dia_semana":  "SEX",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-08",
+                     "dia_semana":  "SEG",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-09",
+                     "dia_semana":  "TER",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-10",
+                     "dia_semana":  "QUA",
+                     "nota":  "Feriado Nacional â€” Dia de Portugal, de CamÃµes e das Comunidades Portuguesas",
+                     "aulas":  [
+
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-11",
+                     "dia_semana":  "QUI",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-12",
+                     "dia_semana":  "SEX",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-15",
+                     "dia_semana":  "SEG",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-16",
+                     "dia_semana":  "TER",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-17",
+                     "dia_semana":  "QUA",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00635",
+                                       "descricao":  "Configurar ServiÃ§os de Rede",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC01480",
+                                       "descricao":  "Analisar EvidÃªncias de Ataques CibernÃ©ticos",
+                                       "formador":  "Paulo Ricardo Costa Ramalho"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-18",
+                     "dia_semana":  "QUI",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-19",
+                     "dia_semana":  "SEX",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-22",
+                     "dia_semana":  "SEG",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-23",
+                     "dia_semana":  "TER",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-24",
+                     "dia_semana":  "QUA",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-25",
+                     "dia_semana":  "QUI",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-26",
+                     "dia_semana":  "SEX",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00034",
+                                       "descricao":  "Colaborar e Trabalhar em Equipa",
+                                       "formador":  "Lilian de Barros"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-29",
+                     "dia_semana":  "SEG",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC01477",
+                                       "descricao":  "Aplicar MÃ©todos EstatÃ­sticos",
+                                       "formador":  "Jose Gabriel Fernandes Chaveca"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00606",
+                                       "descricao":  "Desenvolver Programas em Linguagem Estruturada",
+                                       "formador":  "Iolanda Aquino Serro"
+                                   }
+                               ]
+                 },
+                 {
+                     "data":  "2026-06-30",
+                     "dia_semana":  "TER",
+                     "aulas":  [
+                                   {
+                                       "hora":  "09:00-10:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "10:00-11:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "11:00-12:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "12:00-13:00",
+                                       "uc":  "UC00599",
+                                       "descricao":  "Interagir em InglÃªs nas Atividades do Setor da InformÃ¡tica",
+                                       "formador":  "Olinda Oliveira"
+                                   },
+                                   {
+                                       "hora":  "14:00-15:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "15:00-16:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   },
+                                   {
+                                       "hora":  "16:00-17:00",
+                                       "uc":  "UC00634",
+                                       "descricao":  "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+                                       "formador":  "Ivan Filipe Saloio GonÃ§alves"
+                                   }
+                               ]
+                 }
+             ],
+    "ucs_identificadas":  [
+                              "UC00034",
+                              "UC00599",
+                              "UC00606",
+                              "UC00634",
+                              "UC00635",
+                              "UC01476",
+                              "UC01477",
+                              "UC01480"
+                          ]
+}

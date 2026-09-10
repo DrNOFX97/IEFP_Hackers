@@ -8,9 +8,6 @@ CLAUDE.md
 cloudrun/
 
 # ── Dados privados ──────────────────────────────────────────────
-data/horario_*.json
-data/ucs_*.json
-data/cronograma_*.json
 data/.backups/
 
 # ── Scripts de administração e segurança ────────────────────────
