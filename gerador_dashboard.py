@@ -447,8 +447,7 @@ def main():
         try:
             with open(hf, 'r', encoding='utf-8') as f:
                 h_data = json.load(f)
-                if 'horario' in h_data:
-                    horarios.append(h_data['horario'])
+                horarios.append(h_data['horario'] if 'horario' in h_data else h_data)
         except Exception as e:
             print(f"Erro ao ler {hf}: {e}")
     horarios.sort(key=lambda h: h['dias'][0]['data'] if h.get('dias') else '')
