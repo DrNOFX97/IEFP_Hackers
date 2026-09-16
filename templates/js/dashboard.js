@@ -57,22 +57,26 @@
             el.innerHTML = merged.map(aula => {
                 const state       = getAulaState(dateStr, aula.hora);
                 const isClickable = UC_MAP[aula.uc] ? 'clickable' : '';
-                const isRemote    = (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
+                const isRemote    = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
                 const remoteClass  = isRemote ? 'remote' : '';
                 const remoteBadge  = isRemote
                     ? `<div class="aula-uc badge remote" style="margin-top:0;">🌐 Remoto</div>` : '';
+                const isTeste      = aula.tipo === 'teste';
+                const testeClass   = isTeste ? 'teste' : '';
+                const testeBadge   = isTeste
+                    ? `<div class="aula-uc badge teste" style="margin-top:0;">📝 Teste</div>` : '';
                 const formadorBadge = aula.formador
                     ? `<div class="aula-uc badge" style="margin-top:0;background:rgba(255,255,255,0.1);color:#fff;">👤 ${shortName(aula.formador)}</div>` : '';
                 const clickAttr = UC_MAP[aula.uc]
                     ? `data-uc-sched="${aula.uc}"` : '';
                 return `
-                <div class="aula-card ${state} ${isClickable} ${remoteClass}" ${clickAttr}>
+                <div class="aula-card ${state} ${isClickable} ${remoteClass} ${testeClass}" ${clickAttr}>
                     <div class="aula-time">${aula.hora}</div>
                     <div class="aula-info">
                         <div class="aula-desc">${aula.descricao}</div>
                         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:5px;align-items:center;">
                             <div class="aula-uc badge" style="margin-top:0;">${aula.uc}</div>
-                            ${remoteBadge}${formadorBadge}
+                            ${remoteBadge}${testeBadge}${formadorBadge}
                         </div>
                     </div>
                     ${UC_MAP[aula.uc] ? `<button class="open-uc-btn" title="Abrir disciplina">↗</button>` : ''}
@@ -211,8 +215,9 @@
                             if (!sessionStorage.getItem(key)) {
                                 sessionStorage.setItem(key, '1');
                                 const mins = Math.round(diff / 60000);
+                                const prefix = aula.tipo === 'teste' ? '📝 Teste — ' : '';
                                 new Notification(`Aula em ${mins} min — ${aula.hora}`, {
-                                    body: aula.descricao || aula.uc,
+                                    body: prefix + (aula.descricao || aula.uc),
                                     icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🛡️</text></svg>'
                                 });
                             }

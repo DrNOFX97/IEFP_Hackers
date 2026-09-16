@@ -37,6 +37,7 @@
             letter-spacing: 0.05em;
         }
         .badge.remote { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+        .badge.teste { background: rgba(240, 192, 64, 0.15); color: #f0c040; border: 1px solid rgba(240, 192, 64, 0.35); }
 
         .day-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
 
@@ -70,6 +71,7 @@
         .aula-card.remote.clickable:hover { background: rgba(46,204,113,0.14); border-left-color: #5fdc91; }
         .aula-card.remote.past { border-left-color: #1a5e36; background: transparent; }
         .aula-card.remote.past .aula-desc { color: inherit; }
+        .aula-card.teste { box-shadow: inset 3px 0 0 #f0c040; }
 
         .aula-time { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; }
         .aula-info { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 0; }

@@ -222,7 +222,9 @@
                                 dia_semana: dia.dia_semana,
                                 hora:      aula.hora,
                                 mes_ano:   horario.mes_ano,
-                                state:     getAulaState(dia.data, aula.hora)
+                                state:     getAulaState(dia.data, aula.hora),
+                                modalidade: aula.modalidade,
+                                tipo:      aula.tipo
                             });
                         }
                     });
@@ -247,9 +249,10 @@
                 const isActive = sKey === activeKey ? ' active-session' : '';
                 return `<div class="session-chip ${s.state}${isActive}"
                     data-sess-uc="${ucCode}" data-sess-date="${s.data}" data-sess-num="${s.num}"
-                    data-sess-hora="${s.hora}" data-sess-dow="${s.dia_semana}" data-sess-mes="${s.mes_ano}">
+                    data-sess-hora="${s.hora}" data-sess-dow="${s.dia_semana}" data-sess-mes="${s.mes_ano}"
+                    ${s.tipo === 'teste' ? 'title="Teste"' : ''}>
                     <span class="session-chip-num">S${s.num}</span>
-                    <span class="session-chip-date">${d}/${mo}</span>
+                    <span class="session-chip-date">${d}/${mo}${s.tipo === 'teste' ? ' 📝' : ''}</span>
                 </div>`;
             }).join('');
         }

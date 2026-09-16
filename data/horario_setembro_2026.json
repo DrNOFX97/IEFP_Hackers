@@ -456,15 +456,18 @@
         },
         {
           "hora": "14:00-15:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "modalidade": "remoto"
         },
         {
           "hora": "15:00-16:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "modalidade": "remoto"
         },
         {
           "hora": "16:00-17:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "modalidade": "remoto"
         }
       ]
     },
@@ -474,15 +477,18 @@
       "aulas": [
         {
           "hora": "14:00-15:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "tipo": "teste"
         },
         {
           "hora": "15:00-16:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "tipo": "teste"
         },
         {
           "hora": "16:00-17:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "tipo": "teste"
         }
       ]
     },
@@ -492,19 +498,23 @@
       "aulas": [
         {
           "hora": "09:00-10:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "modalidade": "remoto"
         },
         {
           "hora": "10:00-11:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "modalidade": "remoto"
         },
         {
           "hora": "11:00-12:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "modalidade": "remoto"
         },
         {
           "hora": "12:00-13:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "modalidade": "remoto"
         },
         {
           "hora": "14:00-15:00",
@@ -542,7 +552,8 @@
         },
         {
           "hora": "14:00-15:00",
-          "uc": "UC01481"
+          "uc": "UC01481",
+          "modalidade": "remoto"
         },
         {
           "hora": "15:00-16:00",
@@ -620,7 +631,7 @@
         },
         {
           "hora": "14:00-15:00",
-          "uc": "UC01487"
+          "uc": "UC01481"
         },
         {
           "hora": "15:00-16:00",
