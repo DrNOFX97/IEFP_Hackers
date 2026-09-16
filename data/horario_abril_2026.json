@@ -1,0 +1,624 @@
+{
+  "instituicao": "Centro de Emprego e Formação Profissional de Faro",
+  "modalidade": "Cursos de Especialização Tecnológica - CET",
+  "designacao": "Técnico/a Especialista em Cibersegurança",
+  "codigo_financeiro": "481110E0007",
+  "codigo_administrativo": "11650885",
+  "nivel": 5,
+  "mes_ano": "abril 2026",
+  "horario_diario": "09:00-17:00",
+  "dias": [
+    {
+      "data": "2026-04-09",
+      "dia_semana": "QUI",
+      "aulas": [
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-10",
+      "dia_semana": "SEX",
+      "aulas": [
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-13",
+      "dia_semana": "SEG",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-14",
+      "dia_semana": "TER",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-16",
+      "dia_semana": "QUI",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-17",
+      "dia_semana": "SEX",
+      "aulas": [
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-20",
+      "dia_semana": "SEG",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-21",
+      "dia_semana": "TER",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC00599",
+          "descricao": "Interagir em Inglês nas Atividades do Setor da Informática",
+          "formador": ""
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC00599",
+          "descricao": "Interagir em Inglês nas Atividades do Setor da Informática",
+          "formador": ""
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC00599",
+          "descricao": "Interagir em Inglês nas Atividades do Setor da Informática",
+          "formador": ""
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC00599",
+          "descricao": "Interagir em Inglês nas Atividades do Setor da Informática",
+          "formador": ""
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00245",
+          "descricao": "Desenvolver Algoritmos",
+          "formador": "Iolanda Aquino Serro"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-22",
+      "dia_semana": "QUA",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-23",
+      "dia_semana": "QUI",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC00631",
+          "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-24",
+      "dia_semana": "SEX",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-27",
+      "dia_semana": "SEG",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC01477",
+          "descricao": "Aplicar Métodos Estatísticos",
+          "formador": "Jose Gabriel Fernandes Chaveca"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC01477",
+          "descricao": "Aplicar Métodos Estatísticos",
+          "formador": "Jose Gabriel Fernandes Chaveca"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC01477",
+          "descricao": "Aplicar Métodos Estatísticos",
+          "formador": "Jose Gabriel Fernandes Chaveca"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC01477",
+          "descricao": "Aplicar Métodos Estatísticos",
+          "formador": "Jose Gabriel Fernandes Chaveca"
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC01476",
+          "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+          "formador": "Luis Manuel Ferreira De Melo E Horta"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-28",
+      "dia_semana": "TER",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC00599",
+          "descricao": "Interagir em Inglês nas Atividades do Setor da Informática",
+          "formador": ""
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC00599",
+          "descricao": "Interagir em Inglês nas Atividades do Setor da Informática",
+          "formador": ""
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC00599",
+          "descricao": "Interagir em Inglês nas Atividades do Setor da Informática",
+          "formador": ""
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC00599",
+          "descricao": "Interagir em Inglês nas Atividades do Setor da Informática",
+          "formador": ""
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-29",
+      "dia_semana": "QUA",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        }
+      ]
+    },
+    {
+      "data": "2026-04-30",
+      "dia_semana": "QUI",
+      "aulas": [
+        {
+          "hora": "09:00-10:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "10:00-11:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "11:00-12:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "12:00-13:00",
+          "uc": "UC00634",
+          "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+          "formador": "Ivan Filipe Saloio Gonçalves"
+        },
+        {
+          "hora": "14:00-15:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "15:00-16:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        },
+        {
+          "hora": "16:00-17:00",
+          "uc": "UC00602",
+          "descricao": "Modelar Bases de Dados Relacionais",
+          "formador": "Paulo Ricardo Costa Ramalho"
+        }
+      ]
+    }
+  ]
+}

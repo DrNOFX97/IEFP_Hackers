@@ -1,0 +1,280 @@
+{
+  "gerado_em": "2026-09-16T12:57:17.783Z",
+  "periodo": "abril 2026 - setembro 2026",
+  "total_horas": 672,
+  "total_ucs": 25,
+  "ucs": [
+    {
+      "codigo": "UC00034",
+      "descricao": "Colaborar e Trabalhar em Equipa",
+      "formador": "Lilian de Barros",
+      "horas_totais": 50,
+      "meses": [
+        "maio",
+        "junho",
+        "julho"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC00245",
+      "descricao": "Desenvolver Algoritmos",
+      "formador": "Iolanda Aquino Serro",
+      "horas_totais": 18,
+      "meses": [
+        "abril",
+        "maio"
+      ],
+      "carga_horaria_oficial": 25
+    },
+    {
+      "codigo": "UC00598",
+      "descricao": "Efetuar Operações e Cálculos Matemáticos Aplicados a Projetos da Área de Informática",
+      "formador": null,
+      "horas_totais": 50,
+      "meses": [
+        "julho",
+        "agosto",
+        "setembro"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC00599",
+      "descricao": "Interagir em Inglês nas Atividades do Setor da Informática",
+      "formador": "Olinda Oliveira",
+      "horas_totais": 50,
+      "meses": [
+        "abril",
+        "maio",
+        "junho",
+        "julho"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC00602",
+      "descricao": "Modelar Bases de Dados Relacionais",
+      "formador": "Paulo Ricardo Costa Ramalho",
+      "horas_totais": 25,
+      "meses": [
+        "abril",
+        "maio"
+      ],
+      "carga_horaria_oficial": 25
+    },
+    {
+      "codigo": "UC00606",
+      "descricao": "Desenvolver Programas em Linguagem Estruturada",
+      "formador": "Iolanda Aquino Serro",
+      "horas_totais": 50,
+      "meses": [
+        "maio",
+        "junho",
+        "julho"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC00616",
+      "descricao": "Implementar as Normas de Segurança e Saúde no Trabalho no Setor de Informática",
+      "formador": null,
+      "horas_totais": 25,
+      "meses": [
+        "julho",
+        "agosto"
+      ],
+      "carga_horaria_oficial": 25
+    },
+    {
+      "codigo": "UC00631",
+      "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
+      "formador": "Ivan Filipe Saloio Gonçalves",
+      "horas_totais": 50,
+      "meses": [
+        "abril",
+        "maio"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC00633",
+      "descricao": "Instalar e Parametrizar Sistemas Operativos de Servidor (Plataforma Proprietária)",
+      "formador": null,
+      "horas_totais": 50,
+      "meses": [
+        "julho",
+        "setembro"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC00634",
+      "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
+      "formador": "Ivan Filipe Saloio Gonçalves",
+      "horas_totais": 40,
+      "meses": [
+        "abril",
+        "maio",
+        "junho",
+        "julho"
+      ],
+      "carga_horaria_oficial": 25
+    },
+    {
+      "codigo": "UC00635",
+      "descricao": "Configurar Serviços de Rede",
+      "formador": "Ivan Filipe Saloio Gonçalves",
+      "horas_totais": 10,
+      "meses": [
+        "junho"
+      ],
+      "carga_horaria_oficial": 25
+    },
+    {
+      "codigo": "UC01476",
+      "descricao": "Implementar a Legislação Relativa à Cibersegurança",
+      "formador": "Luis Manuel Ferreira De Melo E Horta",
+      "horas_totais": 25,
+      "meses": [
+        "abril",
+        "maio",
+        "junho"
+      ],
+      "carga_horaria_oficial": 25
+    },
+    {
+      "codigo": "UC01477",
+      "descricao": "Aplicar Métodos Estatísticos",
+      "formador": "Jose Gabriel Fernandes Chaveca",
+      "horas_totais": 54,
+      "meses": [
+        "abril",
+        "maio",
+        "junho",
+        "julho"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC01478",
+      "descricao": "Configurar Redes de Computadores",
+      "formador": null,
+      "horas_totais": 25,
+      "meses": [
+        "julho",
+        "agosto",
+        "setembro"
+      ],
+      "carga_horaria_oficial": 25
+    },
+    {
+      "codigo": "UC01479",
+      "descricao": "Implementar Mecanismos de Proteção Contra Ameaças Cibernéticas",
+      "formador": null,
+      "horas_totais": 14,
+      "meses": [
+        "setembro"
+      ],
+      "carga_horaria_oficial": 25
+    },
+    {
+      "codigo": "UC01480",
+      "descricao": "Analisar Evidências de Ataques Cibernéticos",
+      "formador": "Paulo Ricardo Costa Ramalho",
+      "horas_totais": 46,
+      "meses": [
+        "maio",
+        "junho",
+        "julho"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC01481",
+      "descricao": "Desenvolver Scripts Aplicados à Cibersegurança",
+      "formador": null,
+      "horas_totais": 25,
+      "meses": [
+        "setembro"
+      ],
+      "carga_horaria_oficial": 25
+    },
+    {
+      "codigo": "UC01482",
+      "descricao": "Programar Scripts de Normalização e Filtragem de Logs",
+      "formador": null,
+      "horas_totais": 4,
+      "meses": [
+        "setembro"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC01483",
+      "descricao": "Detetar e Analisar Vulnerabilidades em Soluções Web",
+      "formador": null,
+      "horas_totais": 0,
+      "meses": [],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC01484",
+      "descricao": "Detetar e Analisar Vulnerabilidades em Sistemas de Rede",
+      "formador": null,
+      "horas_totais": 0,
+      "meses": [],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC01485",
+      "descricao": "Instalar e Configurar Ferramentas de Análise e Recolha de Logs e Evidências",
+      "formador": null,
+      "horas_totais": 0,
+      "meses": [],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC01486",
+      "descricao": "Gerir Sistemas de Deteção de Intrusos (Ids)",
+      "formador": null,
+      "horas_totais": 0,
+      "meses": [],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC01487",
+      "descricao": "Simular Cenários de Cibersegurança e Ciberdefesa (Wargamming)",
+      "formador": null,
+      "horas_totais": 3,
+      "meses": [
+        "setembro"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC01489",
+      "descricao": "Implementar Procedimentos de Recolha e Análise Forense Digital",
+      "formador": null,
+      "horas_totais": 4,
+      "meses": [
+        "setembro"
+      ],
+      "carga_horaria_oficial": 50
+    },
+    {
+      "codigo": "UC01491",
+      "descricao": "Projetar e Administrar Sistemas de Bases de Dados",
+      "formador": null,
+      "horas_totais": 54,
+      "meses": [
+        "julho",
+        "setembro"
+      ],
+      "carga_horaria_oficial": 50
+    }
+  ],
+  "total_horas_curriculo": 1525,
+  "total_horas_curriculo_ufcd": 1025,
+  "fpct_horas": 500
+}
