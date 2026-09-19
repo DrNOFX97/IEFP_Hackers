@@ -61,28 +61,28 @@
       "descricao": "Planear e Instalar a Infraestrutura de Redes Locais",
       "formador": "Ivan Filipe Saloio Gonçalves",
       "carga_horaria": 50,
-      "modalidade": ""
+      "modalidade": "remoto"
     },
     {
       "codigo": "UC00633",
       "descricao": "Instalar e Parametrizar Sistemas Operativos de Servidor (Plataforma Proprietária)",
       "formador": "Ivan Filipe Saloio Gonçalves",
       "carga_horaria": 50,
-      "modalidade": ""
+      "modalidade": "remoto"
     },
     {
       "codigo": "UC00634",
       "descricao": "Instalar, Configurar e Manter Sistema Operativo de Cliente",
       "formador": "Ivan Filipe Saloio Gonçalves",
       "carga_horaria": 25,
-      "modalidade": ""
+      "modalidade": "remoto"
     },
     {
       "codigo": "UC00635",
       "descricao": "Configurar Serviços de Rede",
       "formador": "Ivan Filipe Saloio Gonçalves",
       "carga_horaria": 25,
-      "modalidade": ""
+      "modalidade": "remoto"
     },
     {
       "codigo": "UC01476",
@@ -166,7 +166,7 @@
       "descricao": "Simular Cenários de Cibersegurança e Ciberdefesa (Wargamming)",
       "formador": "Ivan Filipe Saloio Gonçalves",
       "carga_horaria": 50,
-      "modalidade": ""
+      "modalidade": "remoto"
     },
     {
       "codigo": "UC01489",
