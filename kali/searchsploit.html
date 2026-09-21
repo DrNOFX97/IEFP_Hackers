@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SearchSploit — Guia Detalhado</title>
+<style>
+  :root {
+    --bg: #0f1115; --card: #171a21; --border: #262b36;
+    --text: #e6e8eb; --muted: #8b93a1; --accent: #00d1b2;
+    --accent2: #4f8cff; --code-bg: #0b0d11; --star: #f5c518;
+  }
+  [data-theme="light"] {
+    --bg: #f5f6f8; --card: #ffffff; --border: #e1e4e8;
+    --text: #1a1d23; --muted: #5f6672; --accent: #00897b;
+    --accent2: #2962ff; --code-bg: #f0f2f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.6; padding: 2rem 1rem;
+    transition: background .3s, color .3s;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+  .top-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-bottom: 1rem; }
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); width: 40px; height: 40px;
+    border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .2s, transform .1s;
+  }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .back-link {
+    display: inline-flex; align-items: center; gap: .35rem;
+    color: var(--accent2); text-decoration: none;
+    font-size: .9rem; margin-bottom: 1.5rem;
+  }
+  .back-link:hover { text-decoration: underline; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+  h1 {
+    font-size: 2.2rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: .5rem;
+  }
+  .subtitle { color: var(--muted); font-size: 1.05rem; }
+  .meta { margin-top: .75rem; display: flex; gap: 1rem; flex-wrap: wrap; font-size: .85rem; }
+  .meta span { color: var(--muted); }
+  .meta a { color: var(--accent2); text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+  h2 {
+    font-size: 1.35rem; margin: 2.5rem 0 1rem;
+    padding-bottom: .4rem; border-bottom: 1px solid var(--border);
+    color: var(--accent);
+  }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 .5rem; color: var(--text); }
+  p { margin-bottom: 1rem; color: var(--muted); font-size: .95rem; }
+  ul, ol { margin: 0 0 1rem 1.5rem; color: var(--muted); font-size: .95rem; }
+  li { margin-bottom: .35rem; }
+  strong { color: var(--text); }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;
+  }
+  .code {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: .65rem .85rem;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    font-size: .82rem; color: var(--accent);
+    overflow-x: auto; white-space: pre-wrap;
+    margin-bottom: .85rem; cursor: pointer; position: relative;
+  }
+  .code:hover::after {
+    content: "copiar"; position: absolute; right: .6rem; top: .5rem;
+    font-size: .65rem; color: var(--muted); background: var(--code-bg);
+    padding: 0 .3rem;
+  }
+  .code.copied::after { content: "✓ copiado"; color: var(--accent); }
+  .tag {
+    display: inline-block; font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .05em; padding: .2rem .55rem;
+    border-radius: 999px; margin-bottom: .75rem;
+  }
+  .tag-basic { background: rgba(0,209,178,.15); color: var(--accent); }
+  .tag-search { background: rgba(79,140,255,.15); color: var(--accent2); }
+  .tag-file { background: rgba(255,80,80,.15); color: #ff6b6b; }
+  .tag-trick { background: rgba(245,197,24,.15); color: var(--star); }
+  .table {
+    width: 100%; border-collapse: collapse; font-size: .88rem; margin-bottom: 1rem;
+  }
+  .table th, .table td {
+    text-align: left; padding: .5rem .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .table th { color: var(--accent); font-weight: 600; }
+  .table td { color: var(--muted); }
+  .table code { color: var(--accent); background: var(--code-bg); padding: .1rem .3rem; border-radius: 3px; }
+  .cheat-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: .75rem; margin-bottom: 1rem;
+  }
+  .cheat-item {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: .75rem; font-size: .82rem;
+  }
+  .cheat-item .cmd {
+    color: var(--accent); font-family: monospace; display: block; margin-bottom: .3rem;
+  }
+  .cheat-item .desc { color: var(--muted); font-size: .78rem; }
+  .warning {
+    background: rgba(255,80,80,.08); border-left: 3px solid #ff5050;
+    padding: .85rem 1rem; border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem; font-size: .88rem; color: var(--muted);
+  }
+  .warning strong { color: #ff6b6b; }
+  .highlight {
+    background: rgba(0,209,178,.08); border-left: 3px solid var(--accent);
+    padding: .85rem 1rem; border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem; font-size: .88rem; color: var(--muted);
+  }
+  .highlight strong { color: var(--accent); }
+  footer {
+    margin-top: 3rem; text-align: center; font-size: .8rem;
+    color: var(--muted); border-top: 1px solid var(--border); padding-top: 1.5rem;
+  }
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    .top-actions, .back-link, .code:hover::after { display: none !important; }
+    h1 { -webkit-text-fill-color: #000; color: #000; }
+    .code { background: #f5f5f5; color: #333; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top-actions">
+  <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+  <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+</div>
+
+<a class="back-link" href="kali-tools.html">← Voltar às 15 ferramentas</a>
+
+<header>
+  <h1>SearchSploit</h1>
+  <p class="subtitle">Motor de busca offline do Exploit-DB — encontra exploits e PoCs sem ligação à Internet</p>
+  <div class="meta">
+    <span>🔗 <a href="https://www.exploit-db.com/searchsploit" target="_blank" rel="noopener">Manual oficial</a></span>
+    <span>📖 <a href="https://gitlab.com/exploit-database/exploitdb" target="_blank" rel="noopener">Repositório Git</a></span>
+    <span>📦 <a href="https://github.com/offensive-security/exploitdb" target="_blank" rel="noopener">GitHub (mirror)</a></span>
+  </div>
+</header>
+
+<h2>O que é o SearchSploit?</h2>
+<p>
+  O SearchSploit é a <strong>ferramenta de linha de comandos do Exploit Database</strong> (Exploit-DB), um
+  projeto patrocinado pela Offensive Security. Permite pesquisar exploits, shellcodes e papers diretamente
+  no arquivo local do Exploit-DB, sem necessidade de ligação à Internet. É essencial em ambientes isolados,
+  air-gapped ou durante avaliações onde a conectividade é limitada [citation:1][citation:10][citation:17].
+</p>
+<p>
+  O Exploit-DB é o arquivo mais completo de exploits públicos e software vulnerável correspondente, reunindo
+  contribuições diretas, mailing lists e outras fontes públicas. É um repositório de <strong>exploits e
+  Proof-of-Concepts (PoCs)</strong>, não de advisories — fornece dados acionáveis imediatamente [citation:1][citation:9].
+  A versão 4.0.1 do SearchSploit inclui suporte para papers do Exploit-DB, se configurados [citation:10].
+</p>
+
+<h2>Instalação</h2>
+<p>O SearchSploit está incluído no Kali Linux por defeito através do pacote <code>exploitdb</code>. Noutros sistemas, há várias formas de instalar [citation:5][citation:10]:</p>
+
+<div class="card">
+  <h3>Kali Linux (pré-instalado)</h3>
+  <div class="code" data-cmd="searchsploit -h">searchsploit -h</div>
+  <p>Confirma a instalação. Se não existir (Kali Light), instala com:</p>
+  <div class="code" data-cmd="sudo apt update && sudo apt install exploitdb">sudo apt update && sudo apt install exploitdb</div>
+
+  <h3>macOS (Homebrew)</h3>
+  <div class="code" data-cmd="brew update && brew install exploitdb">brew update && brew install exploitdb</div>
+
+  <h3>Linux genérico (Git)</h3>
+  <div class="code" data-cmd="git clone https://github.com/offensive-security/exploitdb.git /opt/exploitdb">git clone https://github.com/offensive-security/exploitdb.git /opt/exploitdb</div>
+  <div class="code" data-cmd="sudo ln -sf /opt/exploitdb/searchsploit /usr/local/bin/searchsploit">sudo ln -sf /opt/exploitdb/searchsploit /usr/local/bin/searchsploit</div>
+  <p>Cria um link simbólico para não teres de indicar o caminho completo [citation:10][citation:19].</p>
+</div>
+
+<h2>Flags Essenciais</h2>
+<p>O SearchSploit tem uma interface simples, mas as flags mudam radicalmente os resultados [citation:5][citation:7][citation:13]:</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Flag</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>-t, --title</code></td><td>Pesquisar apenas no título (padrão: título + caminho) — remove falsos positivos [citation:2][citation:5]</td></tr>
+    <tr><td><code>-e, --exact</code></td><td>Correspondência exata e ordenada no título (implica <code>-t</code>) [citation:7]</td></tr>
+    <tr><td><code>-s, --strict</code></td><td>Desativa a pesquisa fuzzy para ranges de versões [citation:5][citation:7]</td></tr>
+    <tr><td><code>--exclude</code></td><td>Remover resultados. Múltiplos termos separados por <code>|</code> [citation:2][citation:7]</td></tr>
+    <tr><td><code>--cve</code></td><td>Pesquisar por CVE específico (ex: <code>--cve 2021-44228</code>) [citation:3][citation:6]</td></tr>
+    <tr><td><code>--nmap</code></td><td>Analisar output XML do Nmap e procurar exploits para os serviços detetados [citation:3][citation:6][citation:19]</td></tr>
+    <tr><td><code>-m, --mirror</code></td><td>Copiar exploit para o diretório atual [citation:3][citation:4]</td></tr>
+    <tr><td><code>-p, --path</code></td><td>Mostrar caminho completo do exploit (copia para clipboard) [citation:3][citation:7]</td></tr>
+    <tr><td><code>-x, --examine</code></td><td>Abrir exploit no <code>$PAGER</code> para inspeção [citation:3][citation:11]</td></tr>
+    <tr><td><code>-w, --www</code></td><td>Mostrar URLs do Exploit-DB.com em vez de caminhos locais [citation:3][citation:5]</td></tr>
+    <tr><td><code>-j, --json</code></td><td>Output em formato JSON (para scripts) [citation:3][citation:6]</td></tr>
+    <tr><td><code>-u, --update</code></td><td>Atualizar a base de dados local [citation:3][citation:7]</td></tr>
+  </tbody>
+</table>
+
+<h2>Exemplos de Uso — do Básico ao Avançado</h2>
+
+<h3>1. Pesquisa básica por keyword</h3>
+<span class="tag tag-basic">Básico</span>
+<div class="code" data-cmd="searchsploit apache 2.4">searchsploit apache 2.4</div>
+<p>Pesquisa "apache" e "2.4" no título e caminho. Os termos são combinados com AND por defeito [citation:11][citation:16].</p>
+
+<h3>2. Múltiplos termos (AND implícito)</h3>
+<span class="tag tag-search">Pesquisa</span>
+<div class="code" data-cmd="searchsploit afd windows local">searchsploit afd windows local</div>
+<p>Encontra exploits que contenham "afd", "windows" e "local" no título ou caminho [citation:1][citation:2].</p>
+
+<h3>3. Pesquisa apenas no título (remove ruído)</h3>
+<span class="tag tag-search">Pesquisa</span>
+<div class="code" data-cmd="searchsploit -t oracle windows">searchsploit -t oracle windows</div>
+<p>O <code>-t</code> reduz drasticamente os resultados ao ignorar o caminho do ficheiro. No exemplo, passa de 94 para 9 resultados [citation:2][citation:14].</p>
+
+<h3>4. Pesquisa exata e ordenada</h3>
+<span class="tag tag-search">Pesquisa</span>
+<div class="code" data-cmd="searchsploit -e &quot;WordPress 4.1&quot;">searchsploit -e "WordPress 4.1"</div>
+<p><code>-e</code> exige correspondência exata e na ordem. "WordPress 4.1" não encontraria "WordPress Core 4.1" [citation:5][citation:7].</p>
+
+<h3>5. Pesquisa estrita (sem fuzzy em versões)</h3>
+<span class="tag tag-search">Pesquisa</span>
+<div class="code" data-cmd="searchsploit -s &quot;Samba 3.0.20&quot;">searchsploit -s "Samba 3.0.20"</div>
+<p>O modo estrito desativa a deteção de ranges. "1.1" não seria encontrado em "1.0 < 1.3" [citation:5][citation:11].</p>
+
+<h3>6. Excluir resultados indesejados</h3>
+<span class="tag tag-search">Pesquisa</span>
+<div class="code" data-cmd="searchsploit linux kernel 3.2 --exclude=&quot;(PoC)|/dos/&quot;">searchsploit linux kernel 3.2 --exclude="(PoC)|/dos/"</div>
+<p>Remove exploits de Proof-of-Concept e Denial-of-Service. Múltiplos termos separados por <code>|</code> [citation:2][citation:7][citation:14].</p>
+
+<h3>7. Pesquisa por CVE</h3>
+<span class="tag tag-search">CVE</span>
+<div class="code" data-cmd="searchsploit --cve 2021-44228">searchsploit --cve 2021-44228</div>
+<p>Pesquisa o Log4Shell por CVE. Essencial quando tens o CVE de um scan de vulnerabilidades [citation:3][citation:6].</p>
+
+<h3>8. Ver caminho de um exploit específico</h3>
+<span class="tag tag-file">Ficheiros</span>
+<div class="code" data-cmd="searchsploit -p 39446">searchsploit -p 39446</div>
+<p>Mostra o caminho completo do EDB-ID 39446. Útil para localizar o ficheiro antes de o copiar [citation:3][citation:7].</p>
+
+<h3>9. Inspecionar exploit sem copiar</h3>
+<span class="tag tag-file">Ficheiros</span>
+<div class="code" data-cmd="searchsploit -x exploits/linux/local/39446.c">searchsploit -x exploits/linux/local/39446.c</div>
+<p>Abre o exploit no <code>$PAGER</code> (less). Lê sempre o código antes de o executar — nunca corras exploits cegamente [citation:11][citation:16].</p>
+
+<h3>10. Copiar exploit para o diretório atual</h3>
+<span class="tag tag-file">Ficheiros</span>
+<div class="code" data-cmd="searchsploit -m exploits/linux/local/39446.c">searchsploit -m exploits/linux/local/39446.c</div>
+<p>O <code>-m</code> copia o exploit para o diretório onde estás. É o primeiro passo para adaptar e testar [citation:3][citation:4][citation:16].</p>
+
+<h3>11. Ver URL do Exploit-DB em vez do caminho local</h3>
+<span class="tag tag-search">Pesquisa</span>
+<div class="code" data-cmd="searchsploit -w --cve 2024-6387">searchsploit -w --cve 2024-6387</div>
+<p>Mostra o URL direto para a página do Exploit-DB. Útil para partilhar referências com a equipa [citation:3][citation:5].</p>
+
+<h3>12. Output JSON para scripting</h3>
+<span class="tag tag-trick">Scripting</span>
+<div class="code" data-cmd="searchsploit -j apache 2.4.49 | jq">searchsploit -j apache 2.4.49 | jq</div>
+<p>Output estruturado em JSON, processável com <code>jq</code> para filtragem e automação [citation:3][citation:6].</p>
+
+<h3>13. Integração com Nmap — descoberta automática</h3>
+<span class="tag tag-trick">Workflow</span>
+<div class="code" data-cmd="nmap -sV 192.168.1.10 -oX scan.xml">nmap -sV 192.168.1.10 -oX scan.xml</div>
+<div class="code" data-cmd="searchsploit --nmap scan.xml">searchsploit --nmap scan.xml</div>
+<p>O <code>--nmap</code> analisa o XML do Nmap e procura exploits para cada serviço e versão detetados [citation:3][citation:6][citation:19].</p>
+
+<h3>14. Atualizar a base de dados</h3>
+<span class="tag tag-basic">Setup</span>
+<div class="code" data-cmd="searchsploit -u">searchsploit -u</div>
+<p>Atualiza o arquivo local. No Kali, o pacote é atualizado semanalmente; via Git/Homebrew, diariamente [citation:7][citation:16].</p>
+
+<h2>Interpretação do Output</h2>
+<p>O output do SearchSploit segue um formato consistente. Aprender a ler os caminhos é essencial [citation:11]:</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Caminho</th><th>Significado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>windows/remote/</code></td><td>Exploit remoto contra Windows</td></tr>
+    <tr><td><code>windows/local/</code></td><td>Escalação de privilégios local em Windows (requer shell prévia) [citation:11]</td></tr>
+    <tr><td><code>linux/remote/</code></td><td>Exploit remoto contra Linux</td></tr>
+    <tr><td><code>linux/local/</code></td><td>Escalação de privilégios local em Linux</td></tr>
+    <tr><td><code>.rb</code></td><td>Módulo Metasploit (Ruby) — pode ser usado diretamente no msfconsole [citation:11]</td></tr>
+    <tr><td><code>.py</code></td><td>Script Python — requer Python e adaptação [citation:11]</td></tr>
+    <tr><td><code>.c</code></td><td>Código C — requer compilação [citation:11]</td></tr>
+    <tr><td><code>.txt</code></td><td>PoC em texto ou instruções</td></tr>
+  </tbody>
+</table>
+
+<h2>Cheat Sheet rápido</h2>
+<div class="cheat-grid">
+  <div class="cheat-item">
+    <span class="cmd">searchsploit apache 2.4</span>
+    <span class="desc">Pesquisa por keyword</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">searchsploit -t oracle</span>
+    <span class="desc">Só títulos (menos ruído)</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">searchsploit -e "Struts 2"</span>
+    <span class="desc">Correspondência exata</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">searchsploit --cve 2021-44228</span>
+    <span class="desc">Pesquisa por CVE</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">searchsploit --nmap scan.xml</span>
+    <span class="desc">Integração com Nmap</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">searchsploit -m 39446</span>
+    <span class="desc">Copiar exploit localmente</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">searchsploit -x 39446</span>
+    <span class="desc">Inspecionar código</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">searchsploit -u</span>
+    <span class="desc">Atualizar base de dados</span>
+  </div>
+</div>
+
+<div class="highlight">
+  <strong>💡 Dica:</strong> A qualidade do resultado depende da <strong>especificidade dos termos</strong>. Em vez de pesquisares "apache", pesquisa "apache 2.4.49" — a versão exata reduz de milhares para dezenas de resultados. E <strong>lê sempre o exploit antes de o correr</strong>: muitos são PoCs incompletos, requerem modificação, ou visam versões ligeiramente diferentes [citation:11][citation:16].
+</div>
+
+<div class="warning">
+  <strong>⚠️ Aviso legal:</strong> O SearchSploit apenas <strong>pesquisa</strong> exploits publicados — não os executa nem testa alvos. No entanto, baixar e executar exploits contra sistemas sem autorização explícita por escrito é ilegal. O Exploit-DB contém código que pode causar danos. Usa apenas em sistemas próprios, laboratórios isolados ou engajamentos com scope definido. A existência de um exploit público não significa que o alvo seja vulnerável — valida sempre [citation:6][citation:17].
+</div>
+
+<footer>
+  Guia SearchSploit — parte da série "Top 15 Ferramentas Kali Linux".
+</footer>
+
+</div>
+
+<script>
+// Tema
+const themeBtn = document.getElementById("themeBtn");
+const savedTheme = localStorage.getItem("searchsploit-theme") || "dark";
+document.documentElement.setAttribute("data-theme", savedTheme);
+themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+themeBtn.addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("searchsploit-theme", next);
+  themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+});
+
+// Imprimir
+document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+// Copiar comandos
+document.querySelectorAll(".code").forEach(el => {
+  el.addEventListener("click", () => {
+    navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+      el.classList.add("copied");
+      setTimeout(() => el.classList.remove("copied"), 1200);
+    });
+  });
+});
+</script>
+
+</body>
+</html>

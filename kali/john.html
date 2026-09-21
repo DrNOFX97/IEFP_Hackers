@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>John the Ripper — Guia Detalhado</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #171a21;
+      --border: #262b36;
+      --text: #e6e8eb;
+      --muted: #8b93a1;
+      --accent: #00d1b2;
+      --accent2: #4f8cff;
+      --code-bg: #0b0d11;
+      --star: #f5c518;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --border: #e1e4e8;
+      --text: #1a1d23;
+      --muted: #5f6672;
+      --accent: #00897b;
+      --accent2: #2962ff;
+      --code-bg: #f0f2f5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      transition: background .3s, color .3s;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .icon-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s, transform .1s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      color: var(--accent2);
+      text-decoration: none;
+      font-size: .9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: .5rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .meta {
+      margin-top: .75rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: .85rem;
+    }
+
+    .meta span {
+      color: var(--muted);
+    }
+
+    .meta a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    .meta a:hover {
+      text-decoration: underline;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: .4rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 1.5rem 0 .5rem;
+      color: var(--text);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 1rem 1.5rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    li {
+      margin-bottom: .35rem;
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .65rem .85rem;
+      font-family: "SF Mono", Consolas, Monaco, monospace;
+      font-size: .82rem;
+      color: var(--accent);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      margin-bottom: .85rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .code:hover::after {
+      content: "copiar";
+      position: absolute;
+      right: .6rem;
+      top: .5rem;
+      font-size: .65rem;
+      color: var(--muted);
+      background: var(--code-bg);
+      padding: 0 .3rem;
+    }
+
+    .code.copied::after {
+      content: "✓ copiado";
+      color: var(--accent);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      margin-bottom: .75rem;
+    }
+
+    .tag-basic {
+      background: rgba(0, 209, 178, .15);
+      color: var(--accent);
+    }
+
+    .tag-mode {
+      background: rgba(79, 140, 255, .15);
+      color: var(--accent2);
+    }
+
+    .tag-file {
+      background: rgba(255, 80, 80, .15);
+      color: #ff6b6b;
+    }
+
+    .tag-rule {
+      background: rgba(245, 197, 24, .15);
+      color: var(--star);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      margin-bottom: 1rem;
+    }
+
+    .table th,
+    .table td {
+      text-align: left;
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table th {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .table td {
+      color: var(--muted);
+    }
+
+    .table code {
+      color: var(--accent);
+      background: var(--code-bg);
+      padding: .1rem .3rem;
+      border-radius: 3px;
+    }
+
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1rem;
+    }
+
+    .cheat-item {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .75rem;
+      font-size: .82rem;
+    }
+
+    .cheat-item .cmd {
+      color: var(--accent);
+      font-family: monospace;
+      display: block;
+      margin-bottom: .3rem;
+    }
+
+    .cheat-item .desc {
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .warning {
+      background: rgba(255, 80, 80, .08);
+      border-left: 3px solid #ff5050;
+      padding: .85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .warning strong {
+      color: #ff6b6b;
+    }
+
+    .highlight {
+      background: rgba(0, 209, 178, .08);
+      border-left: 3px solid var(--accent);
+      padding: .85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .highlight strong {
+      color: var(--accent);
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+        padding: 0;
+      }
+
+      .top-actions,
+      .back-link,
+      .code:hover::after {
+        display: none !important;
+      }
+
+      h1 {
+        -webkit-text-fill-color: #000;
+        color: #000;
+      }
+
+      .code {
+        background: #f5f5f5;
+        color: #333;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+      <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+    </div>
+
+    <a class="back-link" href="kali-tools.html">← Voltar às 15 ferramentas</a>
+
+    <header>
+      <h1>John the Ripper</h1>
+      <p class="subtitle">O cracker de passwords clássico com auto-detecção de formato e sistema de regras poderoso</p>
+      <div class="meta">
+        <span>🔗 <a href="https://www.openwall.com/john/" target="_blank" rel="noopener">Site oficial</a></span>
+        <span>📖 <a href="https://www.openwall.com/john/doc/" target="_blank" rel="noopener">Documentação</a></span>
+        <span>📦 <a href="https://github.com/openwall/john" target="_blank" rel="noopener">GitHub</a></span>
+      </div>
+    </header>
+
+    <h2>O que é o John the Ripper?</h2>
+    <p>
+      O John the Ripper (JtR) é um cracker de passwords rápido, open source e disponível para muitas
+      plataformas Unix, Windows e macOS. O seu propósito principal é <strong>detetar passwords Unix fracas</strong>,
+      mas suporta centenas de tipos de hash e cifras graças à versão "jumbo" mantida pela comunidade.
+    </p>
+    <p>
+      Uma das suas características mais distintivas é a <strong>auto-detecção de formato de hash</strong> — ao
+      contrário do Hashcat, que exige a flag <code>-m</code>, o John tenta identificar automaticamente o tipo
+      de hash e escolher o melhor modo de ataque. Além disso, a versão <strong>jumbo</strong> inclui
+      utilitários de extração de hash (<code>*2john</code>) para dezenas de formatos de ficheiro: ZIP, RAR,
+      PDF, Office, SSH keys, KeePass e muitos outros.
+    </p>
+
+    <h2>Versão Core vs. Jumbo</h2>
+    <p>Existem duas distribuições principais do John the Ripper:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Versão</th>
+          <th>Características</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Core (oficial)</strong></td>
+          <td>Mantida pela Openwall. Suporta formatos Unix tradicionais (DES, bigcrypt, BSDI, MD5-crypt, Blowfish),
+            Kerberos/AFS e LM hashes Windows. Estável e minimalista.</td>
+        </tr>
+        <tr>
+          <td><strong>Jumbo (comunidade)</strong></td>
+          <td>Build comunitária com centenas de formatos adicionais, utilitários <code>*2john</code> e suporte
+            GPU/OpenCL. Incluída por defeito no Kali Linux. Menos "madura", mas muito mais funcional.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Modos de Ataque do John</h2>
+    <p>O John combina vários modos de cracking num único programa. Por defeito, executa-os por ordem:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Modo</th>
+          <th>Flag</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Single Crack</strong></td>
+          <td><code>--single</code></td>
+          <td>Mutações inteligentes a partir de usernames e metadados (GECOS). Ex: utilizador "markus" →
+            <code>Markus1</code>, <code>MArkus</code>, <code>markus!</code>.</td>
+        </tr>
+        <tr>
+          <td><strong>Wordlist</strong></td>
+          <td><code>--wordlist=</code></td>
+          <td>Testa cada palavra da wordlist, com regras opcionais de mutação.</td>
+        </tr>
+        <tr>
+          <td><strong>Incremental</strong></td>
+          <td><code>--incremental</code></td>
+          <td>Força bruta por conjuntos de caracteres. Lento, mas não depende de wordlist.</td>
+        </tr>
+        <tr>
+          <td><strong>Rules</strong></td>
+          <td><code>--rules</code></td>
+          <td>Aplica mutações a cada palavra da wordlist: capitalização, sufixos, leet-speak.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Exemplos de Uso — do Básico ao Avançado</h2>
+
+    <h3>1. Crack automático (auto-detecção de formato)</h3>
+    <span class="tag tag-basic">Básico</span>
+    <div class="code" data-cmd="john hashes.txt">john hashes.txt</div>
+    <p>O John identifica automaticamente o tipo de hash e aplica a sequência padrão de modos (Single → Wordlist →
+      Incremental).</p>
+
+    <h3>2. Listar formatos suportados</h3>
+    <span class="tag tag-basic">Básico</span>
+    <div class="code" data-cmd="john --list=formats | less">john --list=formats | less</div>
+    <p>Mostra centenas de formatos na versão jumbo. Filtra com <code>grep</code>:
+      <code>john --list=formats | grep -i bcrypt</code>.</p>
+
+    <h3>3. Especificar formato explicitamente</h3>
+    <span class="tag tag-basic">Básico</span>
+    <div class="code" data-cmd="john --format=raw-md5 hashes.txt">john --format=raw-md5 hashes.txt</div>
+    <p>Quando a auto-detecção falha ou é ambígua. Formatos comuns: <code>raw-md5</code>, <code>raw-sha1</code>,
+      <code>nt</code> (NTLM), <code>sha512crypt</code>.</p>
+
+    <h3>4. Ataque de dicionário</h3>
+    <span class="tag tag-mode">Wordlist</span>
+    <div class="code" data-cmd="john --wordlist=rockyou.txt hashes.txt">john --wordlist=rockyou.txt hashes.txt</div>
+    <p>Testa cada palavra do <code>rockyou.txt</code>. O John para quando encontra a password.</p>
+
+    <h3>5. Dicionário com regras de mutação</h3>
+    <span class="tag tag-rule">Regras</span>
+    <div class="code" data-cmd="john --wordlist=rockyou.txt --rules hashes.txt">john --wordlist=rockyou.txt --rules
+      hashes.txt</div>
+    <p>As regras transformam cada palavra da wordlist em múltiplas variantes: capitalização, sufixos numéricos,
+      substituições leet-speak.</p>
+
+    <h3>6. Regras pré-definidas do John</h3>
+    <span class="tag tag-rule">Regras</span>
+    <div class="code" data-cmd="john --wordlist=rockyou.txt --rules=Jumbo --fork=8 hashes.txt">john
+      --wordlist=rockyou.txt --rules=Jumbo --fork=8 hashes.txt</div>
+    <p>Regras disponíveis: <code>Single</code> (rápido), <code>Wordlist</code>, <code>Jumbo</code> (tudo),
+      <code>KoreLogic</code> (padrões corporativos reais).</p>
+
+    <h3>7. Modo Single Crack (usernames)</h3>
+    <span class="tag tag-mode">Single</span>
+    <div class="code" data-cmd="john --single hashes.txt">john --single hashes.txt</div>
+    <p>Requer que o ficheiro tenha o formato <code>username:hash</code>. O John usa o username como base para mutações.
+    </p>
+
+    <h3>8. Crack de hashes Linux (/etc/shadow)</h3>
+    <span class="tag tag-file">Sistema</span>
+    <div class="code" data-cmd="unshadow /etc/passwd /etc/shadow > unshadowed.txt">unshadow /etc/passwd /etc/shadow >
+      unshadowed.txt</div>
+    <p>Combina <code>passwd</code> e <code>shadow</code> num formato que o John entende.</p>
+    <div class="code" data-cmd="john --wordlist=rockyou.txt --format=sha512crypt unshadowed.txt">john
+      --wordlist=rockyou.txt --format=sha512crypt unshadowed.txt</div>
+    <p>Hashes modernos de Linux usam sha512crypt. O John auto-detecta, mas podes forçar o formato.</p>
+
+    <h3>9. Crack de NTLM (Windows)</h3>
+    <span class="tag tag-file">Windows</span>
+    <div class="code" data-cmd="john --format=nt --wordlist=rockyou.txt ntlm_hashes.txt">john --format=nt
+      --wordlist=rockyou.txt ntlm_hashes.txt</div>
+    <p>NTLM vem de dumps SAM/NTDS.dit. Formato: <code>nt</code> ou <code>ntlm</code>.</p>
+
+    <h3>10. Crack de ZIP protegido</h3>
+    <span class="tag tag-file">Ficheiro</span>
+    <div class="code" data-cmd="zip2john protected.zip > zip_hash.txt">zip2john protected.zip > zip_hash.txt</div>
+    <div class="code" data-cmd="john --wordlist=rockyou.txt zip_hash.txt">john --wordlist=rockyou.txt zip_hash.txt</div>
+    <p>O <code>zip2john</code> extrai o hash do ZIP. Depois o John cracka-o como qualquer outro hash.</p>
+
+    <h3>11. Crack de RAR</h3>
+    <span class="tag tag-file">Ficheiro</span>
+    <div class="code" data-cmd="rar2john protected.rar > rar_hash.txt">rar2john protected.rar > rar_hash.txt</div>
+    <div class="code" data-cmd="john --format=rar5 --wordlist=rockyou.txt rar_hash.txt">john --format=rar5
+      --wordlist=rockyou.txt rar_hash.txt</div>
+    <p>Formato <code>rar5</code> para arquivos RAR modernos.</p>
+
+    <h3>12. Crack de PDF</h3>
+    <span class="tag tag-file">Ficheiro</span>
+    <div class="code" data-cmd="python3 /usr/share/john/pdf2john.py protected.pdf > pdf_hash.txt">python3
+      /usr/share/john/pdf2john.py protected.pdf > pdf_hash.txt</div>
+    <div class="code" data-cmd="john --wordlist=rockyou.txt pdf_hash.txt">john --wordlist=rockyou.txt pdf_hash.txt</div>
+    <p>O <code>pdf2john.py</code> extrai o hash do PDF encriptado.</p>
+
+    <h3>13. Crack de Office (docx, xlsx)</h3>
+    <span class="tag tag-file">Ficheiro</span>
+    <div class="code" data-cmd="python3 /usr/share/john/office2john.py protected.docx > office_hash.txt">python3
+      /usr/share/john/office2john.py protected.docx > office_hash.txt</div>
+    <div class="code" data-cmd="john --wordlist=rockyou.txt office_hash.txt">john --wordlist=rockyou.txt office_hash.txt
+    </div>
+    <p>Suporta Office 2007/2010/2013.</p>
+
+    <h3>14. Crack de chave SSH privada</h3>
+    <span class="tag tag-file">Ficheiro</span>
+    <div class="code" data-cmd="ssh2john id_rsa > ssh_hash.txt">ssh2john id_rsa > ssh_hash.txt</div>
+    <div class="code" data-cmd="john --wordlist=rockyou.txt ssh_hash.txt">john --wordlist=rockyou.txt ssh_hash.txt</div>
+    <p>Se a chave privada SSH estiver protegida por passphrase.</p>
+
+    <h3>15. Mostrar passwords cracked</h3>
+    <span class="tag tag-basic">Básico</span>
+    <div class="code" data-cmd="john --show hashes.txt">john --show hashes.txt</div>
+    <p>Mostra os pares hash:password já recuperados, guardados no potfile (<code>~/.john/john.pot</code>).</p>
+
+    <h3>16. Retomar sessão interrompida</h3>
+    <span class="tag tag-basic">Básico</span>
+    <div class="code" data-cmd="john --restore">john --restore</div>
+    <p>O John guarda o estado a cada 10 minutos e ao premir <code>q</code> ou Ctrl-C. Retoma onde parou.</p>
+
+    <h2>Utilitários *2john</h2>
+    <p>A versão jumbo inclui utilitários que extraem hashes de ficheiros protegidos para formato que o John entende:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Utilitário</th>
+          <th>Formato</th>
+          <th>Exemplo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>zip2john</code></td>
+          <td>ZIP</td>
+          <td><code>zip2john file.zip > hash.txt</code></td>
+        </tr>
+        <tr>
+          <td><code>rar2john</code></td>
+          <td>RAR</td>
+          <td><code>rar2john file.rar > hash.txt</code></td>
+        </tr>
+        <tr>
+          <td><code>7z2john.pl</code></td>
+          <td>7-Zip</td>
+          <td><code>7z2john.pl file.7z > hash.txt</code></td>
+        </tr>
+        <tr>
+          <td><code>pdf2john.py</code></td>
+          <td>PDF</td>
+          <td><code>pdf2john.py file.pdf > hash.txt</code></td>
+        </tr>
+        <tr>
+          <td><code>office2john.py</code></td>
+          <td>MS Office</td>
+          <td><code>office2john.py file.docx > hash.txt</code></td>
+        </tr>
+        <tr>
+          <td><code>ssh2john</code></td>
+          <td>SSH keys</td>
+          <td><code>ssh2john id_rsa > hash.txt</code></td>
+        </tr>
+        <tr>
+          <td><code>keepass2john.py</code></td>
+          <td>KeePass</td>
+          <td><code>keepass2john.py db.kdbx > hash.txt</code></td>
+        </tr>
+        <tr>
+          <td><code>unshadow</code></td>
+          <td>Linux shadow</td>
+          <td><code>unshadow passwd shadow > hash.txt</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Cheat Sheet rápido</h2>
+    <div class="cheat-grid">
+      <div class="cheat-item">
+        <span class="cmd">john hashes.txt</span>
+        <span class="desc">Auto-detecção + modos padrão</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--wordlist=rockyou.txt</span>
+        <span class="desc">Ataque de dicionário</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--rules</span>
+        <span class="desc">Mutações de wordlist</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--single</span>
+        <span class="desc">Mutações de usernames</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--format=raw-md5</span>
+        <span class="desc">Forçar formato</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--show</span>
+        <span class="desc">Ver resultados</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--restore</span>
+        <span class="desc">Retomar sessão</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--list=formats</span>
+        <span class="desc">Listar formatos suportados</span>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <strong>💡 Dica:</strong> O John e o Hashcat complementam-se. O John é mais prático para cracking
+      de ficheiros (ZIP, PDF, Office) graças aos utilitários <code>*2john</code>, e a auto-detecção
+      de formato acelera o trabalho. O Hashcat é superior quando precisas de máxima performance
+      em GPU ou ataques de máscara complexos.
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ Aviso legal:</strong> O John the Ripper é uma ferramenta legítima de segurança, mas
+      crackear passwords de sistemas ou ficheiros sem autorização explícita é ilegal. Usa apenas em
+      sistemas e dados que possuis ou para os quais tens permissão por escrito. Em contexto forense,
+      obtém sempre aprovação formal antes de iniciar a recuperação de passwords.
+    </div>
+
+    <footer>
+      Guia John the Ripper — parte da série "Top 15 Ferramentas Kali Linux".
+    </footer>
+
+  </div>
+
+  <script>
+    // Tema
+    const themeBtn = document.getElementById("themeBtn");
+    const savedTheme = localStorage.getItem("john-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+    themeBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("john-theme", next);
+      themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+    });
+
+    // Imprimir
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+    // Copiar comandos
+    document.querySelectorAll(".code").forEach(el => {
+      el.addEventListener("click", () => {
+        navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+          el.classList.add("copied");
+          setTimeout(() => el.classList.remove("copied"), 1200);
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

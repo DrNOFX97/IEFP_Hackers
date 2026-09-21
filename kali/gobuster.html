@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gobuster — Guia Detalhado</title>
+<style>
+  :root {
+    --bg: #0f1115; --card: #171a21; --border: #262b36;
+    --text: #e6e8eb; --muted: #8b93a1; --accent: #00d1b2;
+    --accent2: #4f8cff; --code-bg: #0b0d11; --star: #f5c518;
+  }
+  [data-theme="light"] {
+    --bg: #f5f6f8; --card: #ffffff; --border: #e1e4e8;
+    --text: #1a1d23; --muted: #5f6672; --accent: #00897b;
+    --accent2: #2962ff; --code-bg: #f0f2f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.6; padding: 2rem 1rem;
+    transition: background .3s, color .3s;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+
+  .top-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-bottom: 1rem; }
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); width: 40px; height: 40px;
+    border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .2s, transform .1s;
+  }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: .35rem;
+    color: var(--accent2); text-decoration: none;
+    font-size: .9rem; margin-bottom: 1.5rem;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+  h1 {
+    font-size: 2.2rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: .5rem;
+  }
+  .subtitle { color: var(--muted); font-size: 1.05rem; }
+  .meta { margin-top: .75rem; display: flex; gap: 1rem; flex-wrap: wrap; font-size: .85rem; }
+  .meta span { color: var(--muted); }
+  .meta a { color: var(--accent2); text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+
+  h2 {
+    font-size: 1.35rem; margin: 2.5rem 0 1rem;
+    padding-bottom: .4rem; border-bottom: 1px solid var(--border);
+    color: var(--accent);
+  }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 .5rem; color: var(--text); }
+  p { margin-bottom: 1rem; color: var(--muted); font-size: .95rem; }
+  ul, ol { margin: 0 0 1rem 1.5rem; color: var(--muted); font-size: .95rem; }
+  li { margin-bottom: .35rem; }
+  strong { color: var(--text); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;
+  }
+
+  .code {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: .65rem .85rem;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    font-size: .82rem; color: var(--accent);
+    overflow-x: auto; white-space: pre-wrap;
+    margin-bottom: .85rem; cursor: pointer; position: relative;
+  }
+  .code:hover::after {
+    content: "copiar"; position: absolute; right: .6rem; top: .5rem;
+    font-size: .65rem; color: var(--muted); background: var(--code-bg);
+    padding: 0 .3rem;
+  }
+  .code.copied::after { content: "✓ copiado"; color: var(--accent); }
+
+  .tag {
+    display: inline-block; font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .05em; padding: .2rem .55rem;
+    border-radius: 999px; margin-bottom: .75rem;
+  }
+  .tag-basic { background: rgba(0,209,178,.15); color: var(--accent); }
+  .tag-mode { background: rgba(79,140,255,.15); color: var(--accent2); }
+  .tag-advanced { background: rgba(255,80,80,.15); color: #ff6b6b; }
+  .tag-tuning { background: rgba(245,197,24,.15); color: var(--star); }
+
+  .table {
+    width: 100%; border-collapse: collapse; font-size: .88rem; margin-bottom: 1rem;
+  }
+  .table th, .table td {
+    text-align: left; padding: .5rem .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .table th { color: var(--accent); font-weight: 600; }
+  .table td { color: var(--muted); }
+  .table code { color: var(--accent); background: var(--code-bg); padding: .1rem .3rem; border-radius: 3px; }
+
+  .cheat-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: .75rem; margin-bottom: 1rem;
+  }
+  .cheat-item {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: .75rem; font-size: .82rem;
+  }
+  .cheat-item .cmd {
+    color: var(--accent); font-family: monospace; display: block; margin-bottom: .3rem;
+  }
+  .cheat-item .desc { color: var(--muted); font-size: .78rem; }
+
+  .warning {
+    background: rgba(255,80,80,.08); border-left: 3px solid #ff5050;
+    padding: .85rem 1rem; border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem; font-size: .88rem; color: var(--muted);
+  }
+  .warning strong { color: #ff6b6b; }
+
+  .highlight {
+    background: rgba(0,209,178,.08); border-left: 3px solid var(--accent);
+    padding: .85rem 1rem; border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem; font-size: .88rem; color: var(--muted);
+  }
+  .highlight strong { color: var(--accent); }
+
+  footer {
+    margin-top: 3rem; text-align: center; font-size: .8rem;
+    color: var(--muted); border-top: 1px solid var(--border); padding-top: 1.5rem;
+  }
+
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    .top-actions, .back-link, .code:hover::after { display: none !important; }
+    h1 { -webkit-text-fill-color: #000; color: #000; }
+    .code { background: #f5f5f5; color: #333; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top-actions">
+  <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+  <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+</div>
+
+<a class="back-link" href="kali-tools.html">← Voltar às 15 ferramentas</a>
+
+<header>
+  <h1>Gobuster</h1>
+  <p class="subtitle">Enumeração de diretórios, subdomínios, hosts virtuais e objetos S3 — rápida, modular e em Go</p>
+  <div class="meta">
+    <span>🔗 <a href="https://github.com/OJ/gobuster" target="_blank" rel="noopener">GitHub</a></span>
+    <span>📖 <a href="https://github.com/OJ/gobuster#readme" target="_blank" rel="noopener">Documentação</a></span>
+    <span>📦 <a href="https://github.com/OJ/gobuster/releases" target="_blank" rel="noopener">Releases</a></span>
+  </div>
+</header>
+
+<h2>O que é o Gobuster?</h2>
+<p>
+  O Gobuster é uma ferramenta open source escrita em <strong>Go</strong>, usada para <strong>enumeração de diretórios,
+  ficheiros, subdomínios, hosts virtuais e objetos S3</strong>. É frequentemente usada em testes de penetração web
+  para descobrir recursos não referenciados publicamente, como painéis de administração, backups, endpoints de API
+  e ficheiros esquecidos .
+</p>
+<p>
+  A escolha de Go traz vantagens concretas: compilação num binário único e estático (sem dependências de runtime),
+  execução rápida e suporte nativo a <strong>concorrência</strong> — o Gobuster usa múltiplas goroutines para testar
+  vários caminhos em paralelo, tornando-o uma das ferramentas de enumeração mais rápidas da atualidade .
+</p>
+
+<h2>Modos de Operação</h2>
+<p>O Gobuster é organizado em subcomandos, um por tipo de enumeração :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Modo</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>dir</code></td>
+      <td>Enumeração clássica de diretórios e ficheiros em servidores web .</td>
+    </tr>
+    <tr>
+      <td><code>dns</code></td>
+      <td>Enumeração de subdomínios através de resolução DNS .</td>
+    </tr>
+    <tr>
+      <td><code>vhost</code></td>
+      <td>Descoberta de hosts virtuais — múltiplos sites no mesmo IP .</td>
+    </tr>
+    <tr>
+      <td><code>s3</code></td>
+      <td>Enumeração de buckets Amazon S3 públicos .</td>
+    </tr>
+    <tr>
+      <td><code>fuzz</code></td>
+      <td>Modo de fuzzing livre — substitui a keyword em qualquer parte do URL .</td>
+    </tr>
+    <tr>
+      <td><code>tftp</code></td>
+      <td>Enumeração de ficheiros em servidores TFTP .</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Flags Essenciais</h2>
+<p>Estas são as flags mais usadas, especialmente no modo <code>dir</code> :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Flag</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>-u URL</code></td><td>URL alvo (obrigatório)</td></tr>
+    <tr><td><code>-w WORDLIST</code></td><td>Wordlist (obrigatório)</td></tr>
+    <tr><td><code>-t THREADS</code></td><td>Número de threads paralelas (padrão: 10)</td></tr>
+    <tr><td><code>-x EXT</code></td><td>Extensões a testar (ex: php,html,txt)</td></tr>
+    <tr><td><code>-s CODE</code></td><td>Códigos HTTP positivos (padrão: 200,204,301,302,307,401,403)</td></tr>
+    <tr><td><code>-b CODE</code></td><td>Códigos HTTP a excluir (blacklist)</td></tr>
+    <tr><td><code>-o FILE</code></td><td>Guardar output em ficheiro</td></tr>
+    <tr><td><code>-k</code></td><td>Ignorar erros de certificado TLS</td></tr>
+    <tr><td><code>-r</code></td><td>Seguir redirecionamentos</td></tr>
+    <tr><td><code>-c COOKIE</code></td><td>Enviar cookie em cada pedido</td></tr>
+    <tr><td><code>-H HEADER</code></td><td>Header personalizado (pode ser repetido)</td></tr>
+    <tr><td><code>-a UA</code></td><td>User-Agent personalizado</td></tr>
+    <tr><td><code>--timeout DUR</code></td><td>Timeout por pedido (ex: 10s)</td></tr>
+    <tr><td><code>--random-agent</code></td><td>User-Agent aleatório por pedido</td></tr>
+    <tr><td><code>--delay DUR</code></td><td>Atraso entre pedidos (evita rate-limit)</td></tr>
+    <tr><td><code>--exclude-length N</code></td><td>Excluir respostas com Content-Length específico</td></tr>
+  </tbody>
+</table>
+
+<h2>Exemplos de Uso — do Básico ao Avançado</h2>
+
+<h3>1. Verificar se está instalado</h3>
+<span class="tag tag-basic">Setup</span>
+<div class="code" data-cmd="gobuster version">gobuster version</div>
+<p>Confirma a versão instalada. No Kali vem pré-instalado .</p>
+
+<h3>2. Ajuda geral e por modo</h3>
+<span class="tag tag-basic">Setup</span>
+<div class="code" data-cmd="gobuster help">gobuster help</div>
+<div class="code" data-cmd="gobuster help dir">gobuster help dir</div>
+<p>Lista todas as flags disponíveis, por modo .</p>
+
+<h3>3. Enumeração básica de diretórios</h3>
+<span class="tag tag-mode">Dir</span>
+<div class="code" data-cmd="gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt">gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt</div>
+<p>Testa cada palavra do <code>common.txt</code> contra o servidor, reportando códigos 200, 204, 301, 302, 307, 401, 403 .</p>
+
+<h3>4. Com extensões específicas</h3>
+<span class="tag tag-mode">Dir</span>
+<div class="code" data-cmd="gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -x php,html,txt,bak">gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -x php,html,txt,bak</div>
+<p>Testa <code>index</code>, <code>index.php</code>, <code>index.html</code>, <code>index.txt</code> e <code>index.bak</code>. Extensões <code>.bak</code> revelam backups esquecidos .</p>
+
+<h3>5. Ignorar erros TLS</h3>
+<span class="tag tag-mode">Dir</span>
+<div class="code" data-cmd="gobuster dir -u https://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -k">gobuster dir -u https://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -k</div>
+<p><code>-k</code> ignora certificados inválidos ou self-signed. Essencial em ambientes de laboratório .</p>
+
+<h3>6. Autenticação com cookies</h3>
+<span class="tag tag-mode">Dir</span>
+<div class="code" data-cmd="gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -c &quot;session=abc123; role=admin&quot;">gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -c "session=abc123; role=admin"</div>
+<p>Enumera áreas autenticadas passando o cookie de sessão .</p>
+
+<h3>7. Headers personalizados</h3>
+<span class="tag tag-mode">Dir</span>
+<div class="code" data-cmd="gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -H &quot;X-Forwarded-For: 127.0.0.1&quot; -H &quot;Authorization: Bearer token123&quot;">gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -H "X-Forwarded-For: 127.0.0.1" -H "Authorization: Bearer token123"</div>
+<p>Múltiplos <code>-H</code> para adicionar vários headers. Útil para bypass de restrições por IP ou autenticação por token .</p>
+
+<h3>8. Aumentar threads (mais rápido)</h3>
+<span class="tag tag-tuning">Tuning</span>
+<div class="code" data-cmd="gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -t 50">gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -t 50</div>
+<p>50 threads paralelas. Cuidado: pode causar rate-limiting ou bloqueio em WAFs .</p>
+
+<h3>9. Guardar resultados</h3>
+<span class="tag tag-tuning">Tuning</span>
+<div class="code" data-cmd="gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -o results.txt">gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -o results.txt</div>
+<p>Guarda cada caminho encontrado em <code>results.txt</code> .</p>
+
+<h3>10. Excluir respostas específicas (evitar falsos positivos)</h3>
+<span class="tag tag-advanced">Avançado</span>
+<div class="code" data-cmd="gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -b 404,500 --exclude-length 1234">gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -b 404,500 --exclude-length 1234</div>
+<p>Ignora páginas com código 404/500 ou com comprimento exato (útil em "soft 404" que devolvem 200 mas com conteúdo padrão) .</p>
+
+<h3>11. Seguir redirecionamentos</h3>
+<span class="tag tag-advanced">Avançado</span>
+<div class="code" data-cmd="gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -r">gobuster dir -u http://192.168.1.10 -w /usr/share/wordlists/dirb/common.txt -r</div>
+<p><code>-r</code> segue 301/302. Útil quando <code>/admin</code> redireciona para <code>/admin/</code> .</p>
+
+<h3>12. Enumeração de subdomínios</h3>
+<span class="tag tag-mode">DNS</span>
+<div class="code" data-cmd="gobuster dns -d example.com -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt">gobuster dns -d example.com -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt</div>
+<p>Descobre subdomínios (ex: <code>mail.example.com</code>, <code>dev.example.com</code>) por resolução DNS .</p>
+
+<h3>13. Subdomínios com wildcard (mostrar IPs)</h3>
+<span class="tag tag-advanced">DNS</span>
+<div class="code" data-cmd="gobuster dns -d example.com -w subdomains.txt --wildcard --show-ips">gobuster dns -d example.com -w subdomains.txt --wildcard --show-ips</div>
+<p><code>--wildcard</code> filtra entradas falsas criadas por wildcard DNS. <code>--show-ips</code> mostra os IPs resolvidos .</p>
+
+<h3>14. Hosts virtuais (vhost)</h3>
+<span class="tag tag-mode">Vhost</span>
+<div class="code" data-cmd="gobuster vhost -u http://192.168.1.10 -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt --append-domain">gobuster vhost -u http://192.168.1.10 -w subdomains.txt --append-domain</div>
+<p>Descobre múltiplos sites no mesmo IP — servidores web que respondem diferente conforme o header <code>Host</code> .</p>
+
+<h3>15. Buckets S3 públicos</h3>
+<span class="tag tag-mode">S3</span>
+<div class="code" data-cmd="gobuster s3 -w buckets.txt">gobuster s3 -w buckets.txt</div>
+<p>Testa nomes de buckets Amazon S3 para verificar se estão públicos. Encontra dados expostos acidentalmente na cloud .</p>
+
+<h3>16. Modo fuzz (substituição livre)</h3>
+<span class="tag tag-advanced">Fuzz</span>
+<div class="code" data-cmd="gobuster fuzz -u http://192.168.1.10/index.php?id=FUZZ -w ids.txt">gobuster fuzz -u http://192.168.1.10/index.php?id=FUZZ -w ids.txt</div>
+<p>Substitui <code>FUZZ</code> pelo conteúdo da wordlist em qualquer parte do URL — parâmetros GET, partes de path, headers .</p>
+
+<h3>17. Modo fuzz em headers</h3>
+<span class="tag tag-advanced">Fuzz</span>
+<div class="code" data-cmd="gobuster fuzz -u http://192.168.1.10 -H &quot;X-Custom: FUZZ&quot; -w payloads.txt">gobuster fuzz -u http://192.168.1.10 -H "X-Custom: FUZZ" -w payloads.txt</div>
+<p>Fuzzing em headers personalizados — útil para testar bypass e injeções em headers .</p>
+
+<h2>Wordlists Recomendadas</h2>
+<p>A qualidade da wordlist determina o sucesso. Estas são as mais usadas :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Wordlist</th><th>Caminho</th><th>Uso</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>common.txt</strong></td>
+      <td><code>/usr/share/wordlists/dirb/common.txt</code></td>
+      <td>Rápida, ~4600 entradas — ideal para começar</td>
+    </tr>
+    <tr>
+      <td><strong>directory-list-2.3-medium</strong></td>
+      <td><code>/usr/share/wordlists/dirbuster/</code></td>
+      <td>~220.000 entradas — cobertura alargada</td>
+    </tr>
+    <tr>
+      <td><strong>raft-*-directories</strong></td>
+      <td><code>/usr/share/seclists/Discovery/Web-Content/</code></td>
+      <td>Curada pela SecLists, alta qualidade</td>
+    </tr>
+    <tr>
+      <td><strong>subdomains-top1million-5000</strong></td>
+      <td><code>/usr/share/seclists/Discovery/DNS/</code></td>
+      <td>Top 5000 subdomínios — bom equilíbrio</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Cheat Sheet rápido</h2>
+<div class="cheat-grid">
+  <div class="cheat-item">
+    <span class="cmd">dir</span>
+    <span class="desc">Enumeração de diretórios</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">dns</span>
+    <span class="desc">Enumeração de subdomínios</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">vhost</span>
+    <span class="desc">Hosts virtuais no mesmo IP</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">s3</span>
+    <span class="desc">Buckets Amazon S3</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">fuzz</span>
+    <span class="desc">Substituição livre em URL</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">-x php,html</span>
+    <span class="desc">Extensões a testar</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">-t 50</span>
+    <span class="desc">Threads paralelas</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">--exclude-length N</span>
+    <span class="desc">Filtrar falsos positivos</span>
+  </div>
+</div>
+
+<div class="highlight">
+  <strong>💡 Dica:</strong> O erro mais comum é correr com a wordlist enorme logo de início — demora muito e pode sobrecarregar o alvo. Começa com <code>common.txt</code> (rápida), depois aprofunda com listas maiores apenas em diretórios que mostram potencial. Além disso, o Gobuster é barulhento: todos os pedidos aparecem nos logs do servidor .
+</div>
+
+<div class="warning">
+  <strong>⚠️ Aviso legal:</strong> Usar o Gobuster contra alvos sem autorização explícita por escrito é ilegal. A enumeração agressiva pode causar carga elevada no servidor, disparar alertas de segurança e ser interpretada como ataque. Usa sempre em sistemas que possuis ou em testes com scope claramente definido, e respeita limites de taxa (<code>--delay</code>) para minimizar impacto .
+</div>
+
+<footer>
+  Guia Gobuster — parte da série "Top 15 Ferramentas Kali Linux".
+</footer>
+
+</div>
+
+<script>
+// Tema
+const themeBtn = document.getElementById("themeBtn");
+const savedTheme = localStorage.getItem("gobuster-theme") || "dark";
+document.documentElement.setAttribute("data-theme", savedTheme);
+themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+themeBtn.addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("gobuster-theme", next);
+  themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+});
+
+// Imprimir
+document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+// Copiar comandos
+document.querySelectorAll(".code").forEach(el => {
+  el.addEventListener("click", () => {
+    navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+      el.classList.add("copied");
+      setTimeout(() => el.classList.remove("copied"), 1200);
+    });
+  });
+});
+</script>
+
+</body>
+</html>

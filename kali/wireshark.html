@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireshark — Guia Detalhado</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #171a21;
+      --border: #262b36;
+      --text: #e6e8eb;
+      --muted: #8b93a1;
+      --accent: #00d1b2;
+      --accent2: #4f8cff;
+      --code-bg: #0b0d11;
+      --star: #f5c518;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --border: #e1e4e8;
+      --text: #1a1d23;
+      --muted: #5f6672;
+      --accent: #00897b;
+      --accent2: #2962ff;
+      --code-bg: #f0f2f5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      transition: background .3s, color .3s;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .icon-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s, transform .1s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      color: var(--accent2);
+      text-decoration: none;
+      font-size: .9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: .5rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .meta {
+      margin-top: .75rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: .85rem;
+    }
+
+    .meta span {
+      color: var(--muted);
+    }
+
+    .meta a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    .meta a:hover {
+      text-decoration: underline;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: .4rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 1.5rem 0 .5rem;
+      color: var(--text);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 1rem 1.5rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    li {
+      margin-bottom: .35rem;
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .65rem .85rem;
+      font-family: "SF Mono", Consolas, Monaco, monospace;
+      font-size: .82rem;
+      color: var(--accent);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      margin-bottom: .85rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .code:hover::after {
+      content: "copiar";
+      position: absolute;
+      right: .6rem;
+      top: .5rem;
+      font-size: .65rem;
+      color: var(--muted);
+      background: var(--code-bg);
+      padding: 0 .3rem;
+    }
+
+    .code.copied::after {
+      content: "✓ copiado";
+      color: var(--accent);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      margin-bottom: .75rem;
+    }
+
+    .tag-capture {
+      background: rgba(0, 209, 178, .15);
+      color: var(--accent);
+    }
+
+    .tag-display {
+      background: rgba(79, 140, 255, .15);
+      color: var(--accent2);
+    }
+
+    .tag-security {
+      background: rgba(255, 80, 80, .15);
+      color: #ff6b6b;
+    }
+
+    .tag-cli {
+      background: rgba(245, 197, 24, .15);
+      color: var(--star);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      margin-bottom: 1rem;
+    }
+
+    .table th,
+    .table td {
+      text-align: left;
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table th {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .table td {
+      color: var(--muted);
+    }
+
+    .table code {
+      color: var(--accent);
+      background: var(--code-bg);
+      padding: .1rem .3rem;
+      border-radius: 3px;
+    }
+
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1rem;
+    }
+
+    .cheat-item {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .75rem;
+      font-size: .82rem;
+    }
+
+    .cheat-item .cmd {
+      color: var(--accent);
+      font-family: monospace;
+      display: block;
+      margin-bottom: .3rem;
+    }
+
+    .cheat-item .desc {
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .warning {
+      background: rgba(255, 80, 80, .08);
+      border-left: 3px solid #ff5050;
+      padding: .85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .warning strong {
+      color: #ff6b6b;
+    }
+
+    .highlight {
+      background: rgba(0, 209, 178, .08);
+      border-left: 3px solid var(--accent);
+      padding: .85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .highlight strong {
+      color: var(--accent);
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+        padding: 0;
+      }
+
+      .top-actions,
+      .back-link,
+      .code:hover::after {
+        display: none !important;
+      }
+
+      h1 {
+        -webkit-text-fill-color: #000;
+        color: #000;
+      }
+
+      .code {
+        background: #f5f5f5;
+        color: #333;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+      <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+    </div>
+
+    <a class="back-link" href="kali-tools.html">← Voltar às 15 ferramentas</a>
+
+    <header>
+      <h1>Wireshark</h1>
+      <p class="subtitle">O analisador de protocolos de rede mais usado do mundo — captura e inspeção de tráfego em
+        tempo real</p>
+      <div class="meta">
+        <span>🔗 <a href="https://www.wireshark.org/" target="_blank" rel="noopener">Site oficial</a></span>
+        <span>📖 <a href="https://www.wireshark.org/docs/" target="_blank" rel="noopener">Documentação</a></span>
+        <span>📦 <a href="https://www.wireshark.org/download.html" target="_blank" rel="noopener">Download</a></span>
+      </div>
+    </header>
+
+    <h2>O que é o Wireshark?</h2>
+    <p>
+      O Wireshark é o analisador de protocolos de rede líder mundial. Seja para resolver problemas de rede,
+      aprender sobre redes ou investigar detalhes ao nível do pacote, o Wireshark dá-te a visibilidade e
+      as ferramentas necessárias. É uma ferramenta open source, livre de qualquer custo de licença,
+      mantida pela Wireshark Foundation, uma organização sem fins lucrativos.
+    </p>
+    <p>
+      Captura e inspeciona tráfego de rede em tempo real ou a partir de ficheiros guardados (PCAP/PCAPNG),
+      suportando centenas de protocolos. É usado tanto para diagnóstico de rede como para investigações
+      de segurança — deteção de malware, exfiltração de dados, análise forense e muito mais.
+    </p>
+
+    <h2>Duas Ferramentas, Um Propósito</h2>
+    <p>O Wireshark vem com duas interfaces complementares:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Ferramenta</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>wireshark</strong></td>
+          <td>Interface gráfica completa (GUI). Ideal para análise visual, exploração de pacotes e trabalho interativo.
+          </td>
+        </tr>
+        <tr>
+          <td><strong>tshark</strong></td>
+          <td>Versão de linha de comandos. Essencial para automação, scripts e servidores headless (sem GUI).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Captura vs. Filtros de Visualização</h2>
+    <p>Uma das distinções mais importantes no Wireshark é entre filtros de captura e filtros de visualização:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Quando</th>
+          <th>Sintaxe</th>
+          <th>Exemplo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Capture Filter</strong></td>
+          <td>Antes/durante a captura. Pacotes não correspondentes são descartados e nunca guardados.</td>
+          <td>BPF (libpcap)</td>
+          <td><code>host 10.0.0.5 and port 80</code></td>
+        </tr>
+        <tr>
+          <td><strong>Display Filter</strong></td>
+          <td>Depois da captura. Apenas filtra o que é mostrado — os dados ficam todos guardados.</td>
+          <td>Wireshark display</td>
+          <td><code>http.request.method == "POST"</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="highlight">
+      <strong>💡 Regra prática:</strong> Captura o mais amplamente possível (quando o scope permite).
+      Os filtros de captura cortam o tamanho do PCAP, mas não podes recuperar pacotes descartados depois.
+    </div>
+
+    <h2>Exemplos de Uso — da Captura à Extração</h2>
+
+    <h3>1. Captura básica de tráfego</h3>
+    <span class="tag tag-capture">Captura</span>
+    <div class="code" data-cmd="wireshark -i eth0">wireshark -i eth0</div>
+    <p>Inicia o Wireshark na interface <code>eth0</code>. Na GUI, basta selecionar a interface e clicar em Start.</p>
+
+    <h3>2. Capturar apenas tráfego HTTP/HTTPS</h3>
+    <span class="tag tag-capture">Captura</span>
+    <div class="code" data-cmd="tshark -i eth0 -f 'port 80 or port 443'">tshark -i eth0 -f 'port 80 or port 443'</div>
+    <p>Filtro de captura BPF para manter apenas tráfego web, reduzindo o tamanho do ficheiro.</p>
+
+    <h3>3. Guardar captura em ficheiro</h3>
+    <span class="tag tag-capture">Captura</span>
+    <div class="code" data-cmd="tshark -i eth0 -w /tmp/capture.pcap">tshark -i eth0 -w /tmp/capture.pcap</div>
+    <p>Guarda a captura para análise posterior ou partilha com a equipa.</p>
+
+    <h3>4. Ler um ficheiro PCAP</h3>
+    <span class="tag tag-cli">CLI</span>
+    <div class="code" data-cmd="tshark -r /tmp/capture.pcap">tshark -r /tmp/capture.pcap</div>
+    <p>Analisa um ficheiro existente sem capturar ao vivo.</p>
+
+    <h3>5. Filtrar por IP</h3>
+    <span class="tag tag-display">Display</span>
+    <div class="code" data-cmd="ip.addr == 192.168.1.10">ip.addr == 192.168.1.10</div>
+    <p>Mostra todo o tráfego de/para o IP especificado. Usa <code>ip.src</code> ou <code>ip.dst</code> para fixar
+      direção.</p>
+
+    <h3>6. Filtrar por protocolo</h3>
+    <span class="tag tag-display">Display</span>
+    <div class="code" data-cmd="http">http</div>
+    <div class="code" data-cmd="dns">dns</div>
+    <div class="code" data-cmd="tls">tls</div>
+    <p>Isola protocolos específicos. Combina com <code>&&</code> ou <code>||</code>.</p>
+
+    <h3>7. Filtrar pedidos HTTP POST (formulários de login)</h3>
+    <span class="tag tag-display">Display</span>
+    <div class="code" data-cmd="http.request.method == &quot;POST&quot;">http.request.method == "POST"</div>
+    <p>Caminho rápido para formulários de login e dados submetidos.</p>
+
+    <h3>8. Encontrar credenciais em texto claro</h3>
+    <span class="tag tag-security">Segurança</span>
+    <div class="code" data-cmd="http.request.method == &quot;POST&quot; && http contains &quot;password&quot;">
+      http.request.method == "POST" && http contains "password"</div>
+    <p>HTTP Basic Auth, FTP, Telnet enviam credenciais sem encriptação. Este filtro revela-as.</p>
+
+    <h3>9. Seguir um stream TCP</h3>
+    <span class="tag tag-display">Display</span>
+    <div class="code" data-cmd="tcp.stream eq 3">tcp.stream eq 3</div>
+    <p>Mostra todos os pacotes do stream #3. Na GUI: right-click > Follow > TCP Stream.</p>
+
+    <h3>10. Detetar port scans</h3>
+    <span class="tag tag-security">Segurança</span>
+    <div class="code" data-cmd="tcp.flags.syn == 1 && tcp.flags.ack == 0">tcp.flags.syn == 1 && tcp.flags.ack == 0</div>
+    <p>Isola pacotes SYN iniciais (sem ACK) — padrão típico de port scans.</p>
+
+    <h3>11. Detetar DNS tunneling</h3>
+    <span class="tag tag-security">Segurança</span>
+    <div class="code" data-cmd="dns && frame.len > 100">dns && frame.len > 100</div>
+    <p>Queries DNS anormalmente longas ou volumosas podem indicar tunneling ou exfiltração.</p>
+
+    <h3>12. Extrair queries DNS únicas</h3>
+    <span class="tag tag-cli">CLI</span>
+    <div class="code"
+      data-cmd="tshark -r incident-capture.pcapng -Y &quot;dns&quot; -T fields -e dns.qry.name | sort -u">tshark -r
+      incident-capture.pcapng -Y "dns" -T fields -e dns.qry.name | sort -u</div>
+    <p>Extrai todos os nomes de domínio consultados — útil para identificar IOCs.</p>
+
+    <h3>13. Exportar ficheiros transferidos via HTTP</h3>
+    <span class="tag tag-cli">CLI</span>
+    <div class="code" data-cmd="tshark -r capture.pcap --export-objects http,./extracted/">tshark -r capture.pcap
+      --export-objects http,./extracted/</div>
+    <p>Extrai todos os ficheiros reassembled de tráfego HTTP para uma pasta. Na GUI: File > Export Objects > HTTP.</p>
+
+    <h3>14. Estatísticas de conversações</h3>
+    <span class="tag tag-cli">CLI</span>
+    <div class="code" data-cmd="tshark -r capture.pcap -q -z conv,tcp">tshark -r capture.pcap -q -z conv,tcp</div>
+    <p>Ranking de quem falou com quem, ordenado por bytes/pacotes. Rápido para detetar transferências anómalas.</p>
+
+    <h3>15. Hierarquia de protocolos</h3>
+    <span class="tag tag-cli">CLI</span>
+    <div class="code" data-cmd="tshark -r capture.pcap -q -z io,phs">tshark -r capture.pcap -q -z io,phs</div>
+    <p>Breakdown do tráfego por protocolo. Confirma se há protocolos inesperados no segmento.</p>
+
+    <h3>16. Extrair campos HTTP para scripts</h3>
+    <span class="tag tag-cli">CLI</span>
+    <div class="code"
+      data-cmd="tshark -r capture.pcap -Y 'http' -T fields -e http.request.method -e http.request.uri -e http.response.code -E separator=&quot;,&quot;">
+      tshark -r capture.pcap -Y 'http' -T fields -e http.request.method -e http.request.uri -e http.response.code -E
+      separator=","</div>
+    <p>Output em CSV: método, URI e código de resposta para cada pedido HTTP.</p>
+
+    <h3>17. Análise de handshake TLS (SNI)</h3>
+    <span class="tag tag-display">Display</span>
+    <div class="code" data-cmd="tls.handshake.type == 1">tls.handshake.type == 1</div>
+    <p>Mostra pacotes ClientHello — podes ver o SNI (nome do servidor) mesmo em tráfego encriptado.</p>
+
+    <h2>Cheat Sheet rápido</h2>
+    <div class="cheat-grid">
+      <div class="cheat-item">
+        <span class="cmd">ip.addr == 10.0.0.5</span>
+        <span class="desc">Tráfego de/para IP</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">tcp.port == 443</span>
+        <span class="desc">Filtrar por porta</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">http.request.method == "POST"</span>
+        <span class="desc">Formulários de login</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">dns.qry.name contains "example.com"</span>
+        <span class="desc">Queries DNS de um domínio</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">tcp.flags.syn == 1 && tcp.flags.ack == 0</span>
+        <span class="desc">Port scans / novas sessões</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">tcp.stream eq N</span>
+        <span class="desc">Stream TCP específico</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">frame contains "password"</span>
+        <span class="desc">Busca por string crua</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">tshark -r f.pcap -T fields -e ip.src</span>
+        <span class="desc">Extrair campo para script</span>
+      </div>
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ Aviso legal e de privacidade:</strong> O Wireshark captura todo o tráfego na interface selecionada,
+      que frequentemente contém informação pessoal identificável (PII). Capturar tráfego sem
+      consentimento viola as leis de privacidade (RGPD, AI Act, etc.). Usa sempre em
+      sistemas que possuis ou tens autorização explícita. Trata capturas exportadas como evidência sensível —
+      guarda com acesso controlado e elimina após o período necessário.
+    </div>
+
+    <footer>
+      Guia Wireshark — parte da série "Top 15 Ferramentas Kali Linux".
+    </footer>
+
+  </div>
+
+  <script>
+    // Tema
+    const themeBtn = document.getElementById("themeBtn");
+    const savedTheme = localStorage.getItem("wireshark-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+    themeBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("wireshark-theme", next);
+      themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+    });
+
+    // Imprimir
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+    // Copiar comandos
+    document.querySelectorAll(".code").forEach(el => {
+      el.addEventListener("click", () => {
+        navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+          el.classList.add("copied");
+          setTimeout(() => el.classList.remove("copied"), 1200);
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>
