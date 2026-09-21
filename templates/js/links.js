@@ -20,9 +20,7 @@
         // ── AULAS REMOTAS ────────────────────────────────────────────────
         const REMOTE_CLASS_LINKS = [
             { label: 'Classroom Ivan', icon: '🎓', url: 'https://classroom.google.com/u/0/c/ODY2NDE0NTcxNTgy', desc: 'Google Classroom — Ivan Gonçalves' },
-            { label: 'Cláudia — UC00616 (sessões 10-16)', icon: '🖥️', url: 'https://teams.microsoft.com/meet/354207630536587?p=3Ihj7xMAnMFAA6CAyV', desc: 'Teams — Segurança e Saúde no Trabalho · Meeting ID: 354 207 630 536 587 · Passcode: mo2VJ6KJ' },
-            { label: 'Cláudia — UC00616 (sessões 17-19)', icon: '🖥️', url: 'https://teams.microsoft.com/meet/379487891570544?p=iLTtXc36Frm8PCAFn4', desc: 'Teams — Segurança e Saúde no Trabalho · Meeting ID: 379 487 891 570 544 · Passcode: Mw3df2XR' },
-            { label: 'Cláudia — UC00616 (sessões 20-25)', icon: '🖥️', url: 'https://teams.microsoft.com/meet/33822378235136?p=HxCJYZmFjAo0WP9VXl', desc: 'Teams — Segurança e Saúde no Trabalho · Meeting ID: 338 223 782 351 36 · Passcode: Hh2En2PF' },
+            { label: 'Google Drive Manuel', icon: '📂', url: 'https://drive.google.com/drive/folders/1yk20TBCoPnuHoU3CL_bc9y6BK8bjHXM8', desc: 'Google Drive — Materiais e recursos do Manuel' },
         ];
 
         function dashLinksRender() {
