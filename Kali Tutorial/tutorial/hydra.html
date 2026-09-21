@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hydra — Guia Detalhado</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #171a21;
+      --border: #262b36;
+      --text: #e6e8eb;
+      --muted: #8b93a1;
+      --accent: #00d1b2;
+      --accent2: #4f8cff;
+      --code-bg: #0b0d11;
+      --star: #f5c518;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --border: #e1e4e8;
+      --text: #1a1d23;
+      --muted: #5f6672;
+      --accent: #00897b;
+      --accent2: #2962ff;
+      --code-bg: #f0f2f5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      transition: background .3s, color .3s;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .icon-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s, transform .1s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      color: var(--accent2);
+      text-decoration: none;
+      font-size: .9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: .5rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .meta {
+      margin-top: .75rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: .85rem;
+    }
+
+    .meta span {
+      color: var(--muted);
+    }
+
+    .meta a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    .meta a:hover {
+      text-decoration: underline;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: .4rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 1.5rem 0 .5rem;
+      color: var(--text);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 1rem 1.5rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    li {
+      margin-bottom: .35rem;
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .65rem .85rem;
+      font-family: "SF Mono", Consolas, Monaco, monospace;
+      font-size: .82rem;
+      color: var(--accent);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      margin-bottom: .85rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .code:hover::after {
+      content: "copiar";
+      position: absolute;
+      right: .6rem;
+      top: .5rem;
+      font-size: .65rem;
+      color: var(--muted);
+      background: var(--code-bg);
+      padding: 0 .3rem;
+    }
+
+    .code.copied::after {
+      content: "✓ copiado";
+      color: var(--accent);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      margin-bottom: .75rem;
+    }
+
+    .tag-basic {
+      background: rgba(0, 209, 178, .15);
+      color: var(--accent);
+    }
+
+    .tag-protocol {
+      background: rgba(79, 140, 255, .15);
+      color: var(--accent2);
+    }
+
+    .tag-web {
+      background: rgba(255, 80, 80, .15);
+      color: #ff6b6b;
+    }
+
+    .tag-tuning {
+      background: rgba(245, 197, 24, .15);
+      color: var(--star);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      margin-bottom: 1rem;
+    }
+
+    .table th,
+    .table td {
+      text-align: left;
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table th {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .table td {
+      color: var(--muted);
+    }
+
+    .table code {
+      color: var(--accent);
+      background: var(--code-bg);
+      padding: .1rem .3rem;
+      border-radius: 3px;
+    }
+
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1rem;
+    }
+
+    .cheat-item {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .75rem;
+      font-size: .82rem;
+    }
+
+    .cheat-item .cmd {
+      color: var(--accent);
+      font-family: monospace;
+      display: block;
+      margin-bottom: .3rem;
+    }
+
+    .cheat-item .desc {
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .warning {
+      background: rgba(255, 80, 80, .08);
+      border-left: 3px solid #ff5050;
+      padding: .85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .warning strong {
+      color: #ff6b6b;
+    }
+
+    .highlight {
+      background: rgba(0, 209, 178, .08);
+      border-left: 3px solid var(--accent);
+      padding: .85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .highlight strong {
+      color: var(--accent);
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+        padding: 0;
+      }
+
+      .top-actions,
+      .back-link,
+      .code:hover::after {
+        display: none !important;
+      }
+
+      h1 {
+        -webkit-text-fill-color: #000;
+        color: #000;
+      }
+
+      .code {
+        background: #f5f5f5;
+        color: #333;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+      <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+    </div>
+
+    <a class="back-link" href="kali-tools.html">← Voltar às 15 ferramentas</a>
+
+    <header>
+      <h1>Hydra</h1>
+      <p class="subtitle">O cracker de logins online mais rápido e flexível — mais de 50 protocolos suportados</p>
+      <div class="meta">
+        <span>🔗 <a href="https://github.com/vanhauser-thc/thc-hydra" target="_blank" rel="noopener">GitHub</a></span>
+        <span>📖 <a href="https://github.com/vanhauser-thc/thc-hydra" target="_blank"
+            rel="noopener">Documentação</a></span>
+        <span>📦 <a href="https://github.com/vanhauser-thc/thc-hydra" target="_blank" rel="noopener">Download</a></span>
+      </div>
+    </header>
+
+    <h2>O que é o Hydra?</h2>
+    <p>
+      O Hydra (também conhecido como THC Hydra) é uma ferramenta open source de <strong>força bruta de passwords
+        online</strong>,
+      desenvolvida pelo grupo <strong>The Hacker's Choice (THC)</strong>. Foi projetada para ser paralelizada —
+      múltiplas threads
+      operam em paralelo para otimizar a eficiência e acelerar o processo de brute-force.
+    </p>
+    <p>
+      Ao contrário do Hashcat e John the Ripper, que fazem <strong>cracking offline</strong> de hashes já extraídos,
+      o Hydra ataca <strong>serviços ativos online</strong>: SSH, FTP, RDP, HTTP, formulários web, bases de dados,
+      e muitos outros. É a ferramenta de eleição para testar a força de passwords diretamente contra sistemas em
+      execução.
+    </p>
+
+    <h2>Protocolos Suportados</h2>
+    <p>O Hydra suporta atualmente <strong>mais de 50 protocolos e serviços</strong>:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Categoria</th>
+          <th>Protocolos</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Shell / Sistema</strong></td>
+          <td><code>ssh</code>, <code>telnet</code>, <code>rlogin</code>, <code>rsh</code>, <code>rexec</code>,
+            <code>smb</code>, <code>rdp</code></td>
+        </tr>
+        <tr>
+          <td><strong>Ficheiros / Transferência</strong></td>
+          <td><code>ftp</code>, <code>ftps</code>, <code>sftp</code>, <code>svn</code></td>
+        </tr>
+        <tr>
+          <td><strong>Web / HTTP</strong></td>
+          <td><code>http-get</code>, <code>http-post-form</code>, <code>https-get</code>, <code>http-proxy</code></td>
+        </tr>
+        <tr>
+          <td><strong>Bases de Dados</strong></td>
+          <td><code>mysql</code>, <code>postgres</code>, <code>mssql</code>, <code>oracle</code>, <code>firebird</code>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Email</strong></td>
+          <td><code>smtp</code>, <code>pop3</code>, <code>imap</code></td>
+        </tr>
+        <tr>
+          <td><strong>Outros</strong></td>
+          <td><code>vnc</code>, <code>snmp</code>, <code>ldap</code>, <code>socks5</code>, <code>icq</code>,
+            <code>irc</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Flags Essenciais</h2>
+    <p>O Hydra tem uma interface simples e intuitiva. Estes são os parâmetros mais usados:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Flag</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>-l LOGIN</code></td>
+          <td>Especifica um único username</td>
+        </tr>
+        <tr>
+          <td><code>-L FILE</code></td>
+          <td>Ficheiro com lista de usernames (um por linha)</td>
+        </tr>
+        <tr>
+          <td><code>-p PASS</code></td>
+          <td>Especifica uma única password</td>
+        </tr>
+        <tr>
+          <td><code>-P FILE</code></td>
+          <td>Ficheiro com lista de passwords (wordlist)</td>
+        </tr>
+        <tr>
+          <td><code>-C FILE</code></td>
+          <td>Ficheiro com formato <code>login:password</code> (combinação)</td>
+        </tr>
+        <tr>
+          <td><code>-t TASKS</code></td>
+          <td>Número de threads paralelas (padrão: 16)</td>
+        </tr>
+        <tr>
+          <td><code>-s PORT</code></td>
+          <td>Porta não padrão do serviço</td>
+        </tr>
+        <tr>
+          <td><code>-f</code></td>
+          <td>Parar após o primeiro login/password encontrado</td>
+        </tr>
+        <tr>
+          <td><code>-e nsr</code></td>
+          <td>Testes extra: <code>n</code> (null password), <code>s</code> (login=pass), <code>r</code> (login
+            invertido)</td>
+        </tr>
+        <tr>
+          <td><code>-o FILE</code></td>
+          <td>Guardar resultados em ficheiro</td>
+        </tr>
+        <tr>
+          <td><code>-vV</code></td>
+          <td>Modo verboso — mostra cada tentativa</td>
+        </tr>
+        <tr>
+          <td><code>-w TIME</code></td>
+          <td>Timeout em segundos para cada resposta (padrão: 32)</td>
+        </tr>
+        <tr>
+          <td><code>-M FILE</code></td>
+          <td>Ficheiro com múltiplos alvos (um por linha)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Exemplos de Uso — do Básico ao Avançado</h2>
+
+    <h3>1. Verificar se o Hydra está instalado</h3>
+    <span class="tag tag-basic">Setup</span>
+    <div class="code" data-cmd="hydra -h">hydra -h</div>
+    <p>Mostra a ajuda completa. No Kali Linux o Hydra já vem pré-instalado.</p>
+
+    <h3>2. SSH — ataque com username e wordlist</h3>
+    <span class="tag tag-protocol">SSH</span>
+    <div class="code" data-cmd="hydra -l root -P passwords.txt ssh://192.168.1.10">hydra -l root -P passwords.txt
+      ssh://192.168.1.10</div>
+    <p>Testa todas as passwords do <code>passwords.txt</code> contra o utilizador <code>root</code> no serviço SSH.</p>
+
+    <h3>3. SSH — com lista de usernames e passwords</h3>
+    <span class="tag tag-protocol">SSH</span>
+    <div class="code" data-cmd="hydra -L users.txt -P passwords.txt ssh://192.168.1.10 -t 4 -f -e ns">hydra -L users.txt
+      -P passwords.txt ssh://192.168.1.10 -t 4 -f -e ns</div>
+    <p><code>-t 4</code> reduz threads para evitar bloqueio. <code>-f</code> para ao encontrar. <code>-e ns</code> testa
+      null password e login=password primeiro.</p>
+
+    <h3>4. SSH — porta não padrão</h3>
+    <span class="tag tag-protocol">SSH</span>
+    <div class="code" data-cmd="hydra -l admin -P passwords.txt -s 2222 ssh://192.168.1.10">hydra -l admin -P
+      passwords.txt -s 2222 ssh://192.168.1.10</div>
+    <p>Quando o SSH corre na porta 2222 em vez da 22.</p>
+
+    <h3>5. FTP — ataque básico</h3>
+    <span class="tag tag-protocol">FTP</span>
+    <div class="code" data-cmd="hydra -L users.txt -P passwords.txt ftp://192.168.1.10">hydra -L users.txt -P
+      passwords.txt ftp://192.168.1.10</div>
+    <p>Brute-force contra o serviço FTP.</p>
+
+    <h3>6. FTP — porta personalizada</h3>
+    <span class="tag tag-protocol">FTP</span>
+    <div class="code" data-cmd="hydra -l admin -P passwords.txt -s 2121 ftp://192.168.1.10">hydra -l admin -P
+      passwords.txt -s 2121 ftp://192.168.1.10</div>
+    <p>FTP em porta não padrão.</p>
+
+    <h3>7. RDP — ataque a Windows Remote Desktop</h3>
+    <span class="tag tag-protocol">RDP</span>
+    <div class="code" data-cmd="hydra -l administrator -P passwords.txt rdp://192.168.1.10">hydra -l administrator -P
+      passwords.txt rdp://192.168.1.10</div>
+    <p>Requer conhecimento da conta (ex: Administrator). RDP tem proteções — usar <code>-t 1</code> para evitar
+      bloqueio.</p>
+
+    <h3>8. HTTP Basic Auth</h3>
+    <span class="tag tag-web">Web</span>
+    <div class="code" data-cmd="hydra -L users.txt -P passwords.txt -s 8080 http-get://192.168.1.10/protected">hydra -L
+      users.txt -P passwords.txt -s 8080 http-get://192.168.1.10/protected</div>
+    <p>Autenticação HTTP básica (popup do browser).</p>
+
+    <h3>9. Formulário web — http-post-form (essencial)</h3>
+    <span class="tag tag-web">Web</span>
+    <div class="code"
+      data-cmd="hydra -l admin -P passwords.txt 192.168.1.10 http-post-form &quot;/login.php:username=^USER^&amp;password=^PASS^:Invalid username or password&quot;">
+      hydra -l admin -P passwords.txt 192.168.1.10 http-post-form "/login.php:username=^USER^&password=^PASS^:Invalid
+      username or password"</div>
+    <p><strong>Estrutura:</strong> <code>&lt;path&gt;:&lt;form-data&gt;:&lt;failure-string&gt;</code>. Os placeholders
+      <code>^USER^</code> e <code>^PASS^</code> são substituídos pelo Hydra. A string de falha é o texto que aparece na
+      página quando o login falha.</p>
+
+    <h3>10. Formulário web — com prefixo F=</h3>
+    <span class="tag tag-web">Web</span>
+    <div class="code"
+      data-cmd="hydra -l admin -P passwords.txt 192.168.1.10 http-post-form &quot;/login.php:user=^USER^&amp;pass=^PASS^:F=incorrect&quot;">
+      hydra -l admin -P passwords.txt 192.168.1.10 http-post-form "/login.php:user=^USER^&pass=^PASS^:F=incorrect"</div>
+    <p>O prefixo <code>F=</code> indica explicitamente que "incorrect" é a string de falha.</p>
+
+    <h3>11. MySQL — ataque a base de dados</h3>
+    <span class="tag tag-protocol">DB</span>
+    <div class="code" data-cmd="hydra -l root -P passwords.txt mysql://192.168.1.10">hydra -l root -P passwords.txt
+      mysql://192.168.1.10</div>
+    <p>Brute-force contra MySQL. Pode requerer a flag <code>-e ns</code> para testar password vazia.</p>
+
+    <h3>12. SMB — ataque a Windows shares</h3>
+    <span class="tag tag-protocol">SMB</span>
+    <div class="code" data-cmd="hydra -L users.txt -P passwords.txt smb://192.168.1.10">hydra -L users.txt -P
+      passwords.txt smb://192.168.1.10</div>
+    <p>Testa credenciais contra o serviço SMB (porta 445).</p>
+
+    <h3>13. VNC — acesso remoto</h3>
+    <span class="tag tag-protocol">VNC</span>
+    <div class="code" data-cmd="hydra -P passwords.txt vnc://192.168.1.10">hydra -P passwords.txt vnc://192.168.1.10
+    </div>
+    <p>VNC muitas vezes usa apenas password, sem username.</p>
+
+    <h3>14. Múltiplos alvos</h3>
+    <span class="tag tag-tuning">Otimização</span>
+    <div class="code" data-cmd="hydra -L users.txt -P passwords.txt -M targets.txt ssh">hydra -L users.txt -P
+      passwords.txt -M targets.txt ssh</div>
+    <p>Ataca vários hosts em paralelo. <code>targets.txt</code> tem um IP/hostname por linha.</p>
+
+    <h3>15. Guardar resultados</h3>
+    <span class="tag tag-tuning">Otimização</span>
+    <div class="code" data-cmd="hydra -l admin -P passwords.txt ssh://192.168.1.10 -o results.txt -f -vV">hydra -l admin
+      -P passwords.txt ssh://192.168.1.10 -o results.txt -f -vV</div>
+    <p>Guarda credenciais encontradas em <code>results.txt</code>, com output verboso.</p>
+
+    <h3>16. Gerar passwords por padrão (-x)</h3>
+    <span class="tag tag-tuning">Otimização</span>
+    <div class="code" data-cmd="hydra -l admin -x 1:8:a1 ssh://192.168.1.10">hydra -l admin -x 1:8:a1 ssh://192.168.1.10
+    </div>
+    <p><code>1:8:a1</code> = comprimento 1 a 8, charset: <code>a</code> (minúsculas) + <code>1</code> (números).
+      Adiciona <code>A</code> para maiúsculas, <code>%</code> para símbolos.</p>
+
+    <h2>Workflow Típico: Nmap → Hydra → Verificação</h2>
+    <p>O Hydra raramente é usado isolado. Um fluxo profissional de pentest segue esta sequência:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Fase</th>
+          <th>Ferramenta</th>
+          <th>Objetivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Reconhecimento</strong></td>
+          <td>Nmap</td>
+          <td>Descobrir portas abertas e serviços: <code>nmap -sV -p- target</code></td>
+        </tr>
+        <tr>
+          <td><strong>2. Confirmação</strong></td>
+          <td>Metasploit</td>
+          <td>Verificar serviços e versões: <code>use auxiliary/scanner/ssh/ssh_version</code></td>
+        </tr>
+        <tr>
+          <td><strong>3. Ataque</strong></td>
+          <td>Hydra</td>
+          <td>Testar credenciais fracas nos serviços confirmados</td>
+        </tr>
+        <tr>
+          <td><strong>4. Verificação</strong></td>
+          <td>Cliente nativo</td>
+          <td>Testar credenciais encontradas manualmente</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Otimização e Boas Práticas</h2>
+    <p>Hydra é rápido, mas mal configurado pode ser ineficaz ou detetado:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Problema</th>
+          <th>Solução</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Muitas threads causam bloqueio</td>
+          <td>Usar <code>-t 4</code> (SSH) ou <code>-t 1</code> (RDP)</td>
+        </tr>
+        <tr>
+          <td>Timeout prematuro</td>
+          <td>Aumentar <code>-w 10</code> ou mais para protocolos lentos</td>
+        </tr>
+        <tr>
+          <td>Wordlist enorme e lenta</td>
+          <td>Usar wordlist pequena e direcionada primeiro, depois expandir</td>
+        </tr>
+        <tr>
+          <td>Não encontra credenciais</td>
+          <td>Testar combinações manuais primeiro (<code>admin:admin</code>, <code>admin:password</code>)</td>
+        </tr>
+        <tr>
+          <td>Detetado por fail2ban</td>
+          <td>Reduzir threads, aumentar timeouts, usar <code>-e ns</code> para reduzir tentativas</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Cheat Sheet rápido</h2>
+    <div class="cheat-grid">
+      <div class="cheat-item">
+        <span class="cmd">-l user</span>
+        <span class="desc">Username único</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-L users.txt</span>
+        <span class="desc">Lista de usernames</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-P passwords.txt</span>
+        <span class="desc">Wordlist de passwords</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-t 4</span>
+        <span class="desc">Threads (menos = mais discreto)</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-f</span>
+        <span class="desc">Parar após sucesso</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-e ns</span>
+        <span class="desc">Null password + login=pass</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-o results.txt</span>
+        <span class="desc">Guardar resultados</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-vV</span>
+        <span class="desc">Output verboso</span>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <strong>💡 Dica:</strong> A qualidade do dicionário é mais importante que o tamanho. Um dicionário direcionado de
+      100 passwords (com keywords da organização, variações comuns) tem mais sucesso que um <code>rockyou.txt</code> de
+      14 milhões de entradas. Ferramentas como <strong>CeWL</strong> podem gerar dicionários a partir do site da
+      organização.
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ Aviso legal:</strong> Usar o Hydra contra sistemas que não possuis ou para os quais não tens
+      autorização explícita é <strong>ilegal e antiético</strong>. O Hydra gera um volume elevado de autenticações, o
+      que pode ativar bloqueios de conta e causar negação de serviço. Usa apenas em testes autorizados, laboratórios ou
+      avaliações defensivas com scope definido.
+    </div>
+
+    <footer>
+      Guia Hydra — parte da série "Top 15 Ferramentas Kali Linux".
+    </footer>
+
+  </div>
+
+  <script>
+    // Tema
+    const themeBtn = document.getElementById("themeBtn");
+    const savedTheme = localStorage.getItem("hydra-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+    themeBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("hydra-theme", next);
+      themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+    });
+
+    // Imprimir
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+    // Copiar comandos
+    document.querySelectorAll(".code").forEach(el => {
+      el.addEventListener("click", () => {
+        navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+          el.classList.add("copied");
+          setTimeout(() => el.classList.remove("copied"), 1200);
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nmap — Guia Detalhado</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #171a21;
+      --border: #262b36;
+      --text: #e6e8eb;
+      --muted: #8b93a1;
+      --accent: #00d1b2;
+      --accent2: #4f8cff;
+      --code-bg: #0b0d11;
+      --star: #f5c518;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --border: #e1e4e8;
+      --text: #1a1d23;
+      --muted: #5f6672;
+      --accent: #00897b;
+      --accent2: #2962ff;
+      --code-bg: #f0f2f5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      transition: background .3s, color .3s;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .icon-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s, transform .1s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      color: var(--accent2);
+      text-decoration: none;
+      font-size: .9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: .5rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .meta {
+      margin-top: .75rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: .85rem;
+    }
+
+    .meta span {
+      color: var(--muted);
+    }
+
+    .meta a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    .meta a:hover {
+      text-decoration: underline;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: .4rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 1.5rem 0 .5rem;
+      color: var(--text);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 1rem 1.5rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    li {
+      margin-bottom: .35rem;
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .65rem .85rem;
+      font-family: "SF Mono", Consolas, Monaco, monospace;
+      font-size: .82rem;
+      color: var(--accent);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      margin-bottom: .85rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .code:hover::after {
+      content: "copiar";
+      position: absolute;
+      right: .6rem;
+      top: .5rem;
+      font-size: .65rem;
+      color: var(--muted);
+      background: var(--code-bg);
+      padding: 0 .3rem;
+    }
+
+    .code.copied::after {
+      content: "✓ copiado";
+      color: var(--accent);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      margin-bottom: .75rem;
+    }
+
+    .tag-scan {
+      background: rgba(0, 209, 178, .15);
+      color: var(--accent);
+    }
+
+    .tag-detect {
+      background: rgba(79, 140, 255, .15);
+      color: var(--accent2);
+    }
+
+    .tag-script {
+      background: rgba(245, 197, 24, .15);
+      color: var(--star);
+    }
+
+    .status-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-table th,
+    .status-table td {
+      text-align: left;
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .status-table th {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .status-table td {
+      color: var(--muted);
+    }
+
+    .status-table code {
+      color: var(--accent);
+      background: var(--code-bg);
+      padding: .1rem .3rem;
+      border-radius: 3px;
+    }
+
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1rem;
+    }
+
+    .cheat-item {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .75rem;
+      font-size: .82rem;
+    }
+
+    .cheat-item .cmd {
+      color: var(--accent);
+      font-family: monospace;
+      display: block;
+      margin-bottom: .3rem;
+    }
+
+    .cheat-item .desc {
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .warning {
+      background: rgba(255, 80, 80, .08);
+      border-left: 3px solid #ff5050;
+      padding: .85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .warning strong {
+      color: #ff6b6b;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+        padding: 0;
+      }
+
+      .top-actions,
+      .back-link,
+      .code:hover::after {
+        display: none !important;
+      }
+
+      h1 {
+        -webkit-text-fill-color: #000;
+        color: #000;
+      }
+
+      .code {
+        background: #f5f5f5;
+        color: #333;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+      <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+    </div>
+
+    <a class="back-link" href="kali-tools.html">← Voltar às 15 ferramentas</a>
+
+    <header>
+      <h1>Nmap</h1>
+      <p class="subtitle">Network Mapper — O scanner de rede e auditoria de segurança mais usado do mundo</p>
+      <div class="meta">
+        <span>🔗 <a href="https://nmap.org/" target="_blank" rel="noopener">Site oficial</a></span>
+        <span>📖 <a href="https://nmap.org/book/" target="_blank" rel="noopener">Documentação</a></span>
+        <span>📦 <a href="https://nmap.org/download.html" target="_blank" rel="noopener">Download</a></span>
+      </div>
+    </header>
+
+    <h2>O que é o Nmap?</h2>
+    <p>
+      O Nmap ("Network Mapper") é uma ferramenta open source para exploração de rede e auditoria de segurança.
+      Foi projetado para escanear redes de forma rápida, embora funcione igualmente bem contra um único host.
+      Usa pacotes IP brutos de formas engenhosas para determinar quais hosts estão disponíveis na rede,
+      quais serviços (nome e versão) esses hosts oferecem, que sistemas operativos (e versões) executam,
+      que tipo de filtros de pacotes/firewalls estão em uso, e dezenas de outras características.
+    </p>
+    <p>
+      Embora seja comumente usado para auditorias de segurança, administradores de sistemas e redes
+      também o acham útil para tarefas de rotina como inventário de rede, gestão de agendas de
+      atualização de serviços e monitorização de uptime de hosts ou serviços.
+    </p>
+
+    <h2>Como funciona a descoberta</h2>
+    <p>O Nmap classifica cada porta escaneada num dos seguintes estados:</p>
+
+    <table class="status-table">
+      <thead>
+        <tr>
+          <th>Estado</th>
+          <th>Significado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>open</code></td>
+          <td>Uma aplicação está ativamente à escuta de conexões nessa porta.</td>
+        </tr>
+        <tr>
+          <td><code>closed</code></td>
+          <td>A porta está acessível mas não há nenhuma aplicação à escuta. Pode abrir a qualquer momento.</td>
+        </tr>
+        <tr>
+          <td><code>filtered</code></td>
+          <td>Um firewall, filtro ou obstáculo de rede está a bloquear a porta. O Nmap não consegue determinar se está
+            aberta ou fechada.</td>
+        </tr>
+        <tr>
+          <td><code>unfiltered</code></td>
+          <td>A porta responde aos probes do Nmap, mas não é possível determinar se está aberta ou fechada.</td>
+        </tr>
+        <tr>
+          <td><code>open|filtered</code></td>
+          <td>O Nmap não consegue determinar se a porta está aberta ou filtrada.</td>
+        </tr>
+        <tr>
+          <td><code>closed|filtered</code></td>
+          <td>O Nmap não consegue determinar se a porta está fechada ou filtrada.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Instalação</h2>
+    <div class="card">
+      <h3>Linux (Debian/Ubuntu/Kali)</h3>
+      <div class="code" data-cmd="sudo apt-get update && sudo apt-get install nmap">sudo apt-get update && sudo apt-get
+        install nmap</div>
+
+      <h3>macOS (Homebrew)</h3>
+      <div class="code" data-cmd="brew install nmap">brew install nmap</div>
+
+      <h3>Windows</h3>
+      <p>Descarrega o instalador oficial em <a href="https://nmap.org/download.html" target="_blank"
+          rel="noopener">nmap.org/download</a> e executa o <code>nmap-&lt;version&gt;-setup.exe</code>.</p>
+    </div>
+
+    <h2>Exemplos de uso (do básico ao avançado)</h2>
+
+    <h3>1. Escaneamento básico de um host</h3>
+    <span class="tag tag-scan">Descoberta</span>
+    <div class="code" data-cmd="nmap 192.168.1.1">nmap 192.168.1.1</div>
+    <p>Escaneia as 1000 portas mais comuns do host alvo. É o ponto de partida.</p>
+
+    <h3>2. Escaneamento de uma sub-rede</h3>
+    <div class="code" data-cmd="nmap 192.168.1.0/24">nmap 192.168.1.0/24</div>
+    <p>Escaneia todos os hosts na sub-rede (notação CIDR). Útil para mapear a rede.</p>
+
+    <h3>3. Descoberta de hosts ativos (Ping Sweep)</h3>
+    <div class="code" data-cmd="nmap -sn 192.168.1.0/24">nmap -sn 192.168.1.0/24</div>
+    <p>Lista quais hosts estão online sem escanear portas. Rápido para inventário.</p>
+
+    <h3>4. Deteção de versões de serviços</h3>
+    <span class="tag tag-detect">Deteção</span>
+    <div class="code" data-cmd="nmap -sV 192.168.1.1">nmap -sV 192.168.1.1</div>
+    <p>Além de listar portas abertas, identifica a versão do software em execução. Essencial para avaliação de
+      vulnerabilidades.</p>
+
+    <h3>5. Deteção de Sistema Operativo</h3>
+    <div class="code" data-cmd="nmap -O 192.168.1.1">nmap -O 192.168.1.1</div>
+    <p>Tenta determinar o sistema operativo do alvo com base nas respostas aos pacotes.</p>
+
+    <h3>6. Escaneamento Stealth (TCP SYN)</h3>
+    <span class="tag tag-scan">Técnica</span>
+    <div class="code" data-cmd="sudo nmap -sS 192.168.1.1">sudo nmap -sS 192.168.1.1</div>
+    <p>Também conhecido como half-open scan. Envia pacotes SYN sem completar o three-way handshake. Mais rápido e menos
+      detetável que um scan TCP completo.</p>
+
+    <h3>7. Escaneamento TCP Connect</h3>
+    <div class="code" data-cmd="nmap -sT 192.168.1.1">nmap -sT 192.168.1.1</div>
+    <p>Completa o three-way handshake com cada porta. Mais detetável, mas mais fiável e não requer privilégios de root.
+    </p>
+
+    <h3>8. Escaneamento UDP</h3>
+    <span class="tag tag-scan">Técnica</span>
+    <div class="code" data-cmd="sudo nmap -sU 192.168.1.1">sudo nmap -sU 192.168.1.1</div>
+    <p>Escaneia portas UDP (DNS, SNMP, DHCP, TFTP). Mais lento que TCP porque o UDP não tem handshake. Pode demorar até
+      18 horas sem otimização.</p>
+
+    <h3>9. Escaneamento de portas específicas</h3>
+    <div class="code" data-cmd="nmap -p 80,443 192.168.1.1">nmap -p 80,443 192.168.1.1</div>
+    <p>Escaneia apenas as portas indicadas (separadas por vírgula).</p>
+
+    <h3>10. Escaneamento de todas as portas</h3>
+    <div class="code" data-cmd="nmap -p- 192.168.1.1">nmap -p- 192.168.1.1</div>
+    <p>Escaneia todas as 65535 portas. Mais demorado, mas não deixa nada por verificar.</p>
+
+    <h3>11. Ignorar ping (hosts que bloqueiam ICMP)</h3>
+    <div class="code" data-cmd="nmap -Pn 192.168.1.1">nmap -Pn 192.168.1.1</div>
+    <p>Trata todos os hosts como online, mesmo que não respondam a ping. Útil quando há firewalls a bloquear ICMP.</p>
+
+    <h3>12. Scan agressivo (tudo de uma vez)</h3>
+    <span class="tag tag-detect">Deteção</span>
+    <div class="code" data-cmd="nmap -A -T4 scanme.nmap.org">nmap -A -T4 scanme.nmap.org</div>
+    <p>Combina deteção de SO, versões, script scanning e traceroute. <code>-T4</code> acelera a execução. Usa com
+      cuidado em produção.</p>
+
+    <h3>13. Mapear regras de firewall (ACK Scan)</h3>
+    <div class="code" data-cmd="nmap -sA 192.168.1.1">nmap -sA 192.168.1.1</div>
+    <p>Envia pacotes apenas com flag ACK. Não descobre portas abertas, mas mapeia as regras de filtragem do firewall.
+    </p>
+
+    <h3>14. Scan de vulnerabilidades com NSE</h3>
+    <span class="tag tag-script">Scripts</span>
+    <div class="code" data-cmd="nmap --script vuln 192.168.1.1">nmap --script vuln 192.168.1.1</div>
+    <p>Usa a categoria <code>vuln</code> do Nmap Scripting Engine para verificar vulnerabilidades conhecidas.</p>
+
+    <h3>15. Enumerar diretórios web</h3>
+    <span class="tag tag-script">Scripts</span>
+    <div class="code" data-cmd="nmap -p 80 --script http-enum 192.168.1.1">nmap -p 80 --script http-enum 192.168.1.1
+    </div>
+    <p>Descobre diretórios e ficheiros comuns em servidores web.</p>
+
+    <h3>16. Brute-force SSH com NSE</h3>
+    <span class="tag tag-script">Scripts</span>
+    <div class="code" data-cmd="nmap --script ssh-brute 192.168.1.1">nmap --script ssh-brute 192.168.1.1</div>
+    <p>Testa credenciais SSH com base em listas de utilizadores e passwords. Apenas em testes autorizados.</p>
+
+    <h2>Cheat Sheet rápido</h2>
+    <div class="cheat-grid">
+      <div class="cheat-item">
+        <span class="cmd">nmap -sn 10.0.0.0/24</span>
+        <span class="desc">Ping sweep — descobre hosts ativos</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">nmap -sV -sC 192.168.1.1</span>
+        <span class="desc">Versões + scripts default</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">nmap -p- -T4 192.168.1.1</span>
+        <span class="desc">Todas as portas, execução rápida</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">nmap -sU --top-ports 50 192.168.1.1</span>
+        <span class="desc">Top 50 portas UDP</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">nmap -O --osscan-guess 192.168.1.1</span>
+        <span class="desc">Deteção agressiva de SO</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">nmap -oN output.txt 192.168.1.1</span>
+        <span class="desc">Guardar resultado em ficheiro</span>
+      </div>
+    </div>
+
+    <h2>Combinando flags — a fórmula do Nmap</h2>
+    <div class="card">
+      <p
+        style="font-family: monospace; color: var(--accent); font-size: .95rem; text-align: center; margin-bottom: .75rem;">
+        Nmap + Alvo + Tipo + Portas + Deteção + Timing + Scripts + Evasão
+      </p>
+      <p>Exemplo de um scan lento e minucioso:</p>
+      <div class="code"
+        data-cmd="nmap 192.168.10.50 -sT -p1-65535 --version-light --max-rate 5 --script=vulners -S 192.168.1.1">nmap
+        192.168.10.50 -sT -p1-65535 --version-light --max-rate 5 --script=vulners -S 192.168.1.1</div>
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ Aviso legal:</strong> O Nmap é legal, mas escanear redes sem autorização explícita por escrito
+      viola as leis de cibersegurança (GDPR e legislação local). Usa sempre em sistemas que
+      possuis ou tens permissão para testar. O host <code>scanme.nmap.org</code> foi criado
+      especificamente para prática.
+    </div>
+
+    <footer>
+      Guia Nmap — parte da série "Top 15 Ferramentas Kali Linux".
+    </footer>
+
+  </div>
+
+  <script>
+    // Tema
+    const themeBtn = document.getElementById("themeBtn");
+    const savedTheme = localStorage.getItem("nmap-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+    themeBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("nmap-theme", next);
+      themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+    });
+
+    // Imprimir
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+    // Copiar comandos
+    document.querySelectorAll(".code").forEach(el => {
+      el.addEventListener("click", () => {
+        navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+          el.classList.add("copied");
+          setTimeout(() => el.classList.remove("copied"), 1200);
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

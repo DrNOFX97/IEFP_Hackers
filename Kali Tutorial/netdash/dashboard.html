@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de Rede</title>
+<style>
+  :root {
+    --bg: #0a0d14;
+    --card: #151a24;
+    --card-hover: #1a2030;
+    --border: #232a38;
+    --text: #e8ecf3;
+    --muted: #7a8497;
+    --accent: #5eead4;
+    --accent-2: #818cf8;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --ok: #34d399;
+    --shadow: 0 8px 32px rgba(0,0,0,.4);
+  }
+  [data-theme="light"] {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --card-hover: #f8fafc;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #0d9488;
+    --accent-2: #4f46e5;
+    --warn: #d97706;
+    --danger: #dc2626;
+    --ok: #059669;
+    --shadow: 0 4px 20px rgba(15,23,42,.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at 20% 0%, var(--card) 0%, var(--bg) 55%);
+    background-attachment: fixed;
+    color: var(--text);
+    line-height: 1.5;
+    padding: 1.5rem;
+    min-height: 100vh;
+    transition: background .4s, color .3s;
+  }
+  .container { max-width: 1500px; margin: 0 auto; }
+
+  /* Topbar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+  .topbar h1 {
+    font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .topbar .sub { color: var(--muted); font-size: .85rem; margin-top: .15rem; }
+  .top-actions { display: flex; gap: .5rem; align-items: center; }
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    width: 42px; height: 42px; border-radius: 12px; cursor: pointer;
+    font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border: none; color: #0a0d14; padding: .65rem 1.2rem;
+    border-radius: 10px; cursor: pointer; font-weight: 600;
+    font-size: .9rem; display: flex; align-items: center; gap: .5rem;
+    transition: all .2s;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: .35rem; margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border); padding-bottom: 0;
+    overflow-x: auto;
+  }
+  .tab {
+    background: none; border: none; color: var(--muted);
+    padding: .75rem 1.1rem; cursor: pointer; font-size: .9rem;
+    font-weight: 500; border-bottom: 2px solid transparent;
+    transition: all .2s; white-space: nowrap;
+    display: flex; align-items: center; gap: .4rem;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab .count {
+    background: var(--card); padding: 0 .45rem; border-radius: 999px;
+    font-size: .72rem; color: var(--muted); min-width: 20px; text-align: center;
+  }
+  .tab.active .count { background: rgba(94,234,212,.15); color: var(--accent); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Status bar */
+  .status-bar {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: .75rem; margin-bottom: 1.5rem;
+  }
+  .status-pill {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: .85rem 1.1rem;
+    display: flex; align-items: center; gap: .75rem;
+    transition: border-color .2s;
+  }
+  .status-pill:hover { border-color: var(--accent); }
+  .status-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .si-1 { background: rgba(94,234,212,.15); }
+  .si-2 { background: rgba(129,140,248,.15); }
+  .si-3 { background: rgba(251,191,36,.15); }
+  .si-4 { background: rgba(52,211,153,.15); }
+  .si-5 { background: rgba(248,113,113,.15); }
+  .status-text { display: flex; flex-direction: column; }
+  .status-value { font-weight: 600; font-size: 1rem; font-variant-numeric: tabular-nums; }
+  .status-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+  /* Controls */
+  .controls {
+    display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+  .controls input, .controls select {
+    flex: 1; min-width: 180px; padding: .7rem 1rem;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: .9rem;
+    outline: none; transition: border-color .2s;
+  }
+  .controls input:focus, .controls select:focus { border-color: var(--accent); }
+
+  /* Grid */
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1rem;
+  }
+  .host-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.1rem;
+    transition: all .25s; position: relative; overflow: hidden;
+    animation: fadeInUp .35s ease-out backwards;
+  }
+  .host-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow); }
+  .host-card.is-new { border-color: var(--ok); }
+  .host-card.is-new::before {
+    content: "NOVO";
+    position: absolute; top: .6rem; right: .6rem;
+    font-size: .6rem; font-weight: 700; letter-spacing: .08em;
+    background: var(--ok); color: #0a0d14;
+    padding: .2rem .5rem; border-radius: 4px;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .host-head {
+    display: flex; align-items: center; gap: .5rem;
+    margin-bottom: .5rem; flex-wrap: wrap;
+  }
+  .host-ip {
+    font-size: 1.1rem; font-weight: 700;
+    font-family: "SF Mono", Consolas, monospace;
+    color: var(--accent);
+  }
+  .host-badge {
+    font-size: .65rem; text-transform: uppercase;
+    letter-spacing: .05em; padding: .2rem .55rem;
+    border-radius: 999px; font-weight: 600;
+  }
+  .badge-vendor { background: rgba(129,140,248,.15); color: var(--accent-2); }
+  .badge-unknown { background: rgba(122,132,151,.15); color: var(--muted); }
+  .host-hostname { font-size: .85rem; color: var(--muted); margin-bottom: .65rem; word-break: break-all; }
+  .host-meta {
+    display: flex; flex-direction: column; gap: .3rem;
+    font-size: .78rem; color: var(--muted);
+    font-family: "SF Mono", Consolas, monospace;
+  }
+  .host-meta .key { color: var(--muted); }
+  .host-meta .val { color: var(--text); }
+
+  .host-ports {
+    margin-top: .85rem; padding-top: .85rem;
+    border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: .35rem;
+  }
+  .port-pill {
+    font-size: .72rem; padding: .2rem .5rem; border-radius: 6px;
+    background: rgba(94,234,212,.1); color: var(--accent);
+    font-family: "SF Mono", Consolas, monospace;
+    border: 1px solid rgba(94,234,212,.25);
+  }
+  .port-pill.risk {
+    background: rgba(248,113,113,.1); color: var(--danger);
+    border-color: rgba(248,113,113,.25);
+  }
+  .port-pill.vuln {
+    background: rgba(251,191,36,.1); color: var(--warn);
+    border-color: rgba(251,191,36,.25);
+  }
+  .loading-ports { font-size: .78rem; color: var(--muted); font-style: italic; }
+
+  .host-actions {
+    display: flex; gap: .4rem; flex-wrap: wrap;
+    margin-top: .85rem; padding-top: .85rem;
+    border-top: 1px solid var(--border);
+  }
+  .btn-mini {
+    background: var(--card-hover); border: 1px solid var(--border);
+    color: var(--text); padding: .38rem .7rem;
+    border-radius: 7px; cursor: pointer; font-size: .75rem;
+    font-weight: 500; transition: all .2s;
+    display: flex; align-items: center; gap: .3rem;
+  }
+  .btn-mini:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-mini.vuln:hover { border-color: var(--warn); color: var(--warn); }
+  .btn-mini.capture:hover { border-color: var(--accent-2); color: var(--accent-2); }
+  .btn-mini:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Empty */
+  .empty {
+    grid-column: 1 / -1; text-align: center;
+    padding: 3rem 1rem; color: var(--muted);
+  }
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .3; }
+
+  /* History */
+  .history-list { display: flex; flex-direction: column; gap: .6rem; }
+  .history-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+    transition: all .2s; cursor: pointer;
+  }
+  .history-item:hover { border-color: var(--accent); transform: translateX(2px); }
+  .history-info { display: flex; flex-direction: column; gap: .15rem; }
+  .history-time { font-weight: 600; font-size: .95rem; }
+  .history-meta { font-size: .8rem; color: var(--muted); }
+  .history-badge {
+    background: rgba(94,234,212,.1); color: var(--accent);
+    padding: .25rem .65rem; border-radius: 999px;
+    font-size: .78rem; font-weight: 600;
+  }
+
+  /* Captures */
+  .capture-list { display: flex; flex-direction: column; gap: .6rem; }
+  .capture-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+    transition: all .2s;
+  }
+  .capture-item:hover { border-color: var(--accent-2); }
+  .capture-info { display: flex; flex-direction: column; gap: .15rem; min-width: 0; flex: 1; }
+  .capture-name {
+    font-weight: 600; font-size: .9rem;
+    font-family: "SF Mono", Consolas, monospace;
+    word-break: break-all;
+  }
+  .capture-meta { font-size: .78rem; color: var(--muted); }
+
+  /* Modal */
+  .modal-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+    z-index: 200; align-items: center; justify-content: center;
+    padding: 1rem;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem;
+    max-width: 800px; width: 100%; max-height: 85vh;
+    overflow-y: auto; box-shadow: var(--shadow);
+    animation: fadeInUp .25s ease-out;
+  }
+  .modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem; gap: 1rem;
+  }
+  .modal-title { font-size: 1.15rem; font-weight: 700; }
+  .modal-close {
+    background: none; border: none; color: var(--muted);
+    font-size: 1.4rem; cursor: pointer; padding: 0;
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .modal-close:hover { background: var(--card-hover); color: var(--text); }
+  .modal pre {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem;
+    font-size: .8rem; overflow-x: auto;
+    white-space: pre-wrap; word-break: break-word;
+    color: var(--muted);
+    font-family: "SF Mono", Consolas, monospace;
+  }
+  .vuln-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+  .vuln-item {
+    background: rgba(251,191,36,.08);
+    border-left: 3px solid var(--warn);
+    padding: .65rem .9rem; border-radius: 0 8px 8px 0;
+    font-size: .85rem; color: var(--text);
+    font-family: "SF Mono", Consolas, monospace;
+    word-break: break-word;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px; padding: .85rem 1.1rem;
+    box-shadow: var(--shadow); font-size: .88rem;
+    transform: translateY(150%); transition: transform .3s ease-out;
+    z-index: 300; max-width: 340px;
+  }
+  .toast.show { transform: translateY(0); }
+  .toast.error { border-left-color: var(--danger); }
+  .toast.warn { border-left-color: var(--warn); }
+
+  /* Spinner */
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer {
+    margin-top: 3rem; text-align: center;
+    font-size: .78rem; color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+
+  @media (max-width: 700px) {
+    body { padding: 1rem; }
+    .topbar h1 { font-size: 1.3rem; }
+    .status-bar { grid-template-columns: repeat(2, 1fr); }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <div>
+      <h1>Dashboard de Rede</h1>
+      <div class="sub" id="subtitle">A carregar...</div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="Alternar tema">🌙</button>
+      <button class="btn-primary" id="scanBtn">
+        <span id="scanBtnIcon">🔍</span>
+        <span id="scanBtnText">Scan</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-pill">
+      <div class="status-icon si-1">🖥️</div>
+      <div class="status-text">
+        <span class="status-value" id="statHosts">—</span>
+        <span class="status-label">Dispositivos</span>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-icon si-2">📡</div>
+      <div class="status-text">
+        <span class="status-value" id="statSubnet">—</span>
+        <span class="status-label">Subnet</span>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-icon si-3">⏱️</div>
+      <div class="status-text">
+        <span class="status-value" id="statTime">—</span>
+        <span class="status-label">Último scan</span>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-icon si-4">🔌</div>
+      <div class="status-text">
+        <span class="status-value" id="statOpenPorts">—</span>
+        <span class="status-label">Portas abertas</span>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-icon si-5">🆕</div>
+      <div class="status-text">
+        <span class="status-value" id="statNew">—</span>
+        <span class="status-label">Novos</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="hosts">🖥️ Dispositivos <span class="count" id="tabCountHosts">0</span></button>
+    <button class="tab" data-tab="history">📜 Histórico <span class="count" id="tabCountHistory">0</span></button>
+    <button class="tab" data-tab="captures">🎥 Capturas <span class="count" id="tabCountCaptures">0</span></button>
+  </div>
+
+  <!-- Painel: Dispositivos -->
+  <div class="panel active" id="panel-hosts">
+    <div class="controls">
+      <input type="text" id="search" placeholder="🔍 Pesquisar por IP, hostname, fabricante ou porta...">
+      <select id="vendorFilter">
+        <option value="">Todos os fabricantes</option>
+      </select>
+      <select id="stateFilter">
+        <option value="">Todos os estados</option>
+        <option value="new">Apenas novos</option>
+        <option value="known">Apenas conhecidos</option>
+      </select>
+    </div>
+
+    <div class="grid" id="grid">
+      <div class="empty">
+        <div class="empty-icon">📡</div>
+        <p>Carrega em <strong>Scan</strong> para descobrir os dispositivos da tua rede.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel: Histórico -->
+  <div class="panel" id="panel-history">
+    <div class="history-list" id="historyList">
+      <div class="empty"><p>Ainda sem histórico.</p></div>
+    </div>
+  </div>
+
+  <!-- Painel: Capturas -->
+  <div class="panel" id="panel-captures">
+    <div id="captureStatus" style="margin-bottom: 1rem;"></div>
+    <div class="capture-list" id="captureList">
+      <div class="empty"><p>Ainda sem capturas.</p></div>
+    </div>
+  </div>
+
+  <footer>
+    Dashboard de Rede — Nmap local + tshark. <span id="footerSubnet"></span>
+  </footer>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Detalhes</div>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- Estado ----------
+let hosts = [];
+let comparison = { new: [], removed: [], kept: [] };
+let openPortsCount = 0;
+
+const grid = document.getElementById("grid");
+const search = document.getElementById("search");
+const vendorFilter = document.getElementById("vendorFilter");
+const stateFilter = document.getElementById("stateFilter");
+const toast = document.getElementById("toast");
+const modalBackdrop = document.getElementById("modalBackdrop");
+const modalTitle = document.getElementById("modalTitle");
+const modalBody = document.getElementById("modalBody");
+
+const RISKY_PORTS = [21, 23, 135, 139, 445, 1433, 3389, 5900, 7547];
+
+// ---------- Tema ----------
+const themeBtn = document.getElementById("themeBtn");
+const savedTheme = localStorage.getItem("netdash-theme") || "dark";
+document.documentElement.setAttribute("data-theme", savedTheme);
+themeBtn.textContent = savedTheme === "dark" ? "🌙" : "☀️";
+themeBtn.addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("netdash-theme", next);
+  themeBtn.textContent = next === "dark" ? "🌙" : "☀️";
+});
+
+// ---------- Toast ----------
+let toastTimer;
+function showToast(msg, type = "ok") {
+  toast.textContent = msg;
+  toast.classList.remove("error", "warn");
+  if (type === "error") toast.classList.add("error");
+  if (type === "warn") toast.classList.add("warn");
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 3500);
+}
+
+// ---------- Modal ----------
+function openModal(title, html) {
+  modalTitle.textContent = title;
+  modalBody.innerHTML = html;
+  modalBackdrop.classList.add("show");
+}
+function closeModal() {
+  modalBackdrop.classList.remove("show");
+}
+document.getElementById("modalClose").addEventListener("click", closeModal);
+modalBackdrop.addEventListener("click", e => {
+  if (e.target === modalBackdrop) closeModal();
+});
+
+// ---------- Tabs ----------
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+
+    if (tab.dataset.tab === "history") loadHistory();
+    if (tab.dataset.tab === "captures") loadCaptures();
+  });
+});
+
+// ---------- Scan principal ----------
+async function scanNetwork() {
+  const btn = document.getElementById("scanBtn");
+  const icon = document.getElementById("scanBtnIcon");
+  const text = document.getElementById("scanBtnText");
+
+  btn.disabled = true;
+  icon.innerHTML = '<span class="spinner"></span>';
+  text.textContent = "A escanear...";
+  showToast("A correr nmap -sn na tua rede...");
+
+  try {
+    const res = await fetch("/api/scan");
+    if (!res.ok) throw new Error("Erro no scan");
+    const data = await res.json();
+
+    hosts = data.hosts.map(h => ({ ...h, ports: [], loading: false, vulns: null, vulnLoading: false }));
+    comparison = data.comparison || { new: [], removed: [], kept: [] };
+
+    document.getElementById("statHosts").textContent = data.count;
+    document.getElementById("statSubnet").textContent = data.subnet;
+    document.getElementById("statTime").textContent = new Date(data.timestamp).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("statNew").textContent = comparison.new.length;
+    document.getElementById("footerSubnet").textContent = `Subnet: ${data.subnet}`;
+    document.getElementById("subtitle").textContent = `Última atualização: ${new Date(data.timestamp).toLocaleString("pt-PT")}`;
+
+    buildVendorFilter();
+    render();
+
+    if (comparison.new.length) {
+      showToast(`⚠ ${comparison.new.length} dispositivo(s) novo(s) na rede!`, "warn");
+    } else {
+      showToast(`✓ ${data.count} dispositivos encontrados`);
+    }
+  } catch (err) {
+    showToast("Erro: " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+    icon.textContent = "🔍";
+    text.textContent = "Scan";
+  }
+}
+
+// ---------- Scan de portas ----------
+async function scanPorts(ip) {
+  const host = hosts.find(h => h.ip === ip);
+  if (!host || host.loading) return;
+
+  host.loading = true;
+  render();
+
+  try {
+    const res = await fetch(`/api/ports/${ip}`);
+    const data = await res.json();
+    host.ports = data.ports || [];
+    openPortsCount = hosts.reduce((sum, h) => sum + h.ports.length, 0);
+    document.getElementById("statOpenPorts").textContent = openPortsCount;
+  } catch (err) {
+    showToast("Erro ao escanear portas de " + ip, "error");
+  } finally {
+    host.loading = false;
+    render();
+  }
+}
+
+// ---------- Scan NSE (vulnerabilidades) ----------
+async function scanVuln(ip) {
+  const host = hosts.find(h => h.ip === ip);
+  if (!host || host.vulnLoading) return;
+
+  const ok = confirm(
+    `Scan NSE de vulnerabilidades a ${ip}?\n\n` +
+    "AVISO:\n" +
+    "• Corre nmap --script=vuln (pesado e barulhento)\n" +
+    "• Pode demorar 5-15 minutos\n" +
+    "• Pode causar instabilidade em dispositivos fracos\n" +
+    "• Usa APENAS nos teus próprios dispositivos\n\n" +
+    "Continuar?"
+  );
+  if (!ok) return;
+
+  host.vulnLoading = true;
+  render();
+  showToast(`Scan NSE a ${ip}... pode demorar.`);
+
+  try {
+    const res = await fetch(`/api/vuln/${ip}`);
+    const data = await res.json();
+    host.vulns = data;
+
+    if (data.count > 0) {
+      showToast(`⚠ ${data.count} vulnerabilidade(s) encontradas em ${ip}`, "warn");
+    } else {
+      showToast(`✓ Scan NSE a ${ip} sem vulnerabilidades óbvias`);
+    }
+
+    // Abre modal com o resultado
+    let html = "";
+    if (data.vulnerabilities && data.vulnerabilities.length) {
+      html += `<div class="vuln-list">`;
+      data.vulnerabilities.forEach(v => {
+        html += `<div class="vuln-item">${escapeHtml(v)}</div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<p style="color:var(--muted); margin-bottom:1rem;">Nenhuma vulnerabilidade óbvia detetada pelos scripts NSE.</p>`;
+    }
+    if (data.raw_preview) {
+      html += `<details><summary style="cursor:pointer; color:var(--muted); font-size:.85rem; margin-bottom:.5rem;">Ver output bruto</summary><pre>${escapeHtml(data.raw_preview)}</pre></details>`;
+    }
+    openModal(`Scan NSE — ${ip}`, html);
+  } catch (err) {
+    showToast("Erro no scan NSE: " + err.message, "error");
+  } finally {
+    host.vulnLoading = false;
+    render();
+  }
+}
+
+// ---------- Captura tshark ----------
+async function captureHost(ip) {
+  const duration = prompt(`Duração da captura a ${ip} (segundos):`, "30");
+  if (!duration) return;
+  const dur = parseInt(duration);
+  if (isNaN(dur) || dur < 5 || dur > 300) {
+    showToast("Duração inválida (5-300s)", "error");
+    return;
+  }
+
+  showToast(`A iniciar captura a ${ip} por ${dur}s...`);
+
+  try {
+    const res = await fetch(`/api/capture/${ip}?duration=${dur}`, { method: "POST" });
+    const data = await res.json();
+
+    if (data.error) {
+      showToast(data.error, "error");
+      return;
+    }
+    showToast(`📡 Captura iniciada (${dur}s). Vê a aba "Capturas".`);
+
+    // Atualiza a lista após a captura terminar
+    setTimeout(() => loadCaptures(), (dur + 2) * 1000);
+  } catch (err) {
+    showToast("Erro: " + err.message, "error");
+  }
+}
+
+// ---------- Carregar histórico ----------
+async function loadHistory() {
+  const list = document.getElementById("historyList");
+  try {
+    const res = await fetch("/api/history");
+    const data = await res.json();
+    const scans = data.scans || [];
+    document.getElementById("tabCountHistory").textContent = scans.length;
+
+    if (!scans.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">📜</div><p>Ainda sem histórico.</p></div>`;
+      return;
+    }
+
+    list.innerHTML = scans.map(s => {
+      const dt = new Date(s.timestamp);
+      const dataStr = dt.toLocaleString("pt-PT");
+      return `
+        <div class="history-item" onclick="viewHistoryScan('${s.file}')">
+          <div class="history-info">
+            <div class="history-time">${dataStr}</div>
+            <div class="history-meta">${s.subnet} · ${s.file}</div>
+          </div>
+          <div class="history-badge">${s.count} dispositivos</div>
+        </div>`;
+    }).join("");
+  } catch (err) {
+    list.innerHTML = `<div class="empty"><p>Erro a carregar histórico.</p></div>`;
+  }
+}
+
+async function viewHistoryScan(filename) {
+  try {
+    const res = await fetch(`/api/history/${filename}`);
+    const data = await res.json();
+
+    let html = `<p style="color:var(--muted); margin-bottom:1rem; font-size:.85rem;">
+      ${new Date(data.timestamp).toLocaleString("pt-PT")} · ${data.subnet}
+    </p>`;
+
+    if (data.hosts && data.hosts.length) {
+      html += `<div style="display:flex; flex-direction:column; gap:.4rem;">`;
+      data.hosts.forEach(h => {
+        html += `
+          <div style="padding:.5rem .75rem; background:var(--bg); border:1px solid var(--border); border-radius:8px; font-size:.85rem;">
+            <strong style="color:var(--accent); font-family:monospace;">${h.ip}</strong>
+            ${h.vendor ? `<span style="color:var(--muted); margin-left:.5rem;">${h.vendor}</span>` : ""}
+            ${h.mac ? `<div style="color:var(--muted); font-size:.75rem; font-family:monospace;">${h.mac}</div>` : ""}
+          </div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<p style="color:var(--muted);">Sem hosts neste scan.</p>`;
+    }
+
+    openModal(`Scan — ${new Date(data.timestamp).toLocaleString("pt-PT")}`, html);
+  } catch (err) {
+    showToast("Erro a abrir scan", "error");
+  }
+}
+
+// ---------- Carregar capturas ----------
+async function loadCaptures() {
+  const list = document.getElementById("captureList");
+  const status = document.getElementById("captureStatus");
+
+  try {
+    const res = await fetch("/api/captures");
+    const data = await res.json();
+    document.getElementById("tabCountCaptures").textContent = (data.captures || []).length;
+
+    if (!data.tshark_available) {
+      status.innerHTML = `
+        <div class="empty" style="padding:1rem; text-align:left;">
+          <p style="color:var(--warn);">
+            ⚠ <strong>tshark não encontrado</strong>.
+            Instala o Wireshark para ativar capturas.
+            <a href="https://www.wireshark.org/download.html" target="_blank" style="color:var(--accent-2);">Descarregar</a>
+          </p>
+        </div>`;
+    } else {
+      const ifaceInfo = data.interfaces && data.interfaces.length
+        ? `Interfaces detetadas: ${data.interfaces.length}`
+        : "tshark pronto";
+      status.innerHTML = `
+        <div class="status-pill" style="display:inline-flex;">
+          <div class="status-icon si-1">🎥</div>
+          <div class="status-text">
+            <span class="status-value">${data.captures.length} captura(s)</span>
+            <span class="status-label">${ifaceInfo}</span>
+          </div>
+        </div>`;
+    }
+
+    if (!data.captures.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">🎥</div><p>Sem capturas. Usa o botão 📡 num dispositivo.</p></div>`;
+      return;
+    }
+
+    list.innerHTML = data.captures.map(c => {
+      const size = (c.size / 1024).toFixed(1);
+      const dt = new Date(c.modified).toLocaleString("pt-PT");
+      return `
+        <div class="capture-item">
+          <div class="capture-info">
+            <div class="capture-name">${c.name}</div>
+            <div class="capture-meta">${size} KB · ${dt}</div>
+          </div>
+          <button class="btn-mini" onclick="openCapture('${c.name}')">🦈 Abrir no Wireshark</button>
+        </div>`;
+    }).join("");
+  } catch (err) {
+    list.innerHTML = `<div class="empty"><p>Erro a carregar capturas.</p></div>`;
+  }
+}
+
+async function openCapture(filename) {
+  try {
+    const res = await fetch(`/api/captures/${filename}/open`, { method: "POST" });
+    const data = await res.json();
+    if (data.error) showToast(data.error, "error");
+    else showToast("🦈 A abrir no Wireshark...");
+  } catch (err) {
+    showToast("Erro", "error");
+  }
+}
+
+// ---------- Filtros ----------
+function buildVendorFilter() {
+  const vendors = [...new Set(hosts.map(h => h.vendor).filter(Boolean))].sort();
+  vendorFilter.innerHTML = '<option value="">Todos os fabricantes</option>' +
+    vendors.map(v => `<option value="${v}">${v}</option>`).join("");
+}
+
+// ---------- Render ----------
+function render() {
+  const q = search.value.toLowerCase().trim();
+  const vf = vendorFilter.value;
+  const sf = stateFilter.value;
+
+  const filtered = hosts.filter(h => {
+    const matchQ = !q ||
+      h.ip.includes(q) ||
+      (h.hostname || "").toLowerCase().includes(q) ||
+      (h.vendor || "").toLowerCase().includes(q) ||
+      h.ports.some(p => String(p.port).includes(q) || p.service.toLowerCase().includes(q));
+    const matchV = !vf || h.vendor === vf;
+    const isNew = comparison.new.includes(h.ip);
+    const matchS = !sf || (sf === "new" ? isNew : !isNew);
+    return matchQ && matchV && matchS;
+  });
+
+  document.getElementById("tabCountHosts").textContent = hosts.length;
+
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🔍</div>
+        <p>${hosts.length === 0 ? "Sem dados. Carrega em <strong>Scan</strong>." : "Nenhum dispositivo corresponde ao filtro."}</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((h, i) => {
+    const isNew = comparison.new.includes(h.ip);
+    const badge = h.vendor
+      ? `<span class="host-badge badge-vendor">${h.vendor}</span>`
+      : `<span class="host-badge badge-unknown">Desconhecido</span>`;
+
+    let portsHtml = "";
+    if (h.loading) {
+      portsHtml = `<div class="host-ports"><div class="loading-ports"><span class="spinner"></span> A escanear portas...</div></div>`;
+    } else if (h.ports.length) {
+      portsHtml = `<div class="host-ports">${h.ports.map(p => {
+        const cls = RISKY_PORTS.includes(p.port) ? "risk" : "";
+        return `<span class="port-pill ${cls}" title="${p.service} ${p.version}">${p.port} ${p.service}</span>`;
+      }).join("")}</div>`;
+    }
+
+    const vulnBadge = h.vulns && h.vulns.count > 0
+      ? `<span class="port-pill vuln">⚠ ${h.vulns.count} vuln</span>`
+      : "";
+
+    return `
+      <div class="host-card ${isNew ? "is-new" : ""}" style="animation-delay: ${Math.min(i * 0.03, 0.4)}s">
+        <div class="host-head">
+          <span class="host-ip">${h.ip}</span>
+          ${badge}
+        </div>
+        ${h.hostname ? `<div class="host-hostname">${h.hostname}</div>` : ""}
+        <div class="host-meta">
+          ${h.mac ? `<div><span class="key">MAC:</span> <span class="val">${h.mac}</span></div>` : ""}
+        </div>
+        ${portsHtml}
+        ${vulnBadge ? `<div style="margin-top:.5rem;">${vulnBadge}</div>` : ""}
+        <div class="host-actions">
+          <button class="btn-mini" onclick="scanPorts('${h.ip}')" ${h.loading ? "disabled" : ""}>
+            ${h.loading ? '<span class="spinner"></span>' : "🔌"} Portas
+          </button>
+          <button class="btn-mini capture" onclick="captureHost('${h.ip}')">📡 Capturar</button>
+          <button class="btn-mini vuln" onclick="scanVuln('${h.ip}')" ${h.vulnLoading ? "disabled" : ""}>
+            ${h.vulnLoading ? '<span class="spinner"></span>' : "⚠"} NSE
+          </button>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ---------- Helpers ----------
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ---------- Eventos ----------
+document.getElementById("scanBtn").addEventListener("click", scanNetwork);
+search.addEventListener("input", render);
+vendorFilter.addEventListener("change", render);
+stateFilter.addEventListener("change", render);
+
+// ---------- Init ----------
+scanNetwork();
+</script>
+
+</body>
+</html>
