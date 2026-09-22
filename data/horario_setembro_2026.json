@@ -456,18 +456,15 @@
         },
         {
           "hora": "14:00-15:00",
-          "uc": "UC01481",
-          "modalidade": "remoto"
+          "uc": "UC01481"
         },
         {
           "hora": "15:00-16:00",
-          "uc": "UC01481",
-          "modalidade": "remoto"
+          "uc": "UC01481"
         },
         {
           "hora": "16:00-17:00",
-          "uc": "UC01481",
-          "modalidade": "remoto"
+          "uc": "UC01481"
         }
       ]
     },
