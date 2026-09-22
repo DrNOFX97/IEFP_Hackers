@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 06 — sorted()</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:700px) { .nav-links { display:none; } }
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card.acc { border-top:2px solid var(--accent); }
+  .card.acc:hover { border-color:var(--accent);
+    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card.acc .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card.acc h3 { color:var(--accent); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .card.acc ul li::before { color:var(--accent); }
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .compare-grid.three { grid-template-columns:repeat(3,1fr); }
+  @media (max-width:900px) { .compare-grid.three { grid-template-columns:1fr; } }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7;
+    margin-top: 14px; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .ok { color:var(--ok); }
+  .code .err { color:var(--err); }
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); } td.warn { color:var(--warn); }
+  td.err { color:var(--err); } td.kali { color:var(--kali); } td.meta { color:var(--meta); }
+  td.acc { color:var(--accent); }
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px; border:2px solid var(--bg-0); }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo"><span class="dot"></span><span>aula://sorted</span></div>
+    <div class="nav-links">
+      <a href="#basico">Básico</a>
+      <a href="#vs-sort">sorted vs sort</a>
+      <a href="#key">key</a>
+      <a href="#multiplos">Múltiplos</a>
+      <a href="#avancado">Avançado</a>
+      <a href="#armadilhas">Armadilhas</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="badge"><span class="live"></span>AULA 06 • ORDENAÇÃO</div>
+    <h1>
+      <span class="grad-kali">sorted()</span><br>
+      Ordenar sem <span class="grad-meta">destruir</span>
+    </h1>
+    <p class="sub">
+      A função mais usada (e mais mal compreendida) do Python. Devolve uma nova lista,
+      aceita qualquer iterável, e com <code>key</code> faz magia.
+    </p>
+  </div>
+</header>
+
+<section id="basico">
+  <div class="container">
+    <div class="section-label">// 01 — Básico</div>
+    <h2 class="section-title">O que faz</h2>
+    <p class="section-desc">
+      <code>sorted()</code> devolve uma <strong>nova lista ordenada</strong> a partir de
+      qualquer iterável, <strong>sem modificar o original</strong>.
+    </p>
+
+    <div class="code">
+      sorted(iteravel, *, key=<span class="kw">None</span>, reverse=<span class="kw">False</span>)
+    </div>
+
+    <div class="card kali" style="margin-top:32px;">
+      <div class="card-icon">🔢</div>
+      <h3>Exemplo básico</h3>
+      <div class="role">Nova lista, original intacto</div>
+      <div class="code">
+        nums = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">9</span>, <span class="num">2</span>, <span class="num">6</span>]<br><br>
+        <span class="kw">sorted</span>(nums)              <span class="comment"># [1,1,2,3,4,5,6,9]</span><br>
+        <span class="kw">print</span>(nums)               <span class="comment"># [3,1,4,1,5,9,2,6] ← intacto</span><br><br>
+        <span class="kw">sorted</span>(nums, reverse=<span class="kw">True</span>)  <span class="comment"># [9,6,5,4,3,2,1,1]</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Funciona com qualquer iterável</h3>
+
+    <div class="code">
+      <span class="kw">sorted</span>((<span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span>))          <span class="comment"># [1,2,3]       ← tupla → lista</span><br>
+      <span class="kw">sorted</span>(<span class="str">"cba"</span>)              <span class="comment"># ['a','b','c'] ← string</span><br>
+      <span class="kw">sorted</span>({<span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span>})          <span class="comment"># [1,2,3]       ← set</span><br>
+      <span class="kw">sorted</span>({<span class="str">"b"</span>: <span class="num">2</span>, <span class="str">"a"</span>: <span class="num">1</span>})   <span class="comment"># ['a','b']     ← chaves do dict</span>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">💡</div>
+      <div>
+        <h5>Sempre devolve lista</h5>
+        <p>
+          Independentemente do iterável de entrada, <code>sorted()</code> devolve
+          <strong>sempre uma lista</strong>. Isto é uma garantia da linguagem.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="vs-sort">
+  <div class="container">
+    <div class="section-label">// 02 — Confusão clássica</div>
+    <h2 class="section-title">sorted() vs list.sort()</h2>
+    <p class="section-desc">
+      Esta é a distinção que cai sempre em exame. Devolve vs modifica.
+    </p>
+
+    <div class="compare-grid">
+      <div class="card kali">
+        <div class="card-icon">📋</div>
+        <h3>sorted(iteravel)</h3>
+        <div class="role">Built-in · devolve nova lista</div>
+        <ul>
+          <li>Não modifica o original</li>
+          <li>Devolve <strong>nova lista</strong></li>
+          <li>Aceita <strong>qualquer iterável</strong></li>
+          <li>Uso: <code>x = sorted(nums)</code></li>
+        </ul>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">✏️</div>
+        <h3>lista.sort()</h3>
+        <div class="role">Método · modifica no lugar</div>
+        <ul>
+          <li>Modifica a lista original</li>
+          <li>Devolve <strong>None</strong></li>
+          <li>Só funciona em <strong>listas</strong></li>
+          <li>Uso: <code>nums.sort()</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>sorted(iteravel)</th><th>lista.sort()</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">Modifica original?</td><td class="ok">❌ Não</td><td class="warn">✅ Sim</td></tr>
+          <tr><td class="mono">Devolve</td><td class="ok">Nova lista</td><td class="err">None</td></tr>
+          <tr><td class="mono">Aceita qualquer iterável?</td><td class="ok">✅ Sim</td><td class="err">❌ Só listas</td></tr>
+          <tr><td class="mono">Parâmetro key</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+          <tr><td class="mono">Parâmetro reverse</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+          <tr><td class="mono">Estável</td><td class="ok">✅</td><td class="ok">✅</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>Armadilha clássica</h5>
+        <p>
+          <code>nums = nums.sort()</code> → <code>nums</code> fica <strong>None</strong>!
+          <code>sort()</code> modifica no lugar e devolve <code>None</code>. Se atribuíres
+          o resultado, perdes a lista.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="key">
+  <div class="container">
+    <div class="section-label">// 03 — O parâmetro mais importante</div>
+    <h2 class="section-title">key</h2>
+    <p class="section-desc">
+      <code>key</code> recebe uma função que <strong>transforma</strong> cada elemento
+      antes de o comparar. É a base de toda a ordenação personalizada.
+    </p>
+
+    <div class="card acc">
+      <div class="card-icon">🔑</div>
+      <h3>Sintaxe</h3>
+      <div class="role">Função de transformação</div>
+      <div class="code">
+        <span class="kw">sorted</span>(iteravel, key=funcao)
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Exemplos com funções built-in</h3>
+
+    <div class="code">
+      <span class="comment"># por comprimento</span><br>
+      palavras = [<span class="str">"python"</span>, <span class="str">"c"</span>, <span class="str">"java"</span>, <span class="str">"javascript"</span>, <span class="str">"go"</span>]<br>
+      <span class="kw">sorted</span>(palavras, key=<span class="kw">len</span>)<br>
+      <span class="comment"># ['c', 'go', 'java', 'python', 'javascript']</span><br><br>
+
+      <span class="comment"># por valor absoluto</span><br>
+      nums = [-<span class="num">5</span>, <span class="num">3</span>, -<span class="num">1</span>, <span class="num">4</span>, -<span class="num">2</span>]<br>
+      <span class="kw">sorted</span>(nums, key=<span class="kw">abs</span>)<br>
+      <span class="comment"># [-1, -2, 3, 4, -5]</span><br><br>
+
+      <span class="comment"># ignorar maiúsculas</span><br>
+      nomes = [<span class="str">"ana"</span>, <span class="str">"Bruno"</span>, <span class="str">"carla"</span>, <span class="str">"David"</span>]<br>
+      <span class="kw">sorted</span>(nomes, key=<span class="kw">str</span>.lower)<br>
+      <span class="comment"># ['ana', 'Bruno', 'carla', 'David']</span>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">key com lambda</h3>
+
+    <div class="code">
+      <span class="comment"># tuplos por um campo</span><br>
+      pessoas = [(<span class="str">"Ana"</span>, <span class="num">25</span>), (<span class="str">"Rui"</span>, <span class="num">30</span>), (<span class="str">"Sofia"</span>, <span class="num">22</span>)]<br>
+      <span class="kw">sorted</span>(pessoas, key=<span class="kw">lambda</span> p: p[<span class="num">1</span>])<br>
+      <span class="comment"># [('Sofia',22), ('Ana',25), ('Rui',30)]</span><br><br>
+
+      <span class="comment"># dicionário por valor</span><br>
+      notas = {<span class="str">"Ana"</span>: <span class="num">18</span>, <span class="str">"Rui"</span>: <span class="num">12</span>, <span class="str">"Sofia"</span>: <span class="num">20</span>}<br>
+      <span class="kw">sorted</span>(notas.items(), key=<span class="kw">lambda</span> x: x[<span class="num">1</span>])<br>
+      <span class="comment"># [('Rui',12), ('Ana',18), ('Sofia',20)]</span>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">🧠</div>
+      <div>
+        <h5>Regra mental</h5>
+        <p>
+          <code>key</code> responde à pergunta: <strong>"por que critério comparo?"</strong>
+          A função devolve o valor que o Python vai usar para comparar.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="multiplos">
+  <div class="container">
+    <div class="section-label">// 04 — Vários critérios</div>
+    <h2 class="section-title">Ordenação em cascata</h2>
+    <p class="section-desc">
+      Para ordenar por vários campos, devolve um <strong>tuplo</strong> na <code>key</code>.
+    </p>
+
+    <div class="card kali">
+      <div class="card-icon">🎯</div>
+      <h3>Tuplo na key</h3>
+      <div class="role">1º critério, 2º critério, …</div>
+      <div class="code">
+        pessoas = [<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;(<span class="str">"Ana"</span>, <span class="num">25</span>),<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;(<span class="str">"Rui"</span>, <span class="num">30</span>),<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;(<span class="str">"Ana"</span>, <span class="num">22</span>),<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;(<span class="str">"Rui"</span>, <span class="num">25</span>),<br>
+        ]<br><br>
+        <span class="comment"># 1º por nome, 2º por idade</span><br>
+        <span class="kw">sorted</span>(pessoas, key=<span class="kw">lambda</span> p: (p[<span class="num">0</span>], p[<span class="num">1</span>]))<br>
+        <span class="comment"># [('Ana',22), ('Ana',25), ('Rui',25), ('Rui',30)]</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Misturar ascendente e descendente</h3>
+
+    <div class="code">
+      <span class="comment"># nome ascendente, idade descendente</span><br>
+      <span class="kw">sorted</span>(pessoas, key=<span class="kw">lambda</span> p: (p[<span class="num">0</span>], -p[<span class="num">1</span>]))<br>
+      <span class="comment"># [('Ana',25), ('Ana',22), ('Rui',30), ('Rui',25)]</span>
+    </div>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>reverse=True vs -p[1]</h5>
+        <p>
+          <code>reverse=True</code> inverte <strong>todos</strong> os critérios.
+          Se queres inverter apenas um, usa <code>-</code> na <code>key</code>
+          (só funciona para números).
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="avancado">
+  <div class="container">
+    <div class="section-label">// 05 — Avançado</div>
+    <h2 class="section-title">Estabilidade e itemgetter</h2>
+    <p class="section-desc">
+      <code>sorted()</code> é <strong>estável</strong>: elementos iguais mantêm a ordem
+      original. E <code>itemgetter</code> é mais rápido que <code>lambda</code>.
+    </p>
+
+    <div class="card acc">
+      <div class="card-icon">🏛️</div>
+      <h3>Estabilidade</h3>
+      <div class="role">Empates mantêm ordem</div>
+      <div class="code">
+        dados = [(<span class="str">"Ana"</span>, <span class="num">25</span>), (<span class="str">"Rui"</span>, <span class="num">30</span>),<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="str">"Sofia"</span>, <span class="num">25</span>), (<span class="str">"Pedro"</span>, <span class="num">30</span>)]<br><br>
+        <span class="kw">sorted</span>(dados, key=<span class="kw">lambda</span> p: p[<span class="num">1</span>])<br>
+        <span class="comment"># [('Ana',25), ('Sofia',25), ('Rui',30), ('Pedro',30)]</span><br>
+        <span class="comment">#   ↑ Ana veio antes de Sofia — ordem original mantida</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">operator.itemgetter</h3>
+
+    <div class="code">
+      <span class="kw">from</span> operator <span class="kw">import</span> itemgetter<br><br>
+      pessoas = [(<span class="str">"Ana"</span>, <span class="num">25</span>), (<span class="str">"Rui"</span>, <span class="num">30</span>), (<span class="str">"Sofia"</span>, <span class="num">22</span>)]<br><br>
+      <span class="kw">sorted</span>(pessoas, key=itemgetter(<span class="num">1</span>))       <span class="comment"># por idade</span><br>
+      <span class="kw">sorted</span>(pessoas, key=itemgetter(<span class="num">0</span>, <span class="num">1</span>))    <span class="comment"># nome, depois idade</span>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">attrgetter para objetos</h3>
+
+    <div class="code">
+      <span class="kw">from</span> operator <span class="kw">import</span> attrgetter<br><br>
+      <span class="kw">class</span> <span class="ok">Pessoa</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">def</span> __init__(self, nome, idade):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.nome = nome<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.idade = idade<br><br>
+      pessoas = [Pessoa(<span class="str">"Ana"</span>, <span class="num">25</span>), Pessoa(<span class="str">"Rui"</span>, <span class="num">30</span>)]<br>
+      <span class="kw">sorted</span>(pessoas, key=attrgetter(<span class="str">"idade"</span>))
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Ordenar dict por valor</h3>
+
+    <div class="code">
+      d = {<span class="str">"b"</span>: <span class="num">2</span>, <span class="str">"a"</span>: <span class="num">1</span>, <span class="str">"c"</span>: <span class="num">3</span>}<br><br>
+      <span class="kw">sorted</span>(d)                          <span class="comment"># ['a','b','c'] — por chave</span><br>
+      <span class="kw">sorted</span>(d.items(), key=<span class="kw">lambda</span> x: x[<span class="num">1</span>])  <span class="comment"># por valor</span><br>
+      <span class="kw">dict</span>(<span class="kw">sorted</span>(d.items(), key=<span class="kw">lambda</span> x: x[<span class="num">1</span>]))  <span class="comment"># de volta a dict</span>
+    </div>
+  </div>
+</section>
+
+<section id="armadilhas">
+  <div class="container">
+    <div class="section-label">// 06 — Armadilhas</div>
+    <h2 class="section-title">Erros comuns</h2>
+    <p class="section-desc">
+      Cinco armadilhas que apanham quase toda a gente.
+    </p>
+
+    <div class="compare-grid">
+      <div class="card meta">
+        <div class="card-icon">❌</div>
+        <h3>nums = nums.sort()</h3>
+        <div class="role">Fica None</div>
+        <div class="code">
+          nums = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span>]<br>
+          nums = nums.sort()   <span class="comment"># ❌ None</span><br><br>
+          <span class="comment"># ✅ usa sorted()</span><br>
+          nums = <span class="kw">sorted</span>(nums)
+        </div>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">🔤</div>
+        <h3>Maiúsculas vs minúsculas</h3>
+        <div class="role">ASCII: 'Z' &lt; 'a'</div>
+        <div class="code">
+          <span class="kw">sorted</span>([<span class="str">"Banana"</span>, <span class="str">"maçã"</span>])<br>
+          <span class="comment"># ['Banana', 'maçã']</span><br><br>
+          <span class="kw">sorted</span>([<span class="str">"Banana"</span>, <span class="str">"maçã"</span>], key=<span class="kw">str</span>.lower)<br>
+          <span class="comment"># ['Banana', 'maçã'] ✅</span>
+        </div>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">🔀</div>
+        <h3>Tipos mistos</h3>
+        <div class="role">TypeError</div>
+        <div class="code">
+          <span class="kw">sorted</span>([<span class="num">1</span>, <span class="str">"a"</span>, <span class="num">2</span>])   <span class="comment"># ❌ TypeError</span><br><br>
+          <span class="comment"># converte tudo para str</span><br>
+          <span class="kw">sorted</span>([<span class="num">1</span>, <span class="str">"a"</span>], key=<span class="kw">str</span>)
+        </div>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">🚫</div>
+        <h3>None na lista</h3>
+        <div class="role">TypeError</div>
+        <div class="code">
+          <span class="kw">sorted</span>([<span class="num">3</span>, <span class="kw">None</span>, <span class="num">1</span>])   <span class="comment"># ❌ TypeError</span><br><br>
+          <span class="comment"># None no fim</span><br>
+          <span class="kw">sorted</span>([<span class="num">3</span>, <span class="kw">None</span>, <span class="num">1</span>],<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;key=<span class="kw">lambda</span> x: (x <span class="kw">is</span> <span class="kw">None</span>, x))
+        </div>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">🎭</div>
+        <h3>reverse com múltiplos critérios</h3>
+        <div class="role">Inverte tudo</div>
+        <div class="code">
+          <span class="comment"># reverse=True inverte TUDO</span><br>
+          <span class="kw">sorted</span>(pessoas,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;key=<span class="kw">lambda</span> p: (p[<span class="num">0</span>], p[<span class="num">1</span>]),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;reverse=<span class="kw">True</span>)<br><br>
+          <span class="comment"># se queres inverter só um, usa -</span><br>
+          <span class="kw">sorted</span>(pessoas,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;key=<span class="kw">lambda</span> p: (p[<span class="num">0</span>], -p[<span class="num">1</span>]))
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">🧠</div>
+      <div>
+        <h5>Frase para memorizar</h5>
+        <p>
+          <em>"sorted() devolve, sort() modifica. key transforma, reverse inverte."</em>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="exemplos">
+  <div class="container">
+    <div class="section-label">// 07 — Exemplos práticos</div>
+    <h2 class="section-title">Casos reais</h2>
+    <p class="section-desc">
+      Quatro exemplos que aparecem em código de produção.
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h4>Top 3 notas</h4>
+          <p>Ordenar por valor e cortar os primeiros.</p>
+          <div class="code">
+            notas = {<span class="str">"Ana"</span>: <span class="num">18</span>, <span class="str">"Rui"</span>: <span class="num">12</span>, <span class="str">"Sofia"</span>: <span class="num">20</span>, <span class="str">"Pedro"</span>: <span class="num">15</span>, <span class="str">"Marta"</span>: <span class="num">17</span>}<br><br>
+            top3 = <span class="kw">sorted</span>(notas.items(), key=<span class="kw">lambda</span> x: x[<span class="num">1</span>], reverse=<span class="kw">True</span>)[:<span class="num">3</span>]<br>
+            <span class="comment"># [('Sofia',20), ('Ana',18), ('Marta',17)]</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h4>Palavras por frequência</h4>
+          <p>Contar e ordenar por número de ocorrências.</p>
+          <div class="code">
+            <span class="kw">from</span> collections <span class="kw">import</span> Counter<br><br>
+            texto = <span class="str">"o gato viu o cão e o cão viu o gato"</span><br>
+            contagem = Counter(texto.split())<br><br>
+            mais_comuns = <span class="kw">sorted</span>(contagem.items(),<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;key=<span class="kw">lambda</span> x: x[<span class="num">1</span>], reverse=<span class="kw">True</span>)<br>
+            <span class="comment"># [('o',4), ('gato',2), ('viu',2), ('cão',2), ('e',1)]</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h4>Ficheiros por extensão e nome</h4>
+          <p>Ordenação em cascata com tuplo.</p>
+          <div class="code">
+            ficheiros = [<span class="str">"a.txt"</span>, <span class="str">"b.py"</span>, <span class="str">"c.txt"</span>, <span class="str">"d.py"</span>]<br><br>
+            <span class="kw">sorted</span>(ficheiros, key=<span class="kw">lambda</span> f: (f.split(<span class="str">"."</span>)[-<span class="num">1</span>], f))<br>
+            <span class="comment"># ['b.py', 'd.py', 'a.txt', 'c.txt']</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h4>Ignorar maiúsculas</h4>
+          <p>Ordenação case-insensitive com <code>str.lower</code>.</p>
+          <div class="code">
+            nomes = [<span class="str">"ana"</span>, <span class="str">"Bruno"</span>, <span class="str">"carla"</span>, <span class="str">"David"</span>]<br>
+            <span class="kw">sorted</span>(nomes, key=<span class="kw">str</span>.lower)<br>
+            <span class="comment"># ['ana', 'Bruno', 'carla', 'David']</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px; margin-bottom:16px; font-size:20px;">Tabela resumo</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Parâmetro</th><th>O que faz</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono kali">key=funcao</td><td>Transforma cada elemento antes de comparar</td></tr>
+          <tr><td class="mono acc">reverse=True</td><td>Inverte a ordem final</td></tr>
+          <tr><td class="mono meta">(default)</td><td>Ordem crescente natural</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">🧠</div>
+      <div>
+        <h5>Resumo final</h5>
+        <p>
+          1. <code>sorted()</code> devolve nova lista; <code>list.sort()</code> modifica no lugar ·
+          2. Aceita qualquer iterável · 3. <code>key</code> transforma antes de comparar ·
+          4. <code>reverse=True</code> inverte · 5. É estável ·
+          6. Para múltiplos critérios, devolve tuplo na <code>key</code> ·
+          7. <code>itemgetter</code> é mais rápido que <code>lambda</code> ·
+          8. Cuidado com maiúsculas, tipos mistos e <code>None</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Aula 06 • <strong style="color:var(--kali)">sorted()</strong> · Ordenação em Python</p>
+    <p style="margin-top:10px; opacity:0.6">Material educativo • Funções built-in</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

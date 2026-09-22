@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostgreSQL — Aula Interativa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:900px) { .nav-links { display:none; } }
+
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card.purple { border-top:2px solid var(--accent); }
+  .card.purple:hover { border-color:var(--accent);
+    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card.purple .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card.purple h3 { color:var(--accent); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .card.purple ul li::before { color:var(--accent); }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .triple-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  @media (max-width:980px) { .triple-grid { grid-template-columns:1fr; } }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code.meta-code::before { background:var(--meta); }
+  .code.purple-code::before { background:var(--accent); }
+  .code .prompt { color:var(--meta); user-select:none; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .cmd { color:#e8ecf4; }
+  .code .ph { color:var(--warn); font-weight:600; }
+  .code .ok { color:var(--ok); }
+  .code .dim { color:var(--text-faint); }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .bad { color:var(--err); font-weight:600; }
+  .code .good { color:var(--ok); font-weight:600; }
+  .code .key { color:#00d4ff; }
+
+  .term { background:#000; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; margin:32px 0; font-family:var(--font-mono); }
+  .term-bar { display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-1); border-bottom:1px solid var(--border); }
+  .term-bar .b { width:12px; height:12px; border-radius:50%; }
+  .term-bar .b.r { background:#ff5f57; }
+  .term-bar .b.y { background:#febc2e; }
+  .term-bar .b.g { background:#28c840; }
+  .term-bar .title { margin-left:8px; font-size:12px; color:var(--text-faint); }
+  .term-body { padding:18px 20px; font-size:13px; line-height:1.8; min-height:120px;
+    max-height:500px; overflow-y:auto; color:#a8ffcb; white-space:pre-wrap;
+    word-break:break-word; }
+  .term-body .prompt { color:var(--meta); }
+  .term-body .info { color:var(--kali); }
+  .term-body .ok { color:var(--ok); }
+  .term-body .err { color:var(--err); }
+  .term-body .warn { color:var(--warn); }
+  .term-body .dim { color:var(--text-faint); }
+
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); }
+  td.warn { color:var(--warn); }
+  td.err { color:var(--err); }
+  td.kali { color:var(--kali); }
+  td.meta { color:var(--meta); }
+  td.purple { color:var(--accent); }
+
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+
+  .danger-box { background:linear-gradient(135deg,rgba(255,59,107,0.08),rgba(255,77,77,0.04));
+    border:1px solid rgba(255,59,107,0.25); border-left:3px solid var(--meta);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .danger-box .icon { font-size:22px; flex-shrink:0; }
+  .danger-box h5 { color:var(--meta); font-size:15px; margin-bottom:4px; }
+  .danger-box p { color:var(--text-dim); font-size:14px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px;
+    border:2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background:#1c2233; }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+
+  .tag { display:inline-block; font-family:var(--font-mono); font-size:11px;
+    padding:3px 10px; border-radius:100px; letter-spacing:0.5px; margin-left:8px;
+    vertical-align:middle; }
+  .tag.kali { background:rgba(0,212,255,0.1); color:var(--kali);
+    border:1px solid rgba(0,212,255,0.25); }
+  .tag.meta { background:rgba(255,59,107,0.1); color:var(--meta);
+    border:1px solid rgba(255,59,107,0.25); }
+  .tag.purple { background:rgba(124,92,255,0.1); color:var(--accent);
+    border:1px solid rgba(124,92,255,0.25); }
+
+  .flow { display:flex; align-items:center; justify-content:center;
+    flex-wrap:wrap; gap:12px; margin:32px 0; font-family:var(--font-mono); font-size:13px; }
+  .flow-node { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:12px; padding:12px 20px; color:var(--text-dim); text-align:center; }
+  .flow-node.kali { border-color:rgba(0,212,255,0.4); color:var(--kali); }
+  .flow-node.meta { border-color:rgba(255,59,107,0.4); color:var(--meta); }
+  .flow-node.purple { border-color:rgba(124,92,255,0.4); color:var(--accent); }
+  .flow-arrow { color:var(--text-faint); font-size:18px; }
+
+  .scenario { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:16px; }
+  .scenario h5 { font-size:15px; margin-bottom:8px; }
+  .scenario p { color:var(--text-dim); font-size:14px; }
+  .scenario.kali { border-left:3px solid var(--kali); }
+  .scenario.kali h5 { color:var(--kali); }
+  .scenario.purple { border-left:3px solid var(--accent); }
+  .scenario.purple h5 { color:var(--accent); }
+  .scenario.meta { border-left:3px solid var(--meta); }
+  .scenario.meta h5 { color:var(--meta); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      POSTGRES<span style="color:var(--kali)">//</span>PT
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#instalacao">Instalação</a>
+      <a href="#sql">SQL Prático</a>
+      <a href="#avancado">Avançado</a>
+      <a href="#seguranca">Segurança</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · bases de dados relacionais
+  </div>
+  <h1>
+    <span class="grad-kali">Postgre</span><span class="grad-meta">SQL</span>
+  </h1>
+  <p class="sub">
+    O sistema de gestão de bases de dados relacional open source mais avançado do mundo. Conhecido pela sua robustez, conformidade com o padrão SQL e extensibilidade. Nesta aula, exploramos desde a instalação até às funcionalidades avançadas que fazem do PostgreSQL a escolha preferida de engenheiros em todo o mundo.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">O que é o PostgreSQL?</h2>
+  <p class="section-desc">
+    O PostgreSQL é um sistema de gestão de bases de dados relacional (SGBDR) open source, distribuído sob a licença PostgreSQL (uma licença liberal similar à BSD/MIT). Começou como projeto académico na Universidade da Califórnia, Berkeley, em 1986, e evoluiu para um dos sistemas mais avançados e estáveis do mundo, com mais de três décadas de desenvolvimento ativo.
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">1986</span>
+      <span class="label">Início do projeto (Berkeley)</span>
+    </div>
+    <div class="stat">
+      <span class="num">ACID</span>
+      <span class="label">Transações totalmente conformes</span>
+    </div>
+    <div class="stat">
+      <span class="num">6</span>
+      <span class="label">Tipos de índices nativos</span>
+    </div>
+    <div class="stat">
+      <span class="num">MVCC</span>
+      <span class="label">Concorrência multi-versão</span>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Porquê PostgreSQL?
+  </h3>
+
+  <div class="triple-grid">
+    <div class="card kali">
+      <div class="card-icon">🛡️</div>
+      <h3>Robustez</h3>
+      <div class="role">Confiabilidade comprovada</div>
+      <ul>
+        <li>Transações ACID completas.</li>
+        <li>Recuperação após falhas (WAL).</li>
+        <li>Replicação síncrona e assíncrona.</li>
+        <li>Décadas de uso em produção crítica.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🔧</div>
+      <h3>Extensibilidade</h3>
+      <div class="role">Adaptável a qualquer domínio</div>
+      <ul>
+        <li>Tipos de dados personalizados.</li>
+        <li>Funções em múltiplas linguagens.</li>
+        <li>Índices personalizados.</li>
+        <li>Extensões (PostGIS, pgvector, etc.).</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">📊</div>
+      <h3>Funcionalidades avançadas</h3>
+      <div class="role">Muito além do SQL básico</div>
+      <ul>
+        <li>JSONB com indexação GIN.</li>
+        <li>Full-text search nativo.</li>
+        <li>Window functions completas.</li>
+        <li>CTEs recursivas e materializadas.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>PostgreSQL vs SQL padrão</h5>
+      <p>
+        O PostgreSQL segue o padrão SQL de forma rigorosa, mas também oferece extensões poderosas que não fazem parte do padrão. A documentação oficial distingue claramente o que é padrão e o que é extensão. Esta conformidade rigorosa é uma das razões da sua reputação de qualidade e portabilidade.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALAÇÃO -->
+<section id="instalacao" class="container">
+  <div class="section-label">02 — Primeiros passos</div>
+  <h2 class="section-title">Instalação</h2>
+  <p class="section-desc">
+    O PostgreSQL pode ser instalado de várias formas: pacotes nativos do sistema operativo, instaladores oficiais ou imagens Docker. A escolha depende do ambiente e das preferências da equipa.
+  </p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Instalação em Linux (Debian/Ubuntu)</h4>
+        <p>
+          A forma mais direta. Os pacotes oficiais estão disponíveis nos repositórios da distribuição e incluem a ferramenta <code>psql</code> (cliente de linha de comandos) e o servidor.
+        </p>
+        <div class="code">
+<span class="comment"># Atualizar a lista de pacotes</span>
+<span class="prompt">$</span> <span class="cmd">sudo apt update</span>
+
+<span class="comment"># Instalar PostgreSQL e contribuições</span>
+<span class="prompt">$</span> <span class="cmd">sudo apt install postgresql postgresql-contrib</span>
+<span class="ok">Setting up postgresql (14.10-0ubuntu0.22.04.1) ...</span>
+<span class="ok">Setting up postgresql-contrib (14.10-0ubuntu0.22.04.1) ...</span>
+
+<span class="comment"># Iniciar o serviço</span>
+<span class="prompt">$</span> <span class="cmd">sudo systemctl start postgresql</span>
+<span class="prompt">$</span> <span class="cmd">sudo systemctl enable postgresql</span>
+<span class="ok">Synchronizing state of postgresql.service with SysV service script...</span>
+
+<span class="comment"># Verificar o estado</span>
+<span class="prompt">$</span> <span class="cmd">sudo systemctl status postgresql</span>
+<span class="ok">● postgresql.service - PostgreSQL RDBMS</span>
+<span class="ok">     Active: active (exited) since ...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Instalação em Windows</h4>
+        <p>
+          No Windows, o instalador oficial (EDB) é a forma recomendada. Inclui o pgAdmin, uma interface gráfica para gestão. O processo é guiado e configura automaticamente o serviço.
+        </p>
+        <div class="code">
+<span class="comment"># Passos do instalador oficial:</span>
+<span class="comment">1. Descarregar em https://www.postgresql.org/download/windows/</span>
+<span class="comment">2. Executar o instalador (ex: postgresql-16.x-windows-x64.exe)</span>
+<span class="comment">3. Selecionar componentes: PostgreSQL Server, pgAdmin 4, Command Line Tools</span>
+<span class="comment">4. Definir a password do superutilizador 'postgres'</span>
+<span class="comment">5. Porta padrão: 5432</span>
+<span class="comment">6. Locale: Portuguese, Portugal</span>
+<span class="comment">7. Concluir a instalação e testar com psql ou pgAdmin</span>
+
+<span class="comment"># Testar via linha de comandos (SQL Shell)</span>
+<span class="prompt">$</span> <span class="cmd">psql -U postgres -h localhost</span>
+<span class="info">Password for user postgres:</span>
+<span class="ok">psql (16.1)</span>
+<span class="ok">Type "help" for help.</span>
+<span class="prompt">postgres=#</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Instalação com Docker</h4>
+        <p>
+          A abordagem mais reproduzível e recomendada para desenvolvimento e testes. Uma única linha de comando cria uma instância funcional, isolada e descartável.
+        </p>
+        <div class="code">
+<span class="comment"># Executar um contentor PostgreSQL</span>
+<span class="prompt">$</span> <span class="cmd">docker run --name pg-local \</span>
+<span class="cmd">  -e POSTGRES_PASSWORD=minha_password \</span>
+<span class="cmd">  -e POSTGRES_DB=loja \</span>
+<span class="cmd">  -p 5432:5432 \</span>
+<span class="cmd">  -v pgdata:/var/lib/postgresql/data \</span>
+<span class="cmd">  -d postgres:16</span>
+<span class="ok">Unable to find image 'postgres:16' locally</span>
+<span class="ok">16: Pulling from library/postgres</span>
+<span class="ok">...</span>
+<span class="ok">Status: Downloaded newer image for postgres:16</span>
+<span class="ok">a1b2c3d4e5f6...</span>
+
+<span class="comment"># Ligar ao contentor com psql</span>
+<span class="prompt">$</span> <span class="cmd">docker exec -it pg-local psql -U postgres -d loja</span>
+<span class="ok">psql (16.1 (Debian 16.1-1.pgdg120+1))</span>
+<span class="ok">Type "help" for help.</span>
+<span class="prompt">loja=#</span>
+
+<span class="comment"># O volume 'pgdata' persiste os dados mesmo após remover o contentor</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Primeiros comandos no psql</h4>
+        <p>
+          O <code>psql</code> é a interface de linha de comandos do PostgreSQL. É uma ferramenta essencial que todo o utilizador deve dominar, mesmo que use interfaces gráficas como o pgAdmin.
+        </p>
+        <div class="code">
+<span class="comment"># Ligar como superutilizador (Linux)</span>
+<span class="prompt">$</span> <span class="cmd">sudo -u postgres psql</span>
+<span class="ok">psql (14.10 (Ubuntu 14.10-0ubuntu0.22.04.1))</span>
+<span class="ok">Type "help" for help.</span>
+
+<span class="comment"># Criar uma base de dados</span>
+<span class="prompt">postgres=#</span> <span class="cmd">CREATE DATABASE loja;</span>
+<span class="ok">CREATE DATABASE</span>
+
+<span class="comment"># Ligar à base de dados criada</span>
+<span class="prompt">postgres=#</span> <span class="cmd">\c loja</span>
+<span class="ok">You are now connected to database "loja" as user "postgres".</span>
+
+<span class="comment"># Listar bases de dados</span>
+<span class="prompt">loja=#</span> <span class="cmd">\l</span>
+<span class="info">                                  List of databases</span>
+<span class="info">   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges</span>
+<span class="info">-----------+----------+----------+-------------+-------------+-----------------------</span>
+<span class="info"> loja      | postgres | UTF8     | pt_PT.UTF-8 | pt_PT.UTF-8 |</span>
+<span class="info"> postgres  | postgres | UTF8     | pt_PT.UTF-8 | pt_PT.UTF-8 |</span>
+<span class="info"> template0 | postgres | UTF8     | pt_PT.UTF-8 | pt_PT.UTF-8 | =c/postgres</span>
+<span class="info"> template1 | postgres | UTF8     | pt_PT.UTF-8 | pt_PT.UTF-8 | =c/postgres</span>
+
+<span class="comment"># Sair</span>
+<span class="prompt">loja=#</span> <span class="cmd">\q</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SQL PRÁTICO -->
+<section id="sql" class="container">
+  <div class="section-label">03 — SQL Prático</div>
+  <h2 class="section-title">Operações fundamentais</h2>
+  <p class="section-desc">
+    O SQL do PostgreSQL é poderoso e expressivo. Estes exemplos cobrem desde a criação de tabelas até consultas com junções e agregações, com foco nos tipos de dados e funcionalidades específicas do PostgreSQL.
+  </p>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Criar tabelas e inserir dados
+  </h3>
+
+  <div class="code">
+<span class="comment">-- Criar uma tabela de utilizadores</span>
+<span class="kw">CREATE TABLE</span> utilizadores (
+  id <span class="kw">SERIAL PRIMARY KEY</span>,
+  nome <span class="kw">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+  email <span class="kw">VARCHAR</span>(<span class="num">100</span>) <span class="kw">UNIQUE NOT NULL</span>,
+  idade <span class="kw">INT</span>,
+  cidade <span class="kw">VARCHAR</span>(<span class="num">50</span>),
+  criado_em <span class="kw">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="kw">CURRENT_TIMESTAMP</span>
+);
+
+<span class="comment">-- Criar uma tabela de encomendas (com chave estrangeira)</span>
+<span class="kw">CREATE TABLE</span> encomendas (
+  id <span class="kw">SERIAL PRIMARY KEY</span>,
+  utilizador_id <span class="kw">INT</span> <span class="kw">REFERENCES</span> utilizadores(id) <span class="kw">ON DELETE CASCADE</span>,
+  total <span class="kw">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>,
+  estado <span class="kw">VARCHAR</span>(<span class="num">20</span>) <span class="kw">DEFAULT</span> <span class="str">'pendente'</span>,
+  data <span class="kw">DATE</span> <span class="kw">DEFAULT</span> <span class="kw">CURRENT_DATE</span>
+);
+
+<span class="comment">-- Inserir dados</span>
+<span class="kw">INSERT INTO</span> utilizadores (nome, email, idade, cidade) <span class="kw">VALUES</span>
+  (<span class="str">'Ana Silva'</span>, <span class="str">'ana@exemplo.pt'</span>, <span class="num">34</span>, <span class="str">'Lisboa'</span>),
+  (<span class="str">'Bruno Costa'</span>, <span class="str">'bruno@exemplo.pt'</span>, <span class="num">29</span>, <span class="str">'Porto'</span>),
+  (<span class="str">'Carla Mendes'</span>, <span class="str">'carla@exemplo.pt'</span>, <span class="num">41</span>, <span class="str">'Coimbra'</span>);
+
+<span class="kw">INSERT INTO</span> encomendas (utilizador_id, total, estado) <span class="kw">VALUES</span>
+  (<span class="num">1</span>, <span class="num">149.90</span>, <span class="str">'entregue'</span>),
+  (<span class="num">1</span>, <span class="num">89.50</span>, <span class="str">'pendente'</span>),
+  (<span class="num">2</span>, <span class="num">220.00</span>, <span class="str">'entregue'</span>);
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Consultas com junções e agregações
+  </h3>
+
+  <div class="code purple-code">
+<span class="comment">-- Selecionar todos os utilizadores</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> utilizadores;
+
+<span class="comment">-- Filtrar por cidade</span>
+<span class="kw">SELECT</span> nome, email <span class="kw">FROM</span> utilizadores <span class="kw">WHERE</span> cidade = <span class="str">'Lisboa'</span>;
+
+<span class="comment">-- Junção entre utilizadores e encomendas</span>
+<span class="kw">SELECT</span>
+  u.nome,
+  u.cidade,
+  e.total,
+  e.estado
+<span class="kw">FROM</span> utilizadores u
+<span class="kw">INNER JOIN</span> encomendas e <span class="kw">ON</span> u.id = e.utilizador_id
+<span class="kw">ORDER BY</span> u.nome, e.total <span class="kw">DESC</span>;
+
+<span class="comment">-- Agregação: total gasto por utilizador</span>
+<span class="kw">SELECT</span>
+  u.nome,
+  <span class="kw">COUNT</span>(e.id) <span class="kw">AS</span> num_encomendas,
+  <span class="kw">SUM</span>(e.total) <span class="kw">AS</span> total_gasto,
+  <span class="kw">AVG</span>(e.total) <span class="kw">AS</span> media_encomenda
+<span class="kw">FROM</span> utilizadores u
+<span class="kw">LEFT JOIN</span> encomendas e <span class="kw">ON</span> u.id = e.utilizador_id
+<span class="kw">GROUP BY</span> u.id, u.nome
+<span class="kw">HAVING</span> <span class="kw">COUNT</span>(e.id) &gt; <span class="num">0</span>
+<span class="kw">ORDER BY</span> total_gasto <span class="kw">DESC</span>;
+
+<span class="comment">-- Subconsulta: utilizadores com encomendas acima da média</span>
+<span class="kw">SELECT</span> nome <span class="kw">FROM</span> utilizadores
+<span class="kw">WHERE</span> id <span class="kw">IN</span> (
+  <span class="kw">SELECT</span> utilizador_id <span class="kw">FROM</span> encomendas
+  <span class="kw">WHERE</span> total &gt; (<span class="kw">SELECT</span> <span class="kw">AVG</span>(total) <span class="kw">FROM</span> encomendas)
+);
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Atualizar e eliminar dados
+  </h3>
+
+  <div class="code meta-code">
+<span class="comment">-- Atualizar um registo</span>
+<span class="kw">UPDATE</span> utilizadores
+<span class="kw">SET</span> cidade = <span class="str">'Braga'</span>, idade = <span class="num">30</span>
+<span class="kw">WHERE</span> email = <span class="str">'bruno@exemplo.pt'</span>;
+
+<span class="comment">-- Eliminar um registo</span>
+<span class="kw">DELETE FROM</span> encomendas <span class="kw">WHERE</span> id = <span class="num">2</span>;
+
+<span class="comment">-- Upsert (INSERT ... ON CONFLICT) — funcionalidade avançada do PostgreSQL</span>
+<span class="kw">INSERT INTO</span> utilizadores (nome, email, idade, cidade)
+<span class="kw">VALUES</span> (<span class="str">'Ana Silva'</span>, <span class="str">'ana@exemplo.pt'</span>, <span class="num">35</span>, <span class="str">'Lisboa'</span>)
+<span class="kw">ON CONFLICT</span> (email)
+<span class="kw">DO UPDATE SET</span>
+  idade = <span class="kw">EXCLUDED</span>.idade,
+  cidade = <span class="kw">EXCLUDED</span>.cidade;
+
+<span class="comment">-- Retornar dados modificados (RETURNING)</span>
+<span class="kw">UPDATE</span> encomendas <span class="kw">SET</span> estado = <span class="str">'enviado'</span>
+<span class="kw">WHERE</span> estado = <span class="str">'pendente'</span>
+<span class="kw">RETURNING</span> id, utilizador_id, total;
+  </div>
+
+  <div class="info-box">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Tipos de dados específicos do PostgreSQL</h5>
+      <p>
+        O PostgreSQL tem tipos de dados poderosos que não existem na maioria dos SGBDs: <code>JSONB</code> (JSON binário indexável), <code>ARRAY</code> (arrays nativos), <code>UUID</code>, <code>INET</code> e <code>CIDR</code> (endereços IP), <code>TSVECTOR</code> (full-text search), <code>RANGE</code> (intervalos), e muitos outros. Aproveitar estes tipos simplifica o código da aplicação e melhora o desempenho.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- AVANÇADO -->
+<section id="avancado" class="container">
+  <div class="section-label">04 — Funcionalidades avançadas</div>
+  <h2 class="section-title">Muito além do SQL básico</h2>
+  <p class="section-desc">
+    O PostgreSQL oferece funcionalidades que o distinguem de outros SGBDs relacionais. Estas são as que mais frequentemente fazem a diferença em projetos reais.
+  </p>
+
+  <div class="triple-grid">
+    <div class="card kali">
+      <div class="card-icon">📄</div>
+      <h3>JSONB</h3>
+      <div class="role">Documentos dentro de tabelas</div>
+      <ul>
+        <li>Armazenamento binário otimizado de JSON.</li>
+        <li>Indexação GIN para consultas rápidas.</li>
+        <li>Operadores para navegação e filtragem.</li>
+        <li>Ideal para dados semi-estruturados.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🔍</div>
+      <h3>Full-Text Search</h3>
+      <div class="role">Pesquisa textual nativa</div>
+      <ul>
+        <li>Sem necessidade de Elasticsearch para casos simples.</li>
+        <li>Suporte a múltiplos idiomas e stemming.</li>
+        <li>Ranking de relevância.</li>
+        <li>Índices GIN para desempenho.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">📊</div>
+      <h3>Window Functions</h3>
+      <div class="role">Análise sem GROUP BY destrutivo</div>
+      <ul>
+        <li>Cálculos sobre janelas de linhas.</li>
+        <li>ROW_NUMBER, RANK, LAG, LEAD.</li>
+        <li>Agregações cumulativas.</li>
+        <li>Comparações entre linhas.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    JSONB em ação
+  </h3>
+
+  <div class="code">
+<span class="comment">-- Criar tabela com coluna JSONB</span>
+<span class="kw">CREATE TABLE</span> perfis (
+  id <span class="kw">SERIAL PRIMARY KEY</span>,
+  utilizador_id <span class="kw">INT</span> <span class="kw">REFERENCES</span> utilizadores(id),
+  dados <span class="kw">JSONB</span>
+);
+
+<span class="comment">-- Inserir documento JSON</span>
+<span class="kw">INSERT INTO</span> perfis (utilizador_id, dados) <span class="kw">VALUES</span>
+(<span class="num">1</span>, <span class="str">'{
+  "interesses": ["segurança", "redes", "bases de dados"],
+  "notificacoes": {"email": true, "sms": false},
+  "nivel": "premium",
+  "pontos": 1500
+}'</span>);
+
+<span class="comment">-- Consultar campo aninhado</span>
+<span class="kw">SELECT</span> utilizador_id, dados -&gt;&gt; <span class="str">'nivel'</span> <span class="kw">AS</span> nivel
+<span class="kw">FROM</span> perfis
+<span class="kw">WHERE</span> dados -&gt;&gt; <span class="str">'nivel'</span> = <span class="str">'premium'</span>;
+
+<span class="comment">-- Verificar se um array contém um valor</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> perfis
+<span class="kw">WHERE</span> dados -&gt; <span class="str">'interesses'</span> ? <span class="str">'segurança'</span>;
+
+<span class="comment">-- Criar índice GIN para acelerar consultas JSONB</span>
+<span class="kw">CREATE INDEX</span> idx_perfis_dados <span class="kw">ON</span> perfis <span class="kw">USING</span> <span class="kw">GIN</span> (dados);
+
+<span class="comment">-- Consulta eficiente com o índice</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> perfis
+<span class="kw">WHERE</span> dados @&gt; <span class="str">'{"nivel": "premium"}'</span>;
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Window Functions
+  </h3>
+
+  <div class="code purple-code">
+<span class="comment">-- Ranking de encomendas por total dentro de cada utilizador</span>
+<span class="kw">SELECT</span>
+  utilizador_id,
+  id <span class="kw">AS</span> encomenda_id,
+  total,
+  <span class="kw">ROW_NUMBER</span>() <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> utilizador_id
+    <span class="kw">ORDER BY</span> total <span class="kw">DESC</span>
+  ) <span class="kw">AS</span> ranking
+<span class="kw">FROM</span> encomendas;
+
+<span class="comment">-- Total cumulativo de gastos por utilizador ao longo do tempo</span>
+<span class="kw">SELECT</span>
+  utilizador_id,
+  data,
+  total,
+  <span class="kw">SUM</span>(total) <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> utilizador_id
+    <span class="kw">ORDER BY</span> data
+    <span class="kw">ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</span>
+  ) <span class="kw">AS</span> total_acumulado
+<span class="kw">FROM</span> encomendas;
+
+<span class="comment">-- Comparar com a encomenda anterior do mesmo utilizador</span>
+<span class="kw">SELECT</span>
+  utilizador_id,
+  id,
+  total,
+  <span class="kw">LAG</span>(total) <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> utilizador_id
+    <span class="kw">ORDER BY</span> id
+  ) <span class="kw">AS</span> encomenda_anterior,
+  total - <span class="kw">LAG</span>(total) <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> utilizador_id
+    <span class="kw">ORDER BY</span> id
+  ) <span class="kw">AS</span> diferenca
+<span class="kw">FROM</span> encomendas;
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    EXPLAIN — analisar o desempenho
+  </h3>
+
+  <p style="color:var(--text-dim); font-size:15px; max-width:820px; margin-bottom:24px;">
+    O comando <code>EXPLAIN</code> mostra o plano de execução que o PostgreSQL vai usar para uma consulta. É a ferramenta essencial para diagnosticar consultas lentas e otimizar índices[citation:6][citation:18].
+  </p>
+
+  <div class="code meta-code">
+<span class="comment">-- Ver o plano de execução (sem executar)</span>
+<span class="kw">EXPLAIN</span> <span class="kw">SELECT</span> * <span class="kw">FROM</span> utilizadores <span class="kw">WHERE</span> cidade = <span class="str">'Lisboa'</span>;
+
+<span class="info">QUERY PLAN</span>
+<span class="info">----------------------------------------------------------</span>
+<span class="info"> Seq Scan on utilizadores  (cost=0.00..1.04 rows=1 width=120)</span>
+<span class="info">   Filter: ((cidade)::text = 'Lisboa'::text)</span>
+<span class="info">(2 rows)</span>
+
+<span class="comment">-- Executar e mostrar tempos reais</span>
+<span class="kw">EXPLAIN ANALYZE</span> <span class="kw">SELECT</span> * <span class="kw">FROM</span> encomendas <span class="kw">WHERE</span> total &gt; <span class="num">100</span>;
+
+<span class="info">QUERY PLAN</span>
+<span class="info">----------------------------------------------------------------</span>
+<span class="info"> Seq Scan on encomendas  (cost=0.00..1.03 rows=2 width=52)</span>
+<span class="info">                          (actual time=0.012..0.014 rows=2 loops=1)</span>
+<span class="info">   Filter: (total &gt; 100)</span>
+<span class="info">   Rows Removed by Filter: 1</span>
+<span class="info"> Planning Time: 0.045 ms</span>
+<span class="info"> Execution Time: 0.031 ms</span>
+<span class="info">(4 rows)</span>
+
+<span class="comment">-- Criar um índice para melhorar o desempenho</span>
+<span class="kw">CREATE INDEX</span> idx_encomendas_total <span class="kw">ON</span> encomendas(total);
+
+<span class="comment">-- Verificar se o plano agora usa o índice</span>
+<span class="kw">EXPLAIN</span> <span class="kw">SELECT</span> * <span class="kw">FROM</span> encomendas <span class="kw">WHERE</span> total &gt; <span class="num">100</span>;
+<span class="info">QUERY PLAN</span>
+<span class="info">----------------------------------------------------------</span>
+<span class="info"> Index Scan using idx_encomendas_total on encomendas</span>
+<span class="info">   Index Cond: (total &gt; '100'::numeric)</span>
+<span class="info">(2 rows)</span>
+  </div>
+
+  <div class="warning">
+    <span class="icon">⚠️</span>
+    <div>
+      <h5>Cuidado com EXPLAIN ANALYZE em operações de escrita</h5>
+      <p>
+        O <code>EXPLAIN ANALYZE</code> executa realmente a consulta. Em comandos <code>INSERT</code>, <code>UPDATE</code> ou <code>DELETE</code>, isto modifica os dados. Para analisar sem alterar dados, envolva o comando numa transação e faça <code>ROLLBACK</code> no final[citation:6].
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SEGURANÇA -->
+<section id="seguranca" class="container">
+  <div class="section-label">05 — Segurança</div>
+  <h2 class="section-title">Proteger o PostgreSQL</h2>
+  <p class="section-desc">
+    A segurança do PostgreSQL é, acima de tudo, uma questão de disciplina. Três hábitos mitigam a maior parte do risco: aplicar atualizações sem demora, seguir o princípio do menor privilégio e usar consultas parametrizadas[citation:11].
+  </p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Gestão de utilizadores e privilégios</h4>
+        <p>
+          Cada aplicação deve ter um utilizador dedicado com apenas as permissões necessárias. Nunca usar a conta <code>postgres</code> para aplicações. O princípio do menor privilégio limita o impacto de uma eventual intrusão[citation:5][citation:17].
+        </p>
+        <div class="code meta-code">
+<span class="comment">-- Criar utilizador para a aplicação</span>
+<span class="kw">CREATE USER</span> app_loja <span class="kw">WITH PASSWORD</span> <span class="str">'password_forte_aqui'</span>;
+
+<span class="comment">-- Conceder apenas as permissões necessárias</span>
+<span class="kw">GRANT CONNECT ON DATABASE</span> loja <span class="kw">TO</span> app_loja;
+<span class="kw">GRANT USAGE ON SCHEMA</span> public <span class="kw">TO</span> app_loja;
+<span class="kw">GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA</span> public <span class="kw">TO</span> app_loja;
+<span class="kw">GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA</span> public <span class="kw">TO</span> app_loja;
+
+<span class="comment">-- Garantir que futuras tabelas também herdam as permissões</span>
+<span class="kw">ALTER DEFAULT PRIVILEGES IN SCHEMA</span> public
+<span class="kw">GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO</span> app_loja;
+
+<span class="comment">-- Revogar acesso público (por omissão, todos podem ligar)</span>
+<span class="kw">REVOKE ALL ON DATABASE</span> loja <span class="kw">FROM</span> public;
+<span class="kw">REVOKE ALL ON SCHEMA</span> public <span class="kw">FROM</span> public;
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Row-Level Security (RLS)</h4>
+        <p>
+          Uma funcionalidade avançada que permite controlar o acesso a nível de linha. Em vez de confiar apenas no código da aplicação, o próprio motor da base de dados impõe as restrições. Extremamente útil em ambientes multi-tenant[citation:17].
+        </p>
+        <div class="code meta-code">
+<span class="comment">-- Ativar RLS numa tabela</span>
+<span class="kw">ALTER TABLE</span> encomendas <span class="kw">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="comment">-- Criar política: cada utilizador só vê as suas encomendas</span>
+<span class="kw">CREATE POLICY</span> user_encomendas <span class="kw">ON</span> encomendas
+  <span class="kw">USING</span> (utilizador_id = <span class="kw">current_user_id</span>());
+
+<span class="comment">-- Nota: 'current_user_id()' seria uma função personalizada
+-- que devolve o ID do utilizador autenticado.
+-- Em alternativa, pode usar variáveis de sessão:
+-- SET app.current_user_id = '42';</span>
+
+<span class="comment">-- Política para administradores (podem ver tudo)</span>
+<span class="kw">CREATE POLICY</span> admin_encomendas <span class="kw">ON</span> encomendas
+  <span class="kw">FOR ALL</span>
+  <span class="kw">TO</span> admin_role
+  <span class="kw">USING</span> (<span class="kw">true</span>);
+
+<span class="comment">-- Com RLS ativo, mesmo uma query direta como
+-- SELECT * FROM encomendas devolve apenas as linhas permitidas</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Prevenir SQL Injection</h4>
+        <p>
+          A defesa mais eficaz é usar consultas parametrizadas (prepared statements). O PostgreSQL suporta nativamente este mecanismo, que separa a estrutura da consulta dos dados fornecidos pelo utilizador[citation:5][citation:11].
+        </p>
+        <div class="code meta-code">
+<span class="comment">-- ❌ Vulnerável: concatenação de strings</span>
+<span class="bad">query = "SELECT * FROM utilizadores WHERE email = '" + input + "'";</span>
+<span class="bad">// Se input = "admin@x.com' OR '1'='1", o atacante contorna a autenticação</span>
+
+<span class="comment">-- ✅ Seguro: parâmetros vinculados (PREPARE/EXECUTE)</span>
+<span class="good">PREPARE login(text) AS</span>
+<span class="good">  SELECT * FROM utilizadores WHERE email = $1;</span>
+<span class="good">EXECUTE login('ana@exemplo.pt');</span>
+
+<span class="comment">-- ✅ Seguro: na aplicação (exemplo Python/psycopg2)</span>
+<span class="good">cursor.execute(</span>
+<span class="good">  "SELECT * FROM utilizadores WHERE email = %s",</span>
+<span class="good">  (email,)</span>
+<span class="good">)</span>
+
+<span class="comment">-- ✅ Seguro: na aplicação (exemplo Node.js/node-postgres)</span>
+<span class="good">client.query('SELECT * FROM utilizadores WHERE email = $1', [email]);</span>
+
+<span class="comment">-- O motor trata o valor como dado, nunca como código SQL</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Atualizações e auditoria</h4>
+        <p>
+          O PostgreSQL publica atualizações de segurança coordenadas para todas as versões suportadas. Aplicar atualizações menores é manutenção rotineira, não um projeto. Para auditoria, a extensão <code>pgAudit</code> permite registar operações detalhadas[citation:11][citation:17].
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Verificar a versão em execução</span>
+<span class="prompt">$</span> <span class="cmd">psql -c "SELECT version();"</span>
+<span class="ok"> PostgreSQL 16.1 on x86_64-pc-linux-gnu...</span>
+
+<span class="comment"># Instalar pgAudit</span>
+<span class="prompt">$</span> <span class="cmd">sudo apt install postgresql-16-pgaudit</span>
+
+<span class="comment"># Configurar pgAudit no postgresql.conf</span>
+<span class="kw">shared_preload_libraries</span> = <span class="str">'pgaudit'</span>
+<span class="kw">pgaudit.log</span> = <span class="str">'ddl, write'</span>  <span class="comment"># registar DDL e escritas</span>
+
+<span class="comment"># Recarregar configuração</span>
+<span class="prompt">$</span> <span class="cmd">sudo systemctl reload postgresql</span>
+
+<span class="comment">-- Ver logs de auditoria</span>
+<span class="prompt">$</span> <span class="cmd">sudo tail -f /var/log/postgresql/postgresql-16-main.log</span>
+<span class="warn">2024-01-15 10:23:45.123 UTC [1234] LOG:  AUDIT: SESSION,1,1,WRITE,INSERT,,,</span>
+<span class="warn">  "INSERT INTO utilizadores (nome, email) VALUES ($1, $2)",&lt;none&gt;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="danger-box">
+    <span class="icon">🚨</span>
+    <div>
+      <h5>Nunca expor o PostgreSQL diretamente à Internet</h5>
+      <p>
+        Uma instância PostgreSQL nunca deve ser acessível diretamente da Internet. Deve estar em rede privada, atrás de uma firewall, com autenticação obrigatória e cifra em trânsito (SSL/TLS). O ficheiro <code>pg_hba.conf</code> controla quem pode ligar de onde e com que método de autenticação.
+      </p>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:32px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Risco</th>
+          <th>Mitigação</th>
+          <th>Configuração</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="err">SQL Injection</td>
+          <td>Consultas parametrizadas</td>
+          <td class="mono">PREPARE / bind variables</td>
+        </tr>
+        <tr>
+          <td class="err">Acesso não autorizado</td>
+          <td>pg_hba.conf restritivo</td>
+          <td class="mono">host all all 10.0.0.0/8 md5</td>
+        </tr>
+        <tr>
+          <td class="warn">Privilégios excessivos</td>
+          <td>Menor privilégio</td>
+          <td class="mono">GRANT SELECT, INSERT ...</td>
+        </tr>
+        <tr>
+          <td class="warn">Sem cifra em trânsito</td>
+          <td>SSL/TLS obrigatório</td>
+          <td class="mono">ssl = on</td>
+        </tr>
+        <tr>
+          <td class="warn">Falta de auditoria</td>
+          <td>pgAudit ativo</td>
+          <td class="mono">pgaudit.log = 'ddl, write'</td>
+        </tr>
+        <tr>
+          <td class="warn">Versão desatualizada</td>
+          <td>Atualizações automáticas</td>
+          <td class="mono">unattended-upgrades</td>
+        </tr>
+        <tr>
+          <td class="warn">Acesso a nível de linha</td>
+          <td>Row-Level Security</td>
+          <td class="mono">CREATE POLICY ...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SÍNTESE -->
+<section id="sintese" class="container">
+  <div class="section-label">06 — Síntese</div>
+  <h2 class="section-title">Para levar consigo</h2>
+  <p class="section-desc">
+    O PostgreSQL é uma ferramenta poderosa que recompensa quem investe em compreendê-la. Estas são as ideias-chave desta aula.
+  </p>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">✅</div>
+      <h3>Pontos-chave</h3>
+      <ul>
+        <li><strong>Robusto e conforme:</strong> segue o padrão SQL com rigor, com décadas de desenvolvimento.</li>
+        <li><strong>Extensível:</strong> tipos, funções, índices e extensões personalizáveis.</li>
+        <li><strong>Funcionalidades avançadas:</strong> JSONB, full-text search, window functions, CTEs.</li>
+        <li><strong>Seguro por design:</strong> RLS, pg_hba.conf, pgAudit, roles e privilégios granulares.</li>
+        <li><strong>Comunidade ativa:</strong> documentação excelente e atualizações regulares.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🎯</div>
+      <h3>Boas práticas essenciais</h3>
+      <ul>
+        <li><strong>Usar psql:</strong> dominar a linha de comandos é essencial.</li>
+        <li><strong>EXPLAIN é seu amigo:</strong> analisar planos antes de otimizar.</li>
+        <li><strong>Menor privilégio:</strong> cada aplicação com o seu utilizador dedicado.</li>
+        <li><strong>Consultas parametrizadas:</strong> sempre, sem exceção.</li>
+        <li><strong>Atualizar regularmente:</strong> segurança é disciplina contínua.</li>
+        <li><strong>Nunca expor à Internet:</strong> firewall, rede privada, SSL obrigatório.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="term" style="margin-top:48px;">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — PostgreSQL no dia a dia</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd"># Ligar a uma base de dados específica</span>
+<span class="prompt">$</span> <span class="cmd">psql -h localhost -U app_loja -d loja</span>
+<span class="ok">psql (16.1)</span>
+<span class="ok">Type "help" for help.</span>
+<span class="prompt">loja=&gt;</span>
+
+<span class="comment">-- Listar tabelas</span>
+<span class="prompt">loja=&gt;</span> <span class="cmd">\dt</span>
+<span class="info">          List of relations</span>
+<span class="info"> Schema |    Name     | Type  |  Owner</span>
+<span class="info">--------+-------------+-------+----------</span>
+<span class="info"> public | encomendas  | table | postgres</span>
+<span class="info"> public | utilizadores| table | postgres</span>
+<span class="info">(2 rows)</span>
+
+<span class="comment">-- Descrever a estrutura de uma tabela</span>
+<span class="prompt">loja=&gt;</span> <span class="cmd">\d utilizadores</span>
+<span class="info">                                    Table "public.utilizadores"</span>
+<span class="info">   Column   |          Type          | Collation | Nullable | Default</span>
+<span class="info">------------+------------------------+-----------+----------+-----------------------------------</span>
+<span class="info"> id         | integer                |           | not null | nextval('utilizadores_id_seq')</span>
+<span class="info"> nome       | character varying(100) |           | not null |</span>
+<span class="info"> email      | character varying(100) |           | not null |</span>
+<span class="info"> idade      | integer                |           |          |</span>
+<span class="info"> cidade     | character varying(50)  |           |          |</span>
+<span class="info"> criado_em  | timestamp              |           |          | CURRENT_TIMESTAMP</span>
+<span class="info">Indexes:</span>
+<span class="info">    "utilizadores_pkey" PRIMARY KEY, btree (id)</span>
+<span class="info">    "utilizadores_email_key" UNIQUE CONSTRAINT, btree (email)</span>
+
+<span class="comment">-- Ver o tamanho das tabelas</span>
+<span class="prompt">loja=&gt;</span> <span class="cmd">SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) AS tamanho</span>
+<span class="cmd">FROM pg_catalog.pg_statio_user_tables ORDER BY pg_total_relation_size(relid) DESC;</span>
+<span class="info">    relname     | tamanho</span>
+<span class="info">----------------+---------</span>
+<span class="info"> encomendas     | 16 kB</span>
+<span class="info"> utilizadores   | 16 kB</span>
+
+<span class="comment">-- Sair</span>
+<span class="prompt">loja=&gt;</span> <span class="cmd">\q</span>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:32px;">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Recursos recomendados</h5>
+      <p>
+        A <strong>documentação oficial</strong> (postgresql.org/docs) é extensa e excelente, com tutoriais e referência completa[citation:2][citation:8]. O livro <em>"PostgreSQL 16 Administration Cookbook"</em> é uma referência prática para administradores. Para otimização, a <strong>wiki do PostgreSQL</strong> tem guias detalhados sobre EXPLAIN e indexes. Em português, o curso da <strong>Alura</strong> e os materiais da <strong>DataCamp</strong> oferecem introduções acessíveis[citation:1][citation:13].
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>PostgreSQL — Aula interativa · Bases de dados relacionais avançadas</p>
+    <p style="margin-top:8px; font-size:12px;">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

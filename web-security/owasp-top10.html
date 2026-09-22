@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OWASP Top 10 — Aula Interativa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:700px) { .nav-links { display:none; } }
+
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code .prompt { color:var(--meta); user-select:none; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .cmd { color:#e8ecf4; }
+  .code .ph { color:var(--warn); font-weight:600; }
+  .code .ok { color:var(--ok); }
+  .code .dim { color:var(--text-faint); }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+
+  .term { background:#000; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; margin:32px 0; font-family:var(--font-mono); }
+  .term-bar { display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-1); border-bottom:1px solid var(--border); }
+  .term-bar .b { width:12px; height:12px; border-radius:50%; }
+  .term-bar .b.r { background:#ff5f57; }
+  .term-bar .b.y { background:#febc2e; }
+  .term-bar .b.g { background:#28c840; }
+  .term-bar .title { margin-left:8px; font-size:12px; color:var(--text-faint); }
+  .term-body { padding:18px 20px; font-size:13px; line-height:1.8; min-height:120px;
+    max-height:500px; overflow-y:auto; color:#a8ffcb; white-space:pre-wrap;
+    word-break:break-word; }
+  .term-body .prompt { color:var(--meta); }
+  .term-body .info { color:var(--kali); }
+  .term-body .ok { color:var(--ok); }
+  .term-body .err { color:var(--err); }
+  .term-body .warn { color:var(--warn); }
+  .term-body .dim { color:var(--text-faint); }
+
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); }
+  td.warn { color:var(--warn); }
+  td.err { color:var(--err); }
+  td.kali { color:var(--kali); }
+  td.meta { color:var(--meta); }
+
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px;
+    border:2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background:#1c2233; }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      OWASP<span style="color:var(--kali)">//</span>TOP10
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#categorias">Categorias</a>
+      <a href="#metodologia">Metodologia</a>
+      <a href="#resumo">Resumo</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · segurança de aplicações web
+  </div>
+  <h1>
+    OWASP<br>
+    <span class="grad-kali">Top 10</span> <span class="grad-meta">2021</span>
+  </h1>
+  <p class="sub">
+    As dez falhas de segurança mais críticas em aplicações web. Uma referência global para programadores, arquitetos e equipas de segurança. Nesta aula, exploramos cada categoria com descrições claras, exemplos de ataque e contramedidas práticas.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">O que é o OWASP Top 10?</h2>
+  <p class="section-desc">
+    O OWASP Top 10 é um documento de referência que identifica os riscos de segurança mais críticos para aplicações web. Publicado pela Open Worldwide Application Security Project, é atualizado periodicamente com base em dados recolhidos de milhares de aplicações em todo o mundo. A versão mais recente disponível em detalhe é a de 2021.
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">2021</span>
+      <span class="label">Última versão estável</span>
+    </div>
+    <div class="stat">
+      <span class="num">3</span>
+      <span class="label">Novas categorias</span>
+    </div>
+    <div class="stat">
+      <span class="num">94%</span>
+      <span class="label">Apps com controlo de acesso quebrado testado</span>
+    </div>
+    <div class="stat">
+      <span class="num">208k+</span>
+      <span class="label">Ocorrências de má configuração</span>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>Porquê estudar o Top 10?</h5>
+      <p>
+        Estas dez categorias representam a causa raiz da maioria das vulnerabilidades exploradas em aplicações reais. Compreendê-las permite priorizar esforços de segurança, justificar investimentos em prevenção e comunicar riscos de forma eficaz com equipas técnicas e de negócio.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIAS -->
+<section id="categorias" class="container">
+  <div class="section-label">02 — As dez categorias</div>
+  <h2 class="section-title">Riscos em detalhe</h2>
+  <p class="section-desc">
+    Cada categoria representa um conjunto de vulnerabilidades com causas raiz semelhantes. A ordem reflete a prevalência e o impacto médio observados nos dados de 2021.
+  </p>
+
+  <!-- A01 -->
+  <div class="card kali" style="margin-bottom:24px;">
+    <div class="card-icon">🚪</div>
+    <h3>A01:2021 — Controlo de Acesso Quebrado</h3>
+    <div class="role">Broken Access Control</div>
+    <ul>
+      <li>O controlo de acesso impõe que utilizadores só possam aceder aos recursos e ações para os quais têm autorização.</li>
+      <li>Falhas ocorrem quando restrições não são aplicadas corretamente ou são contornáveis.</li>
+      <li>Exemplos: acesso a dados de outros utilizadores alterando IDs na URL, elevação de privilégios, acesso a funcionalidades administrativas sem autenticação.</li>
+      <li><strong>Como prevenir:</strong> Negar por omissão; implementar verificação de autorização no servidor para cada pedido; usar mecanismos centralizados de controlo de acesso; registar falhas de acesso.</li>
+    </ul>
+  </div>
+
+  <!-- A02 -->
+  <div class="card meta" style="margin-bottom:24px;">
+    <div class="card-icon">🔐</div>
+    <h3>A02:2021 — Falhas Criptográficas</h3>
+    <div class="role">Cryptographic Failures</div>
+    <ul>
+      <li>Focam-se na falha em proteger dados sensíveis em repouso e em trânsito.</li>
+      <li>Causas comuns: algoritmos obsoletos, chaves fracas, dados transmitidos sem HTTPS, armazenamento de passwords sem hash adequado.</li>
+      <li>Consequência típica: exposição de dados sensíveis, como credenciais, dados pessoais ou informação financeira.</li>
+      <li><strong>Como prevenir:</strong> Classificar dados por sensibilidade; usar algoritmos fortes e atuais; forçar HTTPS; nunca armazenar segredos em texto simples; usar gestão de chaves adequada.</li>
+    </ul>
+  </div>
+
+  <!-- A03 -->
+  <div class="card kali" style="margin-bottom:24px;">
+    <div class="card-icon">💉</div>
+    <h3>A03:2021 — Injeção</h3>
+    <div class="role">Injection</div>
+    <ul>
+      <li>Ocorre quando dados não confiáveis são interpretados como comandos ou consultas pelo interpretador.</li>
+      <li>Inclui SQL Injection, NoSQL Injection, Command Injection, XSS (agora nesta categoria).</li>
+      <li>É uma das categorias mais testadas, com 94% das aplicações a apresentar alguma forma de injeção nos testes.</li>
+      <li><strong>Como prevenir:</strong> Validar e sanitizar toda a entrada; usar consultas parametrizadas ou ORM; escapar saída conforme o contexto; aplicar o princípio do menor privilégio nas contas de base de dados.</li>
+    </ul>
+  </div>
+
+  <!-- A04 -->
+  <div class="card meta" style="margin-bottom:24px;">
+    <div class="card-icon">🏗️</div>
+    <h3>A04:2021 — Design Inseguro</h3>
+    <div class="role">Insecure Design</div>
+    <ul>
+      <li>Nova categoria em 2021, focada em falhas de conceção e arquitetura, não apenas de implementação.</li>
+      <li>Se um controlo de segurança nunca foi concebido, nenhuma implementação perfeita o pode corrigir.</li>
+      <li>Exemplos: falta de modelação de ameaças, ausência de requisitos de segurança, padrões de design inseguros.</li>
+      <li><strong>Como prevenir:</strong> Integrar modelação de ameaças no ciclo de desenvolvimento; usar padrões de design seguro; definir requisitos de segurança desde o início; adotar um ciclo de vida de desenvolvimento seguro (SSDLC).</li>
+    </ul>
+  </div>
+
+  <!-- A05 -->
+  <div class="card kali" style="margin-bottom:24px;">
+    <div class="card-icon">⚙️</div>
+    <h3>A05:2021 — Má Configuração de Segurança</h3>
+    <div class="role">Security Misconfiguration</div>
+    <ul>
+      <li>90% das aplicações foram testadas para alguma forma de má configuração.</li>
+      <li>Causas comuns: contas predefinidas ativas, funcionalidades desnecessárias ligadas, mensagens de erro detalhadas, permissões excessivas em serviços cloud.</li>
+      <li>Exemplos: servidor de aplicações com aplicações de exemplo em produção; listagem de diretórios ativa; cabeçalhos de segurança ausentes.</li>
+      <li><strong>Como prevenir:</strong> Processo de hardening repetível; ambientes idênticos com credenciais distintas; plataforma mínima; revisão regular de configurações; automatizar verificação de configurações.</li>
+    </ul>
+  </div>
+
+  <!-- A06 -->
+  <div class="card meta" style="margin-bottom:24px;">
+    <div class="card-icon">📦</div>
+    <h3>A06:2021 — Componentes Vulneráveis e Desatualizados</h3>
+    <div class="role">Vulnerable and Outdated Components</div>
+    <ul>
+      <li>Única categoria sem CVEs mapeados às CWEs associadas, pelo que usa peso padrão de 5.0 em exploração e impacto.</li>
+      <li>Frequentemente ignorada porque muitas equipas não sabem que dependências usam, ou não monitorizam vulnerabilidades publicadas.</li>
+      <li>Exemplo: vulnerabilidade CVE-2017-5638 no Struts 2, permitindo execução remota de código, causou violações significativas.</li>
+      <li><strong>Como prevenir:</strong> Inventariar continuamente componentes; usar ferramentas como OWASP Dependency Check; remover dependências não usadas; obter componentes apenas de fontes oficiais; aplicar patches de forma tempestiva e baseada em risco.</li>
+    </ul>
+  </div>
+
+  <!-- A07 -->
+  <div class="card kali" style="margin-bottom:24px;">
+    <div class="card-icon">🔑</div>
+    <h3>A07:2021 — Falhas de Identificação e Autenticação</h3>
+    <div class="role">Identification and Authentication Failures</div>
+    <ul>
+      <li>Antes designada "Broken Authentication", agora inclui falhas de identificação.</li>
+      <li>Exemplos: permitir passwords fracas, não limitar tentativas de login, gestão de sessão inadequada, exposição de tokens.</li>
+      <li>O uso crescente de frameworks padronizadas de autenticação tem ajudado a reduzir a incidência.</li>
+      <li><strong>Como prevenir:</strong> Implementar autenticação multifator; verificar passwords contra listas de passwords comprometidas; limitar tentativas de login; usar gestão de sessão segura no servidor.</li>
+    </ul>
+  </div>
+
+  <!-- A08 -->
+  <div class="card meta" style="margin-bottom:24px;">
+    <div class="card-icon">📜</div>
+    <h3>A08:2021 — Falhas de Integridade de Software e Dados</h3>
+    <div class="role">Software and Data Integrity Failures</div>
+    <ul>
+      <li>Nova categoria em 2021, focada em assumir integridade sem verificar.</li>
+      <li>Inclui a antiga "Insecure Deserialization" e problemas em pipelines CI/CD.</li>
+      <li>Exemplos: atualizações de software sem assinatura digital, plugins de fontes não confiáveis, dados críticos sem verificação de integridade.</li>
+      <li><strong>Como prevenir:</strong> Verificar assinaturas digitais de software; usar fontes confiáveis para dependências; garantir integridade em pipelines CI/CD; não deserializar dados não confiáveis sem validação.</li>
+    </ul>
+  </div>
+
+  <!-- A09 -->
+  <div class="card kali" style="margin-bottom:24px;">
+    <div class="card-icon">📋</div>
+    <h3>A09:2021 — Falhas de Registo e Monitorização de Segurança</h3>
+    <div class="role">Security Logging and Monitoring Failures</div>
+    <ul>
+      <li>Antes designada "Insufficient Logging & Monitoring".</li>
+      <li>Difícil de testar e mal representada nos dados de CVE, mas críticas porque afetam a visibilidade, alerta de incidentes e forense.</li>
+      <li>Exemplos: eventos de login não registados, falhas de controlo de acesso não alertadas, logs armazenados apenas localmente e sem proteção.</li>
+      <li><strong>Como prevenir:</strong> Registar eventos de autenticação, controlo de acesso e validação de entrada; garantir que logs são gerados em formato consumível; estabelecer monitorização e alertas eficazes; testar planos de resposta a incidentes.</li>
+    </ul>
+  </div>
+
+  <!-- A10 -->
+  <div class="card meta" style="margin-bottom:24px;">
+    <div class="card-icon">🌐</div>
+    <h3>A10:2021 — Falsificação de Pedido do Lado do Servidor</h3>
+    <div class="role">Server-Side Request Forgery (SSRF)</div>
+    <ul>
+      <li>Adicionada em 2021 após votação da comunidade, apesar de baixa incidência nos dados.</li>
+      <li>Ocorre quando a aplicação obtém um recurso remoto sem validar o URL fornecido pelo utilizador.</li>
+      <li>Pode permitir acesso a serviços internos, leitura de ficheiros locais ou interação com sistemas internos não expostos.</li>
+      <li><strong>Como prevenir:</strong> Validar e sanitizar URLs fornecidos; usar listas de permissões para domínios e esquemas; segmentar a rede; não devolver respostas brutas de pedidos internos.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- METODOLOGIA -->
+<section id="metodologia" class="container">
+  <div class="section-label">03 — Metodologia</div>
+  <h2 class="section-title">Como o Top 10 é construído</h2>
+  <p class="section-desc">
+    A edição de 2021 é mais orientada por dados do que as anteriores, mas não cegamente. Foram analisados quase 400 CWEs, agrupados em categorias com base na causa raiz sempre que possível.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Categoria</th>
+          <th>CWEs mapeadas</th>
+          <th>Taxa de incidência média</th>
+          <th>Cobertura média</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="kali">A01 — Controlo de acesso quebrado</td>
+          <td class="mono">34</td>
+          <td class="warn">—</td>
+          <td class="mono">—</td>
+        </tr>
+        <tr>
+          <td class="meta">A02 — Falhas criptográficas</td>
+          <td class="mono">29</td>
+          <td class="warn">—</td>
+          <td class="mono">—</td>
+        </tr>
+        <tr>
+          <td class="kali">A03 — Injeção</td>
+          <td class="mono">33</td>
+          <td class="warn">—</td>
+          <td class="mono">—</td>
+        </tr>
+        <tr>
+          <td class="meta">A04 — Design inseguro</td>
+          <td class="mono">40</td>
+          <td class="warn">3.00%</td>
+          <td class="mono">42.51%</td>
+        </tr>
+        <tr>
+          <td class="kali">A05 — Má configuração</td>
+          <td class="mono">20</td>
+          <td class="warn">4.51%</td>
+          <td class="mono">44.84%</td>
+        </tr>
+        <tr>
+          <td class="meta">A06 — Componentes vulneráveis</td>
+          <td class="mono">3</td>
+          <td class="warn">8.77%</td>
+          <td class="mono">22.47%</td>
+        </tr>
+        <tr>
+          <td class="kali">A07 — Autenticação</td>
+          <td class="mono">36</td>
+          <td class="warn">—</td>
+          <td class="mono">—</td>
+        </tr>
+        <tr>
+          <td class="meta">A08 — Integridade</td>
+          <td class="mono">10</td>
+          <td class="warn">—</td>
+          <td class="mono">—</td>
+        </tr>
+        <tr>
+          <td class="kali">A09 — Registo e monitorização</td>
+          <td class="mono">4</td>
+          <td class="warn">—</td>
+          <td class="mono">—</td>
+        </tr>
+        <tr>
+          <td class="meta">A10 — SSRF</td>
+          <td class="mono">1</td>
+          <td class="warn">—</td>
+          <td class="mono">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warning">
+    <span class="icon">⚠️</span>
+    <div>
+      <h5>Nota sobre dados de incidência</h5>
+      <p>
+        Nem todas as categorias têm dados de incidência divulgados publicamente. A metodologia de 2021 analisou quase 400 CWEs e utilizou métricas de exploração e impacto baseadas em CVSSv2 e CVSSv3. O objetivo é focar na causa raiz das vulnerabilidades, em vez de sintomas como "exposição de dados sensíveis".
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RESUMO -->
+<section id="resumo" class="container">
+  <div class="section-label">04 — Síntese</div>
+  <h2 class="section-title">Resumo e recomendações</h2>
+  <p class="section-desc">
+    O OWASP Top 10 não é uma checklist para cumprir mecanicamente. É um guia para compreender onde os esforços de segurança devem ser concentrados.
+  </p>
+
+  <div class="compare-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">✅</div>
+      <h3>Boas práticas transversais</h3>
+      <ul>
+        <li>Validar e sanitizar toda a entrada, independentemente da fonte.</li>
+        <li>Aplicar o princípio do menor privilégio em todos os componentes.</li>
+        <li>Manter todas as dependências atualizadas e monitorizar vulnerabilidades conhecidas.</li>
+        <li>Registar eventos de segurança e configurar alertas para atividades suspeitas.</li>
+        <li>Integrar segurança no ciclo de desenvolvimento desde a conceção.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🎯</div>
+      <h3>Prioridades por categoria</h3>
+      <ul>
+        <li><strong>A01:</strong> Verificação de autorização no servidor em cada pedido.</li>
+        <li><strong>A03:</strong> Consultas parametrizadas e escapar saída.</li>
+        <li><strong>A05:</strong> Processo de hardening repetível e automatizado.</li>
+        <li><strong>A06:</strong> Inventário contínuo de dependências e patches tempestivos.</li>
+        <li><strong>A10:</strong> Validação rigorosa de URLs em pedidos do servidor.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="term" style="margin-top:48px;">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — exemplos de comandos</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd"># Verificar dependências vulneráveis em Node.js</span>
+<span class="prompt">$</span> <span class="cmd">npm audit</span>
+<span class="ok">found 0 vulnerabilities</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar cabeçalhos de segurança</span>
+<span class="prompt">$</span> <span class="cmd">curl -I https://exemplo.pt</span>
+<span class="info">HTTP/2 200</span>
+<span class="warn">strict-transport-security: max-age=31536000</span>
+<span class="ok">content-security-policy: default-src 'self'</span>
+<span class="dim">x-content-type-options: nosniff</span>
+
+<span class="prompt">$</span> <span class="cmd"># Procurar padrões de injeção no código</span>
+<span class="prompt">$</span> <span class="cmd">grep -r "SELECT.*FROM.*WHERE.*\$" ./src</span>
+<span class="err">src/db/query.js:42: const q = `SELECT * FROM users WHERE id = ${userId}`</span>
+<span class="dim">^ possível SQL injection — usar consultas parametrizadas</span>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:32px;">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Recurso recomendado</h5>
+      <p>
+        A documentação oficial do OWASP Top 10 está disponível em <strong>owasp.org/Top10</strong> e inclui folhas de referência (cheat sheets) detalhadas para cada categoria, com exemplos de código e estratégias de mitigação.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>OWASP Top 10 — Aula interativa · Conteúdo baseado na edição de 2021</p>
+    <p style="margin-top:8px; font-size:12px;">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

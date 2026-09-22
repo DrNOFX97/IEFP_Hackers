@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hadoop — Aula Interativa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:900px) { .nav-links { display:none; } }
+
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card.purple { border-top:2px solid var(--accent); }
+  .card.purple:hover { border-color:var(--accent);
+    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card.purple .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card.purple h3 { color:var(--accent); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .card.purple ul li::before { color:var(--accent); }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .triple-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  @media (max-width:980px) { .triple-grid { grid-template-columns:1fr; } }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code.meta-code::before { background:var(--meta); }
+  .code.purple-code::before { background:var(--accent); }
+  .code .prompt { color:var(--meta); user-select:none; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .cmd { color:#e8ecf4; }
+  .code .ph { color:var(--warn); font-weight:600; }
+  .code .ok { color:var(--ok); }
+  .code .dim { color:var(--text-faint); }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .bad { color:var(--err); font-weight:600; }
+  .code .good { color:var(--ok); font-weight:600; }
+  .code .key { color:#00d4ff; }
+
+  .term { background:#000; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; margin:32px 0; font-family:var(--font-mono); }
+  .term-bar { display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-1); border-bottom:1px solid var(--border); }
+  .term-bar .b { width:12px; height:12px; border-radius:50%; }
+  .term-bar .b.r { background:#ff5f57; }
+  .term-bar .b.y { background:#febc2e; }
+  .term-bar .b.g { background:#28c840; }
+  .term-bar .title { margin-left:8px; font-size:12px; color:var(--text-faint); }
+  .term-body { padding:18px 20px; font-size:13px; line-height:1.8; min-height:120px;
+    max-height:500px; overflow-y:auto; color:#a8ffcb; white-space:pre-wrap;
+    word-break:break-word; }
+  .term-body .prompt { color:var(--meta); }
+  .term-body .info { color:var(--kali); }
+  .term-body .ok { color:var(--ok); }
+  .term-body .err { color:var(--err); }
+  .term-body .warn { color:var(--warn); }
+  .term-body .dim { color:var(--text-faint); }
+
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); }
+  td.warn { color:var(--warn); }
+  td.err { color:var(--err); }
+  td.kali { color:var(--kali); }
+  td.meta { color:var(--meta); }
+  td.purple { color:var(--accent); }
+
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+
+  .danger-box { background:linear-gradient(135deg,rgba(255,59,107,0.08),rgba(255,77,77,0.04));
+    border:1px solid rgba(255,59,107,0.25); border-left:3px solid var(--meta);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .danger-box .icon { font-size:22px; flex-shrink:0; }
+  .danger-box h5 { color:var(--meta); font-size:15px; margin-bottom:4px; }
+  .danger-box p { color:var(--text-dim); font-size:14px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px;
+    border:2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background:#1c2233; }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+
+  .tag { display:inline-block; font-family:var(--font-mono); font-size:11px;
+    padding:3px 10px; border-radius:100px; letter-spacing:0.5px; margin-left:8px;
+    vertical-align:middle; }
+  .tag.kali { background:rgba(0,212,255,0.1); color:var(--kali);
+    border:1px solid rgba(0,212,255,0.25); }
+  .tag.meta { background:rgba(255,59,107,0.1); color:var(--meta);
+    border:1px solid rgba(255,59,107,0.25); }
+  .tag.purple { background:rgba(124,92,255,0.1); color:var(--accent);
+    border:1px solid rgba(124,92,255,0.25); }
+
+  .flow { display:flex; align-items:center; justify-content:center;
+    flex-wrap:wrap; gap:12px; margin:32px 0; font-family:var(--font-mono); font-size:13px; }
+  .flow-node { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:12px; padding:12px 20px; color:var(--text-dim); text-align:center; }
+  .flow-node.kali { border-color:rgba(0,212,255,0.4); color:var(--kali); }
+  .flow-node.meta { border-color:rgba(255,59,107,0.4); color:var(--meta); }
+  .flow-node.purple { border-color:rgba(124,92,255,0.4); color:var(--accent); }
+  .flow-arrow { color:var(--text-faint); font-size:18px; }
+
+  .scenario { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:16px; }
+  .scenario h5 { font-size:15px; margin-bottom:8px; }
+  .scenario p { color:var(--text-dim); font-size:14px; }
+  .scenario.kali { border-left:3px solid var(--kali); }
+  .scenario.kali h5 { color:var(--kali); }
+  .scenario.purple { border-left:3px solid var(--accent); }
+  .scenario.purple h5 { color:var(--accent); }
+  .scenario.meta { border-left:3px solid var(--meta); }
+  .scenario.meta h5 { color:var(--meta); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      Hadoop<span style="color:var(--kali)">//</span>PT
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#componentes">Componentes</a>
+      <a href="#mapreduce">MapReduce</a>
+      <a href="#yarn">YARN</a>
+      <a href="#comparacao">Spark</a>
+      <a href="#boas-praticas">Boas práticas</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · big data distribuído
+  </div>
+  <h1>
+    <span class="grad-kali">Ha</span><span class="grad-meta">doop</span>
+  </h1>
+  <p class="sub">
+    A plataforma de software que permite processar e armazenar volumes massivos de dados em clusters de computadores comuns. Criado para responder à necessidade de processar petabytes de informação de forma fiável, económica e escalável. Nesta aula, exploramos a arquitetura, os componentes e as diferenças fundamentais em relação ao Spark.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">O que é o Hadoop?</h2>
+  <p class="section-desc">
+    O Hadoop é uma plataforma de software distribuída que permite escrever e executar aplicações que processam enormes quantidades de dados. Distribui o armazenamento e o processamento por clusters de computadores de uso comum, que podem chegar a milhares de nós [citation:1][citation:9]. Criado para resolver o problema de processar dados que não cabem numa única máquina, o Hadoop trouxe para o grande público o conceito de computação distribuída em hardware acessível.
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">2006</span>
+      <span class="label">Nascimento do Apache Hadoop</span>
+    </div>
+    <div class="stat">
+      <span class="num">HDFS</span>
+      <span class="label">Sistema de ficheiros distribuído</span>
+    </div>
+    <div class="stat">
+      <span class="num">MapReduce</span>
+      <span class="label">Modelo de programação</span>
+    </div>
+    <div class="stat">
+      <span class="num">YARN</span>
+      <span class="label">Gestor de recursos</span>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Porquê Hadoop? As quatro promessas
+  </h3>
+
+  <div class="triple-grid">
+    <div class="card kali">
+      <div class="card-icon">📈</div>
+      <h3>Escalável</h3>
+      <div class="role">Scalable</div>
+      <ul>
+        <li>Armazena e processa petabytes de dados de forma fiável.</li>
+        <li>Clusters podem ter milhares de nós.</li>
+        <li>Adicionar capacidade é adicionar máquinas.</li>
+        <li>Demonstrado em clusters com mais de 4000 nós [citation:9].</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">💰</div>
+      <h3>Económico</h3>
+      <div class="role">Economical</div>
+      <ul>
+        <li>Usa hardware comum, não supercomputadores.</li>
+        <li>Distribui dados e processamento por muitos nós.</li>
+        <li>Reduz o custo por terabyte processado.</li>
+        <li>Open source e sem licenças proprietárias [citation:1].</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">⚡</div>
+      <h3>Eficiente</h3>
+      <div class="role">Efficient</div>
+      <ul>
+        <li>Processa dados em paralelo nos nós onde residem.</li>
+        <li>Localidade dos dados reduz movimento pela rede.</li>
+        <li>Aproveita a largura de banda agregada do cluster.</li>
+        <li>Processamento onde os dados estão [citation:9].</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card kali" style="margin-top:24px;">
+    <div class="card-icon">🛡️</div>
+    <h3>Fiável (Reliable)</h3>
+    <div class="role">Tolerância a falhas</div>
+    <ul>
+      <li>Mantém automaticamente múltiplas cópias dos dados (três por omissão).</li>
+      <li>Reimplanta tarefas de computação quando um nó falha.</li>
+      <li>Recuperação transparente sem intervenção humana.</li>
+      <li>Assume que as falhas são a norma, não a exceção [citation:1][citation:5].</li>
+    </ul>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>A filosofia do Hadoop</h5>
+      <p>
+        O Hadoop assenta numa ideia simples mas poderosa: em vez de comprar um supercomputador caro e fiável, usa-se um cluster de máquinas comuns e assume-se que vão falhar. O software trata da fiabilidade, não o hardware. Esta inversão de prioridades tornou o big data acessível a organizações sem orçamentos de supercomputação [citation:5][citation:11].
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COMPONENTES -->
+<section id="componentes" class="container">
+  <div class="section-label">02 — Arquitetura</div>
+  <h2 class="section-title">Os quatro módulos do Hadoop</h2>
+  <p class="section-desc">
+    O Apache Hadoop é composto por quatro módulos principais que trabalham em conjunto. Compreender o papel de cada um é essencial para perceber a arquitetura global [citation:5].
+  </p>
+
+  <div class="quad-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">📦</div>
+      <h3>Common</h3>
+      <div class="role">Bibliotecas e utilitários</div>
+      <ul>
+        <li>Bibliotecas partilhadas por todos os módulos.</li>
+        <li>Utilitários de configuração e I/O.</li>
+        <li>Base sobre a qual os outros módulos assentam.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">💾</div>
+      <h3>HDFS</h3>
+      <div class="role">Hadoop Distributed File System</div>
+      <ul>
+        <li>Sistema de ficheiros distribuído.</li>
+        <li>Escrito em Java, altamente performante.</li>
+        <li>Não é totalmente compatível com POSIX [citation:5].</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">⚙️</div>
+      <h3>YARN</h3>
+      <div class="role">Yet Another Resource Negotiator</div>
+      <ul>
+        <li>Plataforma de gestão de recursos.</li>
+        <li>Gere CPU, memória e agendamento.</li>
+        <li>Permite partilha do cluster entre frameworks [citation:5].</li>
+      </ul>
+    </div>
+    <div class="card kali">
+      <div class="card-icon">🔄</div>
+      <h3>MapReduce</h3>
+      <div class="role">Modelo de programação</div>
+      <ul>
+        <li>Implementação do paradigma MapReduce.</li>
+        <li>Divide trabalho em blocos pequenos.</li>
+        <li>Processa dados onde estão armazenados [citation:5].</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    HDFS em detalhe
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>NameNode — o mestre</h4>
+        <p>
+          O NameNode é o nó mestre do HDFS. Gere a distribuição dos dados e a replicação, comunica com os DataNodes e mantém o mapa de onde cada bloco está armazenado. Não guarda os dados em si, apenas os metadados [citation:5].
+        </p>
+        <div class="code">
+<span class="comment"># Verificar o estado do NameNode</span>
+<span class="prompt">$</span> <span class="cmd">hdfs dfsadmin -report</span>
+<span class="info">Configured Capacity: 500 GB</span>
+<span class="info">Present Capacity: 420 GB</span>
+<span class="info">DFS Remaining: 380 GB</span>
+<span class="info">DFS Used: 40 GB</span>
+<span class="info">Under replicated blocks: 0</span>
+<span class="info">Blocks with corrupt replicas: 0</span>
+<span class="ok">Live datanodes (3):</span>
+<span class="ok">Name: 192.168.1.101:9866 (slave1)</span>
+<span class="ok">Name: 192.168.1.102:9866 (slave2)</span>
+<span class="ok">Name: 192.168.1.100:9866 (master)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>DataNodes — os trabalhadores</h4>
+        <p>
+          Os DataNodes armazenam os blocos de dados. Cada ficheiro é dividido em blocos (por omissão, 128 MB) e cada bloco é replicado em três nós diferentes. Os DataNodes comunicam periodicamente com o NameNode para reportar o seu estado [citation:5].
+        </p>
+        <div class="code">
+<span class="comment"># Verificar os processos Hadoop em execução</span>
+<span class="prompt">$</span> <span class="cmd">jps</span>
+<span class="ok">1234 NameNode</span>
+<span class="ok">1567 DataNode</span>
+<span class="ok">1890 SecondaryNameNode</span>
+<span class="ok">2103 ResourceManager</span>
+<span class="ok">2345 NodeManager</span>
+
+<span class="comment"># Verificar replicação de um ficheiro</span>
+<span class="prompt">$</span> <span class="cmd">hdfs fsck /dados/ficheiro.csv -files -blocks -locations</span>
+<span class="info">Status: HEALTHY</span>
+<span class="info">Total size: 256 MB</span>
+<span class="info">Total blocks (validated): 2</span>
+<span class="info">  blk_1073741825_1001 len=134217728 repl=3 [DatanodeInfoWithStorage[...]]</span>
+<span class="info">  blk_1073741826_1002 len=134217728 repl=3 [DatanodeInfoWithStorage[...]]</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Comandos essenciais do HDFS</h4>
+        <p>
+          O HDFS usa uma interface de linha de comandos semelhante ao sistema de ficheiros Unix. A familiaridade com estes comandos é essencial para administrar um cluster.
+        </p>
+        <div class="code">
+<span class="comment"># Listar ficheiros na raiz do HDFS</span>
+<span class="prompt">$</span> <span class="cmd">hdfs dfs -ls /</span>
+<span class="ok">Found 3 items</span>
+<span class="ok">drwxr-xr-x   - hadoop supergroup          0 2024-01-15 10:23 /dados</span>
+<span class="ok">drwxr-xr-x   - hadoop supergroup          0 2024-01-15 10:24 /logs</span>
+<span class="ok">drwxr-xr-x   - hadoop supergroup          0 2024-01-15 10:25 /tmp</span>
+
+<span class="comment"># Criar diretório</span>
+<span class="prompt">$</span> <span class="cmd">hdfs dfs -mkdir /dados/novos</span>
+
+<span class="comment"># Copiar ficheiro local para o HDFS</span>
+<span class="prompt">$</span> <span class="cmd">hdfs dfs -put vendas.csv /dados/novos/</span>
+
+<span class="comment"># Ver conteúdo de um ficheiro</span>
+<span class="prompt">$</span> <span class="cmd">hdfs dfs -cat /dados/novos/vendas.csv | head -5</span>
+
+<span class="comment"># Ver o tamanho de um diretório</span>
+<span class="prompt">$</span> <span class="cmd">hdfs dfs -du -h /dados</span>
+<span class="ok">256.0 M  /dados/novos</span>
+<span class="ok">1.2 G    /dados/arquivo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAPREDUCE -->
+<section id="mapreduce" class="container">
+  <div class="section-label">03 — Processamento</div>
+  <h2 class="section-title">MapReduce</h2>
+  <p class="section-desc">
+    O MapReduce é o modelo de programação que permite processar dados em paralelo num cluster. A ideia central é dividir o trabalho em muitas tarefas pequenas que correm simultaneamente em nós diferentes [citation:5][citation:13].
+  </p>
+
+  <div class="flow">
+    <div class="flow-node kali">Input</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node purple">Map</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node meta">Shuffle & Sort</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node kali">Reduce</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Output</div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    As três fases do MapReduce
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Map — mapeamento</h4>
+        <p>
+          O mapper recebe os dados de entrada e transforma cada elemento numa lista de pares (chave, valor). Não modifica os dados originais; produz uma nova saída [citation:13].
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: contar ocorrências de palavras num texto</span>
+<span class="comment"># Input: "o gato viu o rato"</span>
+
+<span class="comment"># O mapper produz pares (palavra, 1):</span>
+<span class="ok">(o, 1), (gato, 1), (viu, 1), (o, 1), (rato, 1)</span>
+
+<span class="comment"># Implementação conceptual em Python</span>
+<span class="kw">def</span> mapper(texto):
+    <span class="kw">for</span> palavra <span class="kw">in</span> texto.split():
+        <span class="kw">yield</span> (palavra, <span class="num">1</span>)
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Shuffle e Sort — reorganização</h4>
+        <p>
+          O shuffle redistribui os pares entre os reducers, agrupando todas as ocorrências da mesma chave. Cada reducer recebe um subconjunto das chaves. As chaves são ordenadas automaticamente antes de chegarem ao reducer [citation:13].
+        </p>
+        <div class="code">
+<span class="comment"># Após o shuffle, os pares são agrupados por chave:</span>
+<span class="ok">(gato, [1])</span>
+<span class="ok">(o, [1, 1])</span>
+<span class="ok">(rato, [1])</span>
+<span class="ok">(viu, [1])</span>
+
+<span class="comment"># O mesmo reducer pode processar várias chaves</span>
+<span class="comment"># Mas todas as ocorrências da mesma chave vão para o mesmo reducer</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Reduce — agregação</h4>
+        <p>
+          O reducer recebe uma chave e um iterador de valores. Aplica uma função de agregação e produz o resultado final. Cada reducer gera um ficheiro de output [citation:13].
+        </p>
+        <div class="code">
+<span class="comment"># O reducer soma os valores de cada chave:</span>
+<span class="ok">(gato, 1)</span>
+<span class="ok">(o, 2)</span>
+<span class="ok">(rato, 1)</span>
+<span class="ok">(viu, 1)</span>
+
+<span class="comment"># Implementação conceptual em Python</span>
+<span class="kw">def</span> reducer(chave, valores):
+    <span class="kw">return</span> (chave, <span class="kw">sum</span>(valores))
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">🔗</span>
+    <div>
+      <h5>Exemplo clássico: Word Count</h5>
+      <p>
+        O "Word Count" é o "Hello World" do MapReduce. O objetivo é contar quantas vezes cada palavra aparece num conjunto de documentos. É o exemplo canónico porque demonstra todas as fases do modelo: o mapper produz (palavra, 1), o shuffle agrupa as ocorrências, e o reducer soma. Esta operação é a base de muitas análises de texto e é usada em benchmarks como o HiBench [citation:7][citation:13].
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- YARN -->
+<section id="yarn" class="container">
+  <div class="section-label">04 — Gestão de recursos</div>
+  <h2 class="section-title">YARN</h2>
+  <p class="section-desc">
+    O YARN (Yet Another Resource Negotiator) é o gestor de recursos do Hadoop. Introduzido na versão 2.0, separou a gestão de recursos do modelo de programação, permitindo que frameworks como Spark, Hive ou Flink partilhem o mesmo cluster [citation:5].
+  </p>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">👑</div>
+      <h3>ResourceManager</h3>
+      <div class="role">O mestre do YARN</div>
+      <ul>
+        <li>Gere todos os recursos do cluster.</li>
+        <li>Recebe pedidos de aplicações.</li>
+        <li>Atribui recursos aos ApplicationMasters.</li>
+        <li>Monitoriza o estado global do cluster.</li>
+        <li>Corre no nó mestre (master node).</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🔧</div>
+      <h3>NodeManager</h3>
+      <div class="role">O agente local</div>
+      <ul>
+        <li>Corre em cada nó do cluster.</li>
+        <li>Gere os recursos do nó local.</li>
+        <li>Reporta ao ResourceManager.</li>
+        <li>Lanca e monitoriza containers.</li>
+        <li>Um por cada nó worker.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Configuração essencial do YARN
+  </h3>
+
+  <p style="color:var(--text-dim); font-size:15px; max-width:820px; margin-bottom:24px;">
+    O ficheiro <code>yarn-site.xml</code> contém as configurações do YARN. Os parâmetros abaixo são os mais relevantes para ajustar o desempenho do cluster [citation:2].
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Parâmetro</th>
+          <th>Valor típico</th>
+          <th>Função</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono kali">yarn.nodemanager.resource.memory-mb</td>
+          <td class="mono">8192</td>
+          <td>Memória física disponível para containers</td>
+        </tr>
+        <tr>
+          <td class="mono purple">yarn.nodemanager.vmem-pmem-ratio</td>
+          <td class="mono">2.1</td>
+          <td>Rácio máximo de memória virtual vs física</td>
+        </tr>
+        <tr>
+          <td class="mono meta">yarn.nodemanager.local-dirs</td>
+          <td class="mono">/data/yarn/local</td>
+          <td>Diretórios para dados intermédios</td>
+        </tr>
+        <tr>
+          <td class="mono">yarn.nodemanager.log-dirs</td>
+          <td class="mono">/data/yarn/logs</td>
+          <td>Diretórios para logs</td>
+        </tr>
+        <tr>
+          <td class="mono kali">yarn.nodemanager.aux-services</td>
+          <td class="mono">mapreduce_shuffle</td>
+          <td>Serviço de shuffle para MapReduce</td>
+        </tr>
+        <tr>
+          <td class="mono purple">yarn.log-aggregation.retain-seconds</td>
+          <td class="mono">604800</td>
+          <td>Tempo de retenção de logs agregados (7 dias)</td>
+        </tr>
+        <tr>
+          <td class="mono meta">yarn.nodemanager.log.retain-seconds</td>
+          <td class="mono">10800</td>
+          <td>Retenção de logs locais (3 horas)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warning">
+    <span class="icon">⚠️</span>
+    <div>
+      <h5>Cuidado com a memória virtual</h5>
+      <p>
+        O parâmetro <code>vmem-pmem-ratio</code> controla quanto a memória virtual de uma tarefa pode exceder a memória física. Se for demasiado baixo, tarefas legítimas são mortas por excesso de memória virtual. Se for demasiado alto, um processo com fuga de memória pode degradar o nó. O valor padrão de 2.1 é razoável para a maioria dos casos [citation:2].
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARAÇÃO -->
+<section id="comparacao" class="container">
+  <div class="section-label">05 — Comparação</div>
+  <h2 class="section-title">Hadoop vs Spark</h2>
+  <p class="section-desc">
+    O Hadoop e o Spark são frequentemente comparados, mas resolvem problemas diferentes. O Hadoop é uma plataforma completa de armazenamento e processamento; o Spark é um motor de processamento que pode usar o HDFS para armazenamento [citation:11][citation:19].
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Critério</th>
+          <th>Hadoop</th>
+          <th>Spark</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">Armazenamento</td>
+          <td class="kali">HDFS nativo</td>
+          <td class="meta">Sem armazenamento nativo (usa HDFS, S3, etc.)</td>
+        </tr>
+        <tr>
+          <td class="mono">Processamento</td>
+          <td class="kali">MapReduce (disco)</td>
+          <td class="meta">RDD/DataFrames (memória)</td>
+        </tr>
+        <tr>
+          <td class="mono">Latência</td>
+          <td class="err">Alta (batch)</td>
+          <td class="ok">Baixa (quase tempo real)</td>
+        </tr>
+        <tr>
+          <td class="mono">Velocidade</td>
+          <td class="warn">Lenta para iterativo</td>
+          <td class="ok">Até 100× mais rápido em memória</td>
+        </tr>
+        <tr>
+          <td class="mono">Custo</td>
+          <td class="ok">Baixo (hardware comum)</td>
+          <td class="warn">Alto (requer muita RAM)</td>
+        </tr>
+        <tr>
+          <td class="mono">Ideal para</td>
+          <td class="kali">Batch, ETL, arquivo</td>
+          <td class="meta">Iterativo, streaming, ML</td>
+        </tr>
+        <tr>
+          <td class="mono">Ficheiros pequenos</td>
+          <td class="err">Problema</td>
+          <td class="err">Problema</td>
+        </tr>
+        <tr>
+          <td class="mono">Maturidade</td>
+          <td class="ok">Mais antigo, mais maduro</td>
+          <td class="warn">Mais recente, em evolução</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Quando usar cada um?
+  </h3>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">🎯</div>
+      <h3>Use Hadoop quando…</h3>
+      <ul>
+        <li>Precisa de processamento batch em larga escala.</li>
+        <li>O orçamento é limitado e quer usar hardware comum.</li>
+        <li>Tem um cluster de armazenamento HDFS que quer aproveitar.</li>
+        <li>O tempo de processamento não é crítico (pode esperar horas).</li>
+        <li>Precisa de um ecossistema maduro com muitas ferramentas.</li>
+        <li>Os dados são tão grandes que não caberiam em memória.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🎯</div>
+      <h3>Use Spark quando…</h3>
+      <ul>
+        <li>Precisa de processamento iterativo (ML, grafos).</li>
+        <li>Quer resultados em tempo quase real.</li>
+        <li>Tem RAM suficiente para os dados de trabalho.</li>
+        <li>Precisa de streaming de dados.</li>
+        <li>Quer usar DataFrames e SQL com boa performance.</li>
+        <li>O tempo é crítico e o orçamento permite mais RAM.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">🤝</span>
+    <div>
+      <h5>Não é uma escolha binária</h5>
+      <p>
+        Na prática, Hadoop e Spark coexistem. O Spark pode correr sobre o YARN, usando o HDFS para armazenamento. Muitas organizações usam Hadoop para armazenar e processar dados históricos em batch, e Spark para análises interativas e machine learning sobre esses mesmos dados. A decisão não é "qual é melhor", mas "que ferramenta para que tarefa" [citation:3][citation:11].
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BOAS PRÁTICAS -->
+<section id="boas-praticas" class="container">
+  <div class="section-label">06 — Síntese</div>
+  <h2 class="section-title">Boas práticas</h2>
+  <p class="section-desc">
+    O Hadoop é uma plataforma complexa. Estas são as práticas que distinguem clusters estáveis e eficientes de clusters frágeis e mal dimensionados.
+  </p>
+
+  <div class="compare-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">✅</div>
+      <h3>Fazer</h3>
+      <ul>
+        <li><strong>Planear o cluster:</strong> dimensionar RAM, CPU e disco antes de instalar [citation:18].</li>
+        <li><strong>Usar blocos de tamanho adequado:</strong> 128 MB ou 256 MB conforme o caso.</li>
+        <li><strong>Manter replicação a 3:</strong> equilíbrio entre fiabilidade e custo.</li>
+        <li><strong>Monitorizar o NameNode:</strong> é o ponto crítico do HDFS.</li>
+        <li><strong>Usar formatos colunares:</strong> Parquet e ORC reduzem I/O.</li>
+        <li><strong>Configurar o YARN adequadamente:</strong> memória e vmem ratio [citation:2].</li>
+        <li><strong>Automatizar a configuração:</strong> Ansible, Puppet ou Ambari.</li>
+        <li><strong>Planear a segurança desde o início:</strong> Kerberos é complexo de adicionar depois.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🚫</div>
+      <h3>Evitar</h3>
+      <ul>
+        <li><strong>Milhares de ficheiros pequenos:</strong> sobrecarrega o NameNode.</li>
+        <li><strong>NameNode como ponto único de falha:</strong> usar HA (High Availability).</li>
+        <li><strong>Ignorar o dimensionamento do YARN:</strong> tarefas mortas por memória.</li>
+        <li><strong>Usar MapReduce para tudo:</strong> Spark é melhor para muitas tarefas.</li>
+        <li><strong>Esquecer os logs:</strong> essenciais para diagnosticar problemas.</li>
+        <li><strong>Atualizar sem testar:</strong> quebra a compatibilidade de formatos.</li>
+        <li><strong>Segurança tardia:</strong> Kerberos não é um "add-on".</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Cenários práticos
+  </h3>
+
+  <div class="scenario kali">
+    <h5>🏢 Arquivo de dados históricos</h5>
+    <p>
+      Cluster Hadoop com HDFS para armazenar petabytes de logs e dados históricos. MapReduce para processamento batch noturno. Spark sobre YARN para consultas ad-hoc mais rápidas. Formato Parquet para eficiência de armazenamento e leitura.
+    </p>
+  </div>
+
+  <div class="scenario purple">
+    <h5>📊 Pipeline de ETL em larga escala</h5>
+    <p>
+      Dados de várias fontes carregados para HDFS via Sqoop e Flume. Processamento com Hive e Spark SQL. Resultados escritos em Parquet particionado. Agendamento com Oozie ou Airflow. O Hadoop fornece a base de armazenamento e gestão de recursos; o Spark faz o processamento.
+    </p>
+  </div>
+
+  <div class="scenario meta">
+    <h5>🔐 Cluster seguro com Kerberos</h5>
+    <p>
+      Kerberos como base de autenticação. Keytabs para NameNode, DataNodes, ResourceManager e NodeManager [citation:20]. HDFS com tokens de acesso. YARN com isolamento de containers. Auditoria de acessos. A configuração de segurança é feita na instalação, não depois [citation:8][citation:12].
+    </p>
+  </div>
+
+  <div class="term" style="margin-top:48px;">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — estado do cluster</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd"># Verificar processos Hadoop</span>
+<span class="prompt">$</span> <span class="cmd">jps</span>
+<span class="ok">1234 NameNode</span>
+<span class="ok">1567 DataNode</span>
+<span class="ok">1890 SecondaryNameNode</span>
+<span class="ok">2103 ResourceManager</span>
+<span class="ok">2345 NodeManager</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar saúde do HDFS</span>
+<span class="prompt">$</span> <span class="cmd">hdfs dfsadmin -report | head -20</span>
+<span class="info">Configured Capacity: 1.5 TB</span>
+<span class="info">Present Capacity: 1.4 TB</span>
+<span class="info">DFS Remaining: 1.2 TB</span>
+<span class="info">DFS Used: 200 GB</span>
+<span class="info">DFS Used%: 14.29%</span>
+<span class="info">Under replicated blocks: 0</span>
+<span class="info">Blocks with corrupt replicas: 0</span>
+<span class="ok">Live datanodes (3):</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar aplicações YARN</span>
+<span class="prompt">$</span> <span class="cmd">yarn application -list</span>
+<span class="info">Total number of applications (application-types: [], states: [SUBMITTED, ACCEPTED, RUNNING] and tags: []): 1</span>
+<span class="ok">                Application-Id      Application-Name        Application-Type          User       Queue             State                Final-State        Progress</span>
+<span class="ok">application_1705312800000_0001  wordcount               MAPREDUCE               hadoop      default           RUNNING              UNDEFINED         45%</span>
+
+<span class="prompt">$</span> <span class="cmd"># Ver logs de um job</span>
+<span class="prompt">$</span> <span class="cmd">yarn logs -applicationId application_1705312800000_0001 | tail -20</span>
+<span class="ok">2024-01-15 10:30:45,123 INFO [main] org.apache.hadoop.mapreduce.Job: Job job_1705312800000_0001 completed successfully</span>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:32px;">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Para saber mais</h5>
+      <p>
+        A <strong>documentação oficial do Apache Hadoop</strong> (hadoop.apache.org) é a referência essencial, com guias de instalação e configuração. O livro <em>"Hadoop: The Definitive Guide"</em> de Tom White é a referência clássica. Para configuração de segurança, a página <strong>SecureMode</strong> da documentação oficial detalha a implementação de Kerberos [citation:4][citation:8]. Para comparações com Spark, os artigos da <strong>IEEE Computer Society</strong> e os papers de benchmark como o <strong>HiBench</strong> oferecem dados concretos [citation:7][citation:11].
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Hadoop — Aula interativa · Big data distribuído</p>
+    <p style="margin-top:8px; font-size:12px;">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

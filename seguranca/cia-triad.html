@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tríade CIA — Aula Interativa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:820px) { .nav-links { display:none; } }
+
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card.purple { border-top:2px solid var(--accent); }
+  .card.purple:hover { border-color:var(--accent);
+    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card.purple .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card.purple h3 { color:var(--accent); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .card.purple ul li::before { color:var(--accent); }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .triple-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  @media (max-width:980px) { .triple-grid { grid-template-columns:1fr; } }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code.meta-code::before { background:var(--meta); }
+  .code.purple-code::before { background:var(--accent); }
+  .code .prompt { color:var(--meta); user-select:none; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .cmd { color:#e8ecf4; }
+  .code .ph { color:var(--warn); font-weight:600; }
+  .code .ok { color:var(--ok); }
+  .code .dim { color:var(--text-faint); }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .bad { color:var(--err); font-weight:600; }
+  .code .good { color:var(--ok); font-weight:600; }
+
+  .term { background:#000; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; margin:32px 0; font-family:var(--font-mono); }
+  .term-bar { display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-1); border-bottom:1px solid var(--border); }
+  .term-bar .b { width:12px; height:12px; border-radius:50%; }
+  .term-bar .b.r { background:#ff5f57; }
+  .term-bar .b.y { background:#febc2e; }
+  .term-bar .b.g { background:#28c840; }
+  .term-bar .title { margin-left:8px; font-size:12px; color:var(--text-faint); }
+  .term-body { padding:18px 20px; font-size:13px; line-height:1.8; min-height:120px;
+    max-height:500px; overflow-y:auto; color:#a8ffcb; white-space:pre-wrap;
+    word-break:break-word; }
+  .term-body .prompt { color:var(--meta); }
+  .term-body .info { color:var(--kali); }
+  .term-body .ok { color:var(--ok); }
+  .term-body .err { color:var(--err); }
+  .term-body .warn { color:var(--warn); }
+  .term-body .dim { color:var(--text-faint); }
+
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); }
+  td.warn { color:var(--warn); }
+  td.err { color:var(--err); }
+  td.kali { color:var(--kali); }
+  td.meta { color:var(--meta); }
+  td.purple { color:var(--accent); }
+
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+
+  .danger-box { background:linear-gradient(135deg,rgba(255,59,107,0.08),rgba(255,77,77,0.04));
+    border:1px solid rgba(255,59,107,0.25); border-left:3px solid var(--meta);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .danger-box .icon { font-size:22px; flex-shrink:0; }
+  .danger-box h5 { color:var(--meta); font-size:15px; margin-bottom:4px; }
+  .danger-box p { color:var(--text-dim); font-size:14px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px;
+    border:2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background:#1c2233; }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+
+  .tag { display:inline-block; font-family:var(--font-mono); font-size:11px;
+    padding:3px 10px; border-radius:100px; letter-spacing:0.5px; margin-left:8px;
+    vertical-align:middle; }
+  .tag.kali { background:rgba(0,212,255,0.1); color:var(--kali);
+    border:1px solid rgba(0,212,255,0.25); }
+  .tag.meta { background:rgba(255,59,107,0.1); color:var(--meta);
+    border:1px solid rgba(255,59,107,0.25); }
+  .tag.purple { background:rgba(124,92,255,0.1); color:var(--accent);
+    border:1px solid rgba(124,92,255,0.25); }
+
+  .triad-visual { display:flex; align-items:center; justify-content:center;
+    gap:32px; flex-wrap:wrap; margin:48px 0; }
+  .triad-circle { width:180px; height:180px; border-radius:50%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-weight:700; transition:transform 0.3s;
+    position:relative; }
+  .triad-circle:hover { transform:scale(1.06); }
+  .triad-circle.c { border:2px solid var(--kali); background:rgba(0,212,255,0.06);
+    box-shadow:0 0 60px -20px var(--kali-glow); }
+  .triad-circle.i { border:2px solid var(--accent); background:rgba(124,92,255,0.06);
+    box-shadow:0 0 60px -20px rgba(124,92,255,0.35); }
+  .triad-circle.a { border:2px solid var(--meta); background:rgba(255,59,107,0.06);
+    box-shadow:0 0 60px -20px var(--meta-glow); }
+  .triad-circle .letter { font-size:52px; line-height:1; }
+  .triad-circle.c .letter { color:var(--kali); }
+  .triad-circle.i .letter { color:var(--accent); }
+  .triad-circle.a .letter { color:var(--meta); }
+  .triad-circle .name { font-size:13px; color:var(--text-dim); margin-top:8px;
+    letter-spacing:1px; text-transform:uppercase; }
+
+  .flow { display:flex; align-items:center; justify-content:center;
+    flex-wrap:wrap; gap:12px; margin:32px 0; font-family:var(--font-mono); font-size:13px; }
+  .flow-node { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:12px; padding:12px 20px; color:var(--text-dim); text-align:center; }
+  .flow-node.kali { border-color:rgba(0,212,255,0.4); color:var(--kali); }
+  .flow-node.meta { border-color:rgba(255,59,107,0.4); color:var(--meta); }
+  .flow-node.purple { border-color:rgba(124,92,255,0.4); color:var(--accent); }
+  .flow-arrow { color:var(--text-faint); font-size:18px; }
+
+  .scenario { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:16px; }
+  .scenario h5 { font-size:15px; margin-bottom:8px; }
+  .scenario p { color:var(--text-dim); font-size:14px; }
+  .scenario.kali { border-left:3px solid var(--kali); }
+  .scenario.kali h5 { color:var(--kali); }
+  .scenario.purple { border-left:3px solid var(--accent); }
+  .scenario.purple h5 { color:var(--accent); }
+  .scenario.meta { border-left:3px solid var(--meta); }
+  .scenario.meta h5 { color:var(--meta); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      CIA<span style="color:var(--kali)">//</span>TRÍADE
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#confidencialidade">Confidencialidade</a>
+      <a href="#integridade">Integridade</a>
+      <a href="#disponibilidade">Disponibilidade</a>
+      <a href="#equilibrio">Equilíbrio</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · fundamentos de segurança
+  </div>
+  <h1>
+    Tríade<br>
+    <span class="grad-kali">C</span><span class="grad-meta">I</span><span style="color:var(--accent)">A</span>
+  </h1>
+  <p class="sub">
+    O modelo fundamental da segurança da informação. Confidencialidade, Integridade e Disponibilidade são os três pilares que sustentam qualquer estratégia de proteção de dados e sistemas. Compreendê-los é o primeiro passo para pensar em segurança de forma estruturada.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">O que é a Tríade CIA?</h2>
+  <p class="section-desc">
+    A Tríade CIA — do inglês <em>Confidentiality, Integrity, Availability</em> — é o modelo conceptual mais amplamente utilizado em segurança da informação. Também conhecida como os três pilares da segurança, foi formalizada em meados do século XX e permanece como base de normas como a ISO/IEC 27001, o NIST Cybersecurity Framework e o RGPD.
+  </p>
+
+  <div class="triad-visual">
+    <div class="triad-circle c">
+      <span class="letter">C</span>
+      <span class="name">Confidencialidade</span>
+    </div>
+    <div class="triad-circle i">
+      <span class="letter">I</span>
+      <span class="name">Integridade</span>
+    </div>
+    <div class="triad-circle a">
+      <span class="letter">A</span>
+      <span class="name">Disponibilidade</span>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>Porquê "tríade" e não "lista"?</h5>
+      <p>
+        Os três pilares não são independentes — estão profundamente interligados. Uma falha num deles frequentemente compromete os outros. Por exemplo, uma violação de confidencialidade (dados roubados) pode levar a uma violação de integridade (dados alterados) se as credenciais obtidas forem reutilizadas. É esta interdependência que faz da tríade um modelo, e não apenas uma checklist.
+      </p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">3</span>
+      <span class="label">Pilares fundamentais</span>
+    </div>
+    <div class="stat">
+      <span class="num">1940s</span>
+      <span class="label">Origens do modelo</span>
+    </div>
+    <div class="stat">
+      <span class="num">ISO 27001</span>
+      <span class="label">Norma que a adota</span>
+    </div>
+    <div class="stat">
+      <span class="num">+2</span>
+      <span class="label">Pilares adicionais modernos</span>
+    </div>
+  </div>
+</section>
+
+<!-- CONFIDENCIALIDADE -->
+<section id="confidencialidade" class="container">
+  <div class="section-label">02 — Primeiro pilar</div>
+  <h2 class="section-title" style="color:var(--kali)">Confidencialidade</h2>
+  <p class="section-desc">
+    Garantir que a informação é acessível apenas a quem tem autorização para a consultar. A confidencialidade protege contra a divulgação não autorizada de dados, seja por ataque externo, erro interno ou fuga de informação.
+  </p>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">🔒</div>
+      <h3>O que protege</h3>
+      <ul>
+        <li><strong>Dados pessoais:</strong> nomes, moradas, números de identificação, dados de saúde.</li>
+        <li><strong>Credenciais:</strong> passwords, chaves de API, tokens de sessão.</li>
+        <li><strong>Segredos comerciais:</strong> fórmulas, estratégias, listas de clientes.</li>
+        <li><strong>Comunicações privadas:</strong> emails, mensagens, chamadas.</li>
+        <li><strong>Dados financeiros:</strong> cartões, contas bancárias, transações.</li>
+      </ul>
+    </div>
+    <div class="card kali">
+      <div class="card-icon">🛡️</div>
+      <h3>Como se implementa</h3>
+      <ul>
+        <li><strong>Cifra:</strong> dados em repouso (AES-256) e em trânsito (TLS 1.3).</li>
+        <li><strong>Controlo de acesso:</strong> RBAC, ABAC, princípio do menor privilégio.</li>
+        <li><strong>Autenticação forte:</strong> MFA, biometria, chaves de segurança.</li>
+        <li><strong>Segmentação de rede:</strong> VLANs, firewalls, zonas desmilitarizadas.</li>
+        <li><strong>Políticas de classificação:</strong> público, interno, confidencial, secreto.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Ameaças típicas à confidencialidade
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Interceção de comunicações</h4>
+        <p>
+          Um atacante na mesma rede (Wi-Fi público, por exemplo) captura tráfego não cifrado. Sem TLS, credenciais e dados sensíveis ficam expostos.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo com tcpdump (uso ético e autorizado)</span>
+<span class="prompt">$</span> <span class="cmd">sudo tcpdump -i eth0 -A 'tcp port 80'</span>
+<span class="warn">POST /login HTTP/1.1</span>
+<span class="bad">username=joao&amp;password=Segredo123</span>
+<span class="dim">^ credenciais em texto simples na rede</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Acesso não autorizado</h4>
+        <p>
+          Credenciais fracas, sessões mal geridas ou permissões excessivas permitem que um utilizador aceda a dados que não deveria ver.
+        </p>
+        <div class="code">
+<span class="comment">// Exemplo: endpoint sem verificação de autorização</span>
+<span class="bad">GET /api/utilizadores/42/dados</span>
+<span class="dim">// Devolve dados do utilizador 42 mesmo que o autenticado seja o 7</span>
+
+<span class="good">// Correto: verificar se o utilizador autenticado tem direito ao recurso</span>
+<span class="good">if (req.user.id !== req.params.id &amp;&amp; !req.user.isAdmin) {</span>
+<span class="good">  return res.status(403).json({ erro: 'Proibido' });</span>
+<span class="good">}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Engenharia social e phishing</h4>
+        <p>
+          A confidencialidade é frequentemente quebrada não por falhas técnicas, mas por manipulação humana. Um email convincente pode levar um utilizador a entregar as suas credenciais voluntariamente.
+        </p>
+        <div class="danger-box" style="margin-top:0;">
+          <span class="icon">🎣</span>
+          <div>
+            <h5>Regra prática</h5>
+            <p>
+              Nenhum sistema é mais seguro do que o elo mais fraco da cadeia. Formação contínua em cibersegurança é tão importante como firewalls e cifra.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code kali-code" style="margin-top:32px;">
+<span class="comment"># Exemplo prático: cifrar dados em repouso com OpenSSL</span>
+<span class="prompt">$</span> <span class="cmd">openssl enc -aes-256-cbc -salt -in dados.txt -out dados.enc</span>
+<span class="ok">enter aes-256-cbc encryption password:</span>
+<span class="ok">Verifying - enter aes-256-cbc encryption password:</span>
+
+<span class="comment"># Sem a password correta, os dados são inúteis para um atacante</span>
+<span class="prompt">$</span> <span class="cmd">file dados.enc</span>
+<span class="dim">dados.enc: openssl enc'd data with salted password</span>
+  </div>
+</section>
+
+<!-- INTEGRIDADE -->
+<section id="integridade" class="container">
+  <div class="section-label">03 — Segundo pilar</div>
+  <h2 class="section-title" style="color:var(--accent)">Integridade</h2>
+  <p class="section-desc">
+    Garantir que a informação não é alterada de forma não autorizada ou acidental. A integridade assegura que os dados são exatamente o que o autor original criou — nem mais, nem menos.
+  </p>
+
+  <div class="compare-grid">
+    <div class="card purple">
+      <div class="card-icon">✅</div>
+      <h3>O que protege</h3>
+      <ul>
+        <li><strong>Exatidão dos dados:</strong> valores, registos, transações.</li>
+        <li><strong>Autoria:</strong> quem criou ou modificou a informação.</li>
+        <li><strong>Sequência:</strong> ordem cronológica de eventos e operações.</li>
+        <li><strong>Completude:</strong> ausência de omissões ou truncagens.</li>
+        <li><strong>Não repúdio:</strong> impossibilidade de negar uma ação realizada.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🛡️</div>
+      <h3>Como se implementa</h3>
+      <ul>
+        <li><strong>Funções de hash:</strong> SHA-256, SHA-3, BLAKE3.</li>
+        <li><strong>Assinaturas digitais:</strong> RSA, ECDSA, Ed25519.</li>
+        <li><strong>HMAC:</strong> hash com chave secreta para verificar autenticidade.</li>
+        <li><strong>Controlo de versões:</strong> Git, auditoria de alterações.</li>
+        <li><strong>Validação de entrada:</strong> impedir dados malformados.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Ameaças típicas à integridade
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Alteração não autorizada</h4>
+        <p>
+          Um atacante com acesso ao sistema modifica registos, saldos ou configurações sem deixar rasto. Sem mecanismos de verificação, a alteração pode passar despercebida durante meses.
+        </p>
+        <div class="code">
+<span class="comment">// Exemplo: saldo bancário sem verificação de integridade</span>
+<span class="bad">UPDATE contas SET saldo = 999999 WHERE id = 42;</span>
+
+<span class="comment">// Com auditoria e hash encadeado, qualquer alteração é detetável</span>
+<span class="good">INSERT INTO auditoria (conta_id, saldo_anterior, saldo_novo, hash_anterior, hash_atual)</span>
+<span class="good">VALUES (42, 1500, 999999, 'a3f…', SHA256('a3f…' || '999999'));</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Corrupção de dados</h4>
+        <p>
+          Falhas de hardware, erros de software ou problemas de rede podem corromper dados silenciosamente. Sem verificações periódicas, a corrupção pode propagar-se para backups.
+        </p>
+        <div class="code">
+<span class="comment"># Verificar integridade de ficheiros com hash</span>
+<span class="prompt">$</span> <span class="cmd">sha256sum importante.db &gt; importante.db.sha256</span>
+<span class="prompt">$</span> <span class="cmd">sha256sum -c importante.db.sha256</span>
+<span class="ok">importante.db: OK</span>
+
+<span class="comment"># Se o ficheiro for alterado, a verificação falha</span>
+<span class="prompt">$</span> <span class="cmd">sha256sum -c importante.db.sha256</span>
+<span class="err">importante.db: FAILED</span>
+<span class="err">sha256sum: WARNING: 1 computed checksum did NOT match</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Ataques de replay e injeção</h4>
+        <p>
+          Um atacante captura um pedido legítimo e reenvia-o, ou injeta comandos em campos de formulário. Ambos comprometem a integridade das operações.
+        </p>
+        <div class="code">
+<span class="comment">// Vulnerável: sem validação nem proteção contra replay</span>
+<span class="bad">POST /transferir { "iban": "PT50…", "valor": 1000 }</span>
+
+<span class="comment">// Correto: token único por operação + validação server-side</span>
+<span class="good">POST /transferir</span>
+<span class="good">X-CSRF-Token: a1b2c3…</span>
+<span class="good">Idempotency-Key: 7f3e…</span>
+<span class="good">{ "iban": "PT50…", "valor": 1000 }</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">🔗</span>
+    <div>
+      <h5>Integridade e blockchain</h5>
+      <p>
+        A tecnologia blockchain é um exemplo extremo de foco na integridade: cada bloco contém o hash do bloco anterior, formando uma cadeia em que qualquer alteração retroativa invalidaria todos os blocos subsequentes. É a aplicação prática do conceito de hash encadeado à escala global.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- DISPONIBILIDADE -->
+<section id="disponibilidade" class="container">
+  <div class="section-label">04 — Terceiro pilar</div>
+  <h2 class="section-title" style="color:var(--meta)">Disponibilidade</h2>
+  <p class="section-desc">
+    Garantir que a informação e os sistemas estão acessíveis a quem tem autorização, sempre que necessário. A disponibilidade é frequentemente a mais subestimada das três, mas é aquela cuja falha tem impacto mais imediato e visível.
+  </p>
+
+  <div class="compare-grid">
+    <div class="card meta">
+      <div class="card-icon">⚡</div>
+      <h3>O que protege</h3>
+      <ul>
+        <li><strong>Uptime dos serviços:</strong> aplicações, APIs, sites.</li>
+        <li><strong>Acesso aos dados:</strong> bases de dados, ficheiros, backups.</li>
+        <li><strong>Capacidade de resposta:</strong> resistência a picos de carga.</li>
+        <li><strong>Continuidade de negócio:</strong> operar mesmo durante incidentes.</li>
+        <li><strong>Recuperação:</strong> restaurar serviço após falha.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🛡️</div>
+      <h3>Como se implementa</h3>
+      <ul>
+        <li><strong>Redundância:</strong> servidores, discos, redes, datacenters.</li>
+        <li><strong>Balanceamento de carga:</strong> distribuir tráfego por várias instâncias.</li>
+        <li><strong>Backups:</strong> cópias regulares, testadas, offsite.</li>
+        <li><strong>Monitorização:</strong> alertas proativos, health checks.</li>
+        <li><strong>Planos de continuidade:</strong> RTO e RPO definidos.</li>
+        <li><strong>Proteção contra DDoS:</strong> CDN, rate limiting, scrubbing.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Ameaças típicas à disponibilidade
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Ataques de negação de serviço (DDoS)</h4>
+        <p>
+          Milhões de pedidos por segundo esgotam os recursos do servidor, tornando o serviço inacessível. Pode ser volumétrico (largura de banda), de protocolo (SYN flood) ou de aplicação (HTTP flood).
+        </p>
+        <div class="code">
+<span class="comment"># Simulação de carga (apenas em ambiente de teste autorizado)</span>
+<span class="prompt">$</span> <span class="cmd">ab -n 1000000 -c 500 https://exemplo.pt/</span>
+<span class="warn">Concurrency Level:      500</span>
+<span class="warn">Time taken for tests:   45.2 seconds</span>
+<span class="err">Failed requests:        87234</span>
+<span class="dim">^ servidor começa a rejeitar pedidos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Falhas de hardware e software</h4>
+        <p>
+          Discos avariam, memórias corrompem, software tem bugs. Sem redundância, qualquer um destes eventos pode derrubar o serviço.
+        </p>
+        <div class="code">
+<span class="comment"># RAID 1: espelhamento de discos para tolerância a falhas</span>
+<span class="prompt">$</span> <span class="cmd">cat /proc/mdstat</span>
+<span class="ok">md0 : active raid1 sda1[0] sdb1[1]</span>
+<span class="ok">      976630464 blocks [2/2] [UU]</span>
+<span class="dim">^ [UU] = ambos os discos saudáveis; se um falhar: [U_]</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Ransomware</h4>
+        <p>
+          O ransomware cifra os dados da vítima e exige resgate. É simultaneamente um ataque à confidencialidade, integridade e disponibilidade — o exemplo perfeito da interdependência da tríade.
+        </p>
+        <div class="danger-box" style="margin-top:0;">
+          <span class="icon">🔐</span>
+          <div>
+            <h5>Regra 3-2-1 para backups</h5>
+            <p>
+              <strong>3</strong> cópias dos dados, em <strong>2</strong> suportes diferentes, com <strong>1</strong> cópia offsite. Esta regra é a defesa mais eficaz contra ransomware no que toca à disponibilidade.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:32px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Métrica</th>
+          <th>Significado</th>
+          <th>Exemplo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono kali">RTO</td>
+          <td>Recovery Time Objective — tempo máximo aceitável de indisponibilidade</td>
+          <td class="mono">4 horas</td>
+        </tr>
+        <tr>
+          <td class="mono purple">RPO</td>
+          <td>Recovery Point Objective — quantidade máxima de dados que se pode perder</td>
+          <td class="mono">15 minutos</td>
+        </tr>
+        <tr>
+          <td class="mono meta">SLA</td>
+          <td>Service Level Agreement — compromisso contratual de disponibilidade</td>
+          <td class="mono">99,95%</td>
+        </tr>
+        <tr>
+          <td class="mono">MTBF</td>
+          <td>Mean Time Between Failures — tempo médio entre falhas</td>
+          <td class="mono">10 000 h</td>
+        </tr>
+        <tr>
+          <td class="mono">MTTR</td>
+          <td>Mean Time To Repair — tempo médio de reparação</td>
+          <td class="mono">2 h</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- EQUILÍBRIO -->
+<section id="equilibrio" class="container">
+  <div class="section-label">05 — Síntese</div>
+  <h2 class="section-title">O equilíbrio da tríade</h2>
+  <p class="section-desc">
+    Os três pilares raramente podem ser maximizados em simultâneo. Aumentar a confidencialidade (mais cifra, mais controlos) pode reduzir a disponibilidade (mais latência, mais pontos de falha). Aumentar a disponibilidade (mais redundância) pode aumentar a superfície de ataque. O papel do profissional de segurança é encontrar o equilíbrio adequado ao contexto.
+  </p>
+
+  <div class="compare-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">⚖️</div>
+      <h3>Tensões típicas</h3>
+      <ul>
+        <li><strong>Confidencialidade vs. Disponibilidade:</strong> cifra forte adiciona latência; autenticação rigorosa pode bloquear utilizadores legítimos.</li>
+        <li><strong>Integridade vs. Disponibilidade:</strong> verificações constantes de hash consomem CPU; validações estritas podem rejeitar dados válidos.</li>
+        <li><strong>Confidencialidade vs. Integridade:</strong> registos de auditoria detalhados (integridade) podem conter dados sensíveis (confidencialidade).</li>
+        <li><strong>Segurança vs. Usabilidade:</strong> o pilar implícito, mas sempre presente na equação.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🎯</div>
+      <h3>Como decidir prioridades</h3>
+      <ul>
+        <li><strong>Classificar ativos:</strong> nem todos os dados têm o mesmo valor.</li>
+        <li><strong>Identificar ameaças:</strong> o que é mais provável e mais grave no seu contexto?</li>
+        <li><strong>Medir risco:</strong> probabilidade × impacto para cada cenário.</li>
+        <li><strong>Alinhar com o negócio:</strong> segurança serve o negócio, não o contrário.</li>
+        <li><strong>Rever periodicamente:</strong> o contexto muda, as prioridades também.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Cenários práticos — que pilares estão em jogo?
+  </h3>
+
+  <div class="scenario kali">
+    <h5>🏥 Sistema de registos médicos comprometido</h5>
+    <p>
+      Um atacante acede à base de dados de um hospital e exfiltra registos de pacientes. <strong>Confidencialidade</strong> violada. Se também alterar dosagens nos registos, a <strong>integridade</strong> é violada. Se cifrar os dados e exigir resgate, a <strong>disponibilidade</strong> é violada. Os três pilares em simultâneo.
+    </p>
+  </div>
+
+  <div class="scenario purple">
+    <h5>🏦 Transferência bancária alterada em trânsito</h5>
+    <p>
+      Um atacante interceta uma transferência de 100 € e altera o valor para 10 000 €. A <strong>confidencialidade</strong> pode não ser afetada (o atacante não leu dados), mas a <strong>integridade</strong> é gravemente violada. Se a alteração não for detetada, a confiança no sistema bancário colapsa.
+    </p>
+  </div>
+
+  <div class="scenario meta">
+    <h5>🛒 Loja online durante a Black Friday</h5>
+    <p>
+      A loja recebe 50× o tráfego habitual e o servidor colapsa. A <strong>disponibilidade</strong> é violada — e o impacto financeiro é imediato. Se a falha for causada por um ataque DDoS, os outros pilares podem não ser afetados, mas o prejuízo é igualmente real.
+    </p>
+  </div>
+
+  <div class="term" style="margin-top:48px;">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — pilares na prática</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd"># Confidencialidade: verificar cifra em trânsito</span>
+<span class="prompt">$</span> <span class="cmd">curl -sI https://exemplo.pt | grep -i strict</span>
+<span class="ok">strict-transport-security: max-age=31536000; includeSubDomains</span>
+
+<span class="prompt">$</span> <span class="cmd"># Integridade: verificar hash de um ficheiro descarregado</span>
+<span class="prompt">$</span> <span class="cmd">sha256sum software.iso</span>
+<span class="info">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  software.iso</span>
+<span class="dim">^ comparar com o hash publicado pelo fornecedor</span>
+
+<span class="prompt">$</span> <span class="cmd"># Disponibilidade: verificar uptime de um serviço</span>
+<span class="prompt">$</span> <span class="cmd">curl -o /dev/null -s -w "%{http_code}\n" https://exemplo.pt</span>
+<span class="ok">200</span>
+<span class="dim">^ 200 OK significa que o serviço está a responder</span>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:32px;">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Para além da tríade: os pilares modernos</h5>
+      <p>
+        Com a evolução das ameaças, surgiram propostas de extensão da tríade. As mais comuns são a <strong>Autenticidade</strong> (garantir que a origem é quem diz ser), o <strong>Não Repúdio</strong> (impossibilidade de negar uma ação) e a <strong>Privacidade</strong> (controlo do indivíduo sobre os seus dados). Alguns autores falam mesmo de um modelo "CIAAAN" ou "Parkerian Hexad". A tríade clássica permanece, no entanto, como o ponto de partida universal.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Tríade CIA — Aula interativa · Fundamentos de segurança da informação</p>
+    <p style="margin-top:8px; font-size:12px;">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

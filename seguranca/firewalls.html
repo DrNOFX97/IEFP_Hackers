@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firewalls — Aula Interativa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:820px) { .nav-links { display:none; } }
+
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card.purple { border-top:2px solid var(--accent); }
+  .card.purple:hover { border-color:var(--accent);
+    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card.purple .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card.purple h3 { color:var(--accent); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .card.purple ul li::before { color:var(--accent); }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .triple-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  @media (max-width:980px) { .triple-grid { grid-template-columns:1fr; } }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code.meta-code::before { background:var(--meta); }
+  .code.purple-code::before { background:var(--accent); }
+  .code .prompt { color:var(--meta); user-select:none; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .cmd { color:#e8ecf4; }
+  .code .ph { color:var(--warn); font-weight:600; }
+  .code .ok { color:var(--ok); }
+  .code .dim { color:var(--text-faint); }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .bad { color:var(--err); font-weight:600; }
+  .code .good { color:var(--ok); font-weight:600; }
+
+  .term { background:#000; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; margin:32px 0; font-family:var(--font-mono); }
+  .term-bar { display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-1); border-bottom:1px solid var(--border); }
+  .term-bar .b { width:12px; height:12px; border-radius:50%; }
+  .term-bar .b.r { background:#ff5f57; }
+  .term-bar .b.y { background:#febc2e; }
+  .term-bar .b.g { background:#28c840; }
+  .term-bar .title { margin-left:8px; font-size:12px; color:var(--text-faint); }
+  .term-body { padding:18px 20px; font-size:13px; line-height:1.8; min-height:120px;
+    max-height:500px; overflow-y:auto; color:#a8ffcb; white-space:pre-wrap;
+    word-break:break-word; }
+  .term-body .prompt { color:var(--meta); }
+  .term-body .info { color:var(--kali); }
+  .term-body .ok { color:var(--ok); }
+  .term-body .err { color:var(--err); }
+  .term-body .warn { color:var(--warn); }
+  .term-body .dim { color:var(--text-faint); }
+
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); }
+  td.warn { color:var(--warn); }
+  td.err { color:var(--err); }
+  td.kali { color:var(--kali); }
+  td.meta { color:var(--meta); }
+  td.purple { color:var(--accent); }
+
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+
+  .danger-box { background:linear-gradient(135deg,rgba(255,59,107,0.08),rgba(255,77,77,0.04));
+    border:1px solid rgba(255,59,107,0.25); border-left:3px solid var(--meta);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .danger-box .icon { font-size:22px; flex-shrink:0; }
+  .danger-box h5 { color:var(--meta); font-size:15px; margin-bottom:4px; }
+  .danger-box p { color:var(--text-dim); font-size:14px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px;
+    border:2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background:#1c2233; }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+
+  .tag { display:inline-block; font-family:var(--font-mono); font-size:11px;
+    padding:3px 10px; border-radius:100px; letter-spacing:0.5px; margin-left:8px;
+    vertical-align:middle; }
+  .tag.kali { background:rgba(0,212,255,0.1); color:var(--kali);
+    border:1px solid rgba(0,212,255,0.25); }
+  .tag.meta { background:rgba(255,59,107,0.1); color:var(--meta);
+    border:1px solid rgba(255,59,107,0.25); }
+  .tag.purple { background:rgba(124,92,255,0.1); color:var(--accent);
+    border:1px solid rgba(124,92,255,0.25); }
+
+  .flow { display:flex; align-items:center; justify-content:center;
+    flex-wrap:wrap; gap:12px; margin:32px 0; font-family:var(--font-mono); font-size:13px; }
+  .flow-node { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:12px; padding:12px 20px; color:var(--text-dim); text-align:center; }
+  .flow-node.kali { border-color:rgba(0,212,255,0.4); color:var(--kali); }
+  .flow-node.meta { border-color:rgba(255,59,107,0.4); color:var(--meta); }
+  .flow-node.purple { border-color:rgba(124,92,255,0.4); color:var(--accent); }
+  .flow-arrow { color:var(--text-faint); font-size:18px; }
+
+  .scenario { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:16px; }
+  .scenario h5 { font-size:15px; margin-bottom:8px; }
+  .scenario p { color:var(--text-dim); font-size:14px; }
+  .scenario.kali { border-left:3px solid var(--kali); }
+  .scenario.kali h5 { color:var(--kali); }
+  .scenario.purple { border-left:3px solid var(--accent); }
+  .scenario.purple h5 { color:var(--accent); }
+  .scenario.meta { border-left:3px solid var(--meta); }
+  .scenario.meta h5 { color:var(--meta); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      FIREWALL<span style="color:var(--kali)">//</span>PT
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#tipos">Tipos</a>
+      <a href="#iptables">iptables</a>
+      <a href="#nftables">nftables</a>
+      <a href="#boas-praticas">Boas práticas</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · segurança de redes
+  </div>
+  <h1>
+    <span class="grad-kali">Fire</span><span class="grad-meta">walls</span>
+  </h1>
+  <p class="sub">
+    O guardião da rede. Uma firewall é o componente que filtra o tráfego entre redes, decidindo o que passa e o que é bloqueado com base em regras predefinidas. Nesta aula, exploramos desde os conceitos fundamentais até à configuração prática em Linux com iptables e nftables.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">O que é uma firewall?</h2>
+  <p class="section-desc">
+    Uma firewall é um sistema — hardware, software ou ambos — que monitoriza e controla o tráfego de rede com base num conjunto de regras de segurança. Funciona como um ponto de controlo entre duas ou mais redes, decidindo quais os pacotes que podem passar e quais devem ser bloqueados.
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">1960s</span>
+      <span class="label">Primeiras firewalls (ARPANET)</span>
+    </div>
+    <div class="stat">
+      <span class="num">7</span>
+      <span class="label">Camadas OSI onde pode atuar</span>
+    </div>
+    <div class="stat">
+      <span class="num">0</span>
+      <span class="label">Confiança implícita na zona externa</span>
+    </div>
+    <div class="stat">
+      <span class="num">1ª</span>
+      <span class="label">Linha de defesa da rede</span>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>A analogia do porteiro</h5>
+      <p>
+        Imagine um edifício com um porteiro na entrada. Ele verifica a identificação de cada visitante, consulta uma lista de autorizações e decide se deixa passar, se pede mais informações ou se recusa a entrada. Uma firewall faz exatamente isso com pacotes de rede: examina cada um, consulta a sua lista de regras e decide o que fazer.
+      </p>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-node kali">Rede externa</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node purple">Firewall</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Rede interna</div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    O que uma firewall consegue fazer
+  </h3>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">✅</div>
+      <h3>Capacidades</h3>
+      <ul>
+        <li><strong>Filtrar tráfego:</strong> permitir ou bloquear pacotes com base em IP, porta, protocolo.</li>
+        <li><strong>Inspecionar estado:</strong> acompanhar o estado das ligações (stateful inspection).</li>
+        <li><strong>Traduzir endereços:</strong> NAT, PAT, mapeamento de portas.</li>
+        <li><strong>Registar eventos:</strong> logs de tráfego permitido e bloqueado.</li>
+        <li><strong>Segmentar redes:</strong> criar zonas com diferentes níveis de confiança.</li>
+        <li><strong>Prevenir intrusões:</strong> IPS integrado em firewalls modernas.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🚫</div>
+      <h3>Limitações</h3>
+      <ul>
+        <li><strong>Não vê tráfego cifrado:</strong> TLS, SSH e VPN são opacos sem inspeção profunda.</li>
+        <li><strong>Não protege contra ataques internos:</strong> um utilizador malicioso dentro da rede contorna a firewall.</li>
+        <li><strong>Não substitui antivírus:</strong> malware em anexos de email ou downloads passa incólume.</li>
+        <li><strong>Não previne engenharia social:</strong> phishing não é tráfego de rede.</li>
+        <li><strong>Não corrige vulnerabilidades:</strong> uma aplicação vulnerável continua vulnerável.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- TIPOS -->
+<section id="tipos" class="container">
+  <div class="section-label">02 — Classificação</div>
+  <h2 class="section-title">Tipos de firewall</h2>
+  <p class="section-desc">
+    As firewalls evoluíram ao longo de décadas. Cada geração acrescentou capacidades, tornando-as mais inteligentes, mas também mais complexas. Conhecer os tipos é essencial para escolher a solução certa para cada contexto.
+  </p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Firewall de filtragem de pacotes (Packet Filtering)</h4>
+        <p>
+          A geração mais simples. Analisa cada pacote individualmente, sem contexto, com base em campos do cabeçalho IP/TCP/UDP. É rápida, mas não percebe se um pacote faz parte de uma ligação legítima ou é um fragmento de ataque.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo de regra: permitir HTTP (porta 80) de qualquer origem</span>
+<span class="kw">PERMIT</span> <span class="ok">tcp</span> <span class="dim">from</span> <span class="str">any</span> <span class="dim">to</span> <span class="str">any</span> <span class="num">port 80</span>
+
+<span class="comment"># Exemplo de regra: bloquear todo o tráfego de entrada SSH</span>
+<span class="kw">DENY</span> <span class="err">tcp</span> <span class="dim">from</span> <span class="str">any</span> <span class="dim">to</span> <span class="str">any</span> <span class="num">port 22</span>
+
+<span class="comment"># Cada pacote é avaliado independentemente — sem memória de estado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Firewall com inspeção de estado (Stateful Inspection)</h4>
+        <p>
+          A geração dominante desde os anos 90. Mantém uma tabela de ligações ativas e só permite pacotes que pertençam a uma ligação estabelecida ou a uma nova ligação autorizada. É muito mais eficaz contra ataques de spoofing e varredura.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: permitir tráfego de saída HTTP e respostas de entrada</span>
+<span class="kw">iptables</span> -A OUTPUT -p tcp --dport 80 -j ACCEPT
+<span class="kw">iptables</span> -A INPUT -m state --state <span class="ok">ESTABLISHED,RELATED</span> -j ACCEPT
+
+<span class="comment"># A tabela de estado sabe que a resposta pertence a uma ligação iniciada internamente</span>
+<span class="comment"># e permite-a automaticamente, sem regra explícita de entrada</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Firewall de aplicação (Proxy / Application Layer)</h4>
+        <p>
+          Atua na camada 7 do modelo OSI. Em vez de inspecionar pacotes, examina o conteúdo das aplicações — URLs, comandos HTTP, mensagens SMTP. Oferece controlo muito mais fino, mas com maior latência e menor escalabilidade.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: proxy HTTP que bloqueia categorias de sites</span>
+<span class="kw">acl</span> bloqueados url_regex <span class="str">"facebook|tiktok|instagram"</span>
+<span class="kw">http_access</span> <span class="err">deny</span> bloqueados
+<span class="kw">http_access</span> <span class="ok">allow</span> <span class="str">localnet</span>
+
+<span class="comment"># O proxy vê a URL completa, não apenas o IP e a porta</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Próxima geração (NGFW — Next-Generation Firewall)</h4>
+        <p>
+          Combina inspeção de estado com funcionalidades avançadas: inspeção profunda de pacotes (DPI), identificação de aplicações, prevenção de intrusões (IPS), filtragem de URLs, inteligência de ameaças e, por vezes, desencriptação TLS controlada.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo conceptual de política NGFW</span>
+<span class="kw">policy</span> <span class="str">"permitir-SaaS"</span> {
+  <span class="kw">source</span> <span class="str">"LAN"</span>
+  <span class="kw">destination</span> <span class="str">"Internet"</span>
+  <span class="kw">application</span> <span class="str">"office365, google-workspace"</span>
+  <span class="kw">action</span> <span class="ok">allow</span>
+  <span class="kw">inspect</span> <span class="str">"malware, c2, exploits"</span>
+  <span class="kw">log</span> <span class="str">"detailed"</span>
+}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:32px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Camada OSI</th>
+          <th>Estado</th>
+          <th>Latência</th>
+          <th>Granularidade</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="kali">Filtragem de pacotes</td>
+          <td class="mono">3–4</td>
+          <td class="err">Sem estado</td>
+          <td class="ok">Muito baixa</td>
+          <td class="warn">IP / porta / protocolo</td>
+        </tr>
+        <tr>
+          <td class="kali">Stateful inspection</td>
+          <td class="mono">3–4</td>
+          <td class="ok">Com estado</td>
+          <td class="ok">Baixa</td>
+          <td class="warn">IP / porta / estado</td>
+        </tr>
+        <tr>
+          <td class="purple">Proxy / aplicação</td>
+          <td class="mono">7</td>
+          <td class="ok">Com estado</td>
+          <td class="err">Alta</td>
+          <td class="ok">Conteúdo da aplicação</td>
+        </tr>
+        <tr>
+          <td class="meta">NGFW</td>
+          <td class="mono">3–7</td>
+          <td class="ok">Com estado</td>
+          <td class="warn">Média</td>
+          <td class="ok">Aplicação + conteúdo + ameaças</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- IPTABLES -->
+<section id="iptables" class="container">
+  <div class="section-label">03 — Prática em Linux</div>
+  <h2 class="section-title">iptables</h2>
+  <p class="section-desc">
+    O iptables é a ferramenta clássica de firewall no Linux. Durante décadas foi o padrão de facto, e ainda hoje é amplamente usado. Funciona através de tabelas, cadeias e regras que determinam o destino de cada pacote.
+  </p>
+
+  <div class="info-box">
+    <span class="icon">⚙️</span>
+    <div>
+      <h5>Arquitetura do iptables</h5>
+      <p>
+        O iptables organiza regras em <strong>tabelas</strong> (filter, nat, mangle, raw) e cada tabela contém <strong>cadeias</strong> (INPUT, OUTPUT, FORWARD, PREROUTING, POSTROUTING). Cada cadeia é uma lista ordenada de regras avaliadas de cima para baixo até haver correspondência.
+      </p>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Cadeias principais da tabela filter
+  </h3>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">📥</div>
+      <h3>INPUT</h3>
+      <div class="role">Tráfego destinado à máquina local</div>
+      <ul>
+        <li>Pacotes que chegam à interface de rede local.</li>
+        <li>Exemplo: pedidos SSH, HTTP, ICMP para o próprio host.</li>
+        <li>É aqui que se protege o servidor contra acessos indesejados.</li>
+      </ul>
+    </div>
+    <div class="card kali">
+      <div class="card-icon">📤</div>
+      <h3>OUTPUT</h3>
+      <div class="role">Tráfego originado na máquina local</div>
+      <ul>
+        <li>Pacotes gerados pelo próprio host.</li>
+        <li>Exemplo: pedidos HTTP de um browser, consultas DNS.</li>
+        <li>Menos crítico, mas útil para detetar malware com C2.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card kali" style="margin-top:24px;">
+    <div class="card-icon">🔀</div>
+    <h3>FORWARD</h3>
+    <div class="role">Tráfego que atravessa a máquina (router / gateway)</div>
+    <ul>
+      <li>Pacotes que não são destinados nem originados no host local.</li>
+      <li>Essencial quando o Linux atua como router ou gateway de rede.</li>
+      <li>Permite segmentar redes internas e aplicar políticas entre zonas.</li>
+    </ul>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Comandos essenciais
+  </h3>
+
+  <div class="code">
+<span class="comment"># Ver as regras atuais (com números de linha e contadores)</span>
+<span class="prompt">$</span> <span class="cmd">sudo iptables -L -n -v --line-numbers</span>
+<span class="info">Chain INPUT (policy ACCEPT 0 packets, 0 bytes)</span>
+<span class="info">num   pkts bytes target     prot opt in     out     source               destination</span>
+<span class="ok">1      120  8400 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0    tcp dpt:22</span>
+<span class="ok">2      340 23800 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0    tcp dpt:80</span>
+
+<span class="comment"># Adicionar uma regra no fim da cadeia INPUT</span>
+<span class="prompt">$</span> <span class="cmd">sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT</span>
+
+<span class="comment"># Inserir uma regra no topo da cadeia (avaliada primeiro)</span>
+<span class="prompt">$</span> <span class="cmd">sudo iptables -I INPUT 1 -s 203.0.113.42 -j DROP</span>
+
+<span class="comment"># Eliminar uma regra pelo número de linha</span>
+<span class="prompt">$</span> <span class="cmd">sudo iptables -D INPUT 2</span>
+
+<span class="comment"># Definir política padrão para DROP em todas as cadeias</span>
+<span class="prompt">$</span> <span class="cmd">sudo iptables -P INPUT DROP</span>
+<span class="prompt">$</span> <span class="cmd">sudo iptables -P FORWARD DROP</span>
+<span class="prompt">$</span> <span class="cmd">sudo iptables -P OUTPUT ACCEPT</span>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Um conjunto de regras básico e funcional
+  </h3>
+
+  <div class="code">
+<span class="comment">#!/bin/bash</span>
+<span class="comment"># Limpar regras existentes</span>
+<span class="cmd">iptables -F</span>
+<span class="cmd">iptables -X</span>
+
+<span class="comment"># Política padrão: bloquear tudo o que não for explicitamente permitido</span>
+<span class="cmd">iptables -P INPUT DROP</span>
+<span class="cmd">iptables -P FORWARD DROP</span>
+<span class="cmd">iptables -P OUTPUT ACCEPT</span>
+
+<span class="comment"># Permitir tráfego na interface loopback</span>
+<span class="cmd">iptables -A INPUT -i lo -j ACCEPT</span>
+
+<span class="comment"># Permitir respostas a ligações estabelecidas ou relacionadas</span>
+<span class="cmd">iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</span>
+
+<span class="comment"># Permitir SSH (porta 22) apenas da rede interna</span>
+<span class="cmd">iptables -A INPUT -p tcp -s 192.168.1.0/24 --dport 22 -j ACCEPT</span>
+
+<span class="comment"># Permitir HTTP e HTTPS de qualquer origem</span>
+<span class="cmd">iptables -A INPUT -p tcp --dport 80 -j ACCEPT</span>
+<span class="cmd">iptables -A INPUT -p tcp --dport 443 -j ACCEPT</span>
+
+<span class="comment"># Permitir ICMP (ping) com limitação de taxa</span>
+<span class="cmd">iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 1/s -j ACCEPT</span>
+
+<span class="comment"># Registar pacotes bloqueados (com prefixo para fácil identificação)</span>
+<span class="cmd">iptables -A INPUT -j LOG --log-prefix <span class="str">"[FW-INPUT-DROP] "</span> --log-level 4</span>
+<span class="cmd">iptables -A INPUT -j DROP</span>
+
+<span class="comment"># Guardar as regras para persistir após reinício</span>
+<span class="prompt">$</span> <span class="cmd">sudo iptables-save &gt; /etc/iptables/rules.v4</span>
+  </div>
+
+  <div class="warning">
+    <span class="icon">⚠️</span>
+    <div>
+      <h5>Cuidado com o bloqueio remoto</h5>
+      <p>
+        Definir a política padrão para DROP antes de permitir SSH é uma forma garantida de se bloquear a si próprio fora do servidor. Configure sempre as regras de acesso remoto <em>primeiro</em> e só depois mude as políticas. Se estiver a usar um servidor remoto, mantenha uma segunda sessão aberta enquanto testa as regras.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- NFTABLES -->
+<section id="nftables" class="container">
+  <div class="section-label">04 — O sucessor</div>
+  <h2 class="section-title">nftables</h2>
+  <p class="section-desc">
+    O nftables é a substituição moderna do iptables. Disponível desde o kernel Linux 3.13 (2014), oferece uma sintaxe unificada, melhor desempenho e maior flexibilidade. As distribuições recentes já o usam por omissão.
+  </p>
+
+  <div class="info-box">
+    <span class="icon">🚀</span>
+    <div>
+      <h5>Porque migrar do iptables?</h5>
+      <p>
+        O iptables acumulou várias ferramentas ao longo do tempo (iptables, ip6tables, arptables, ebtables), cada uma com a sua sintaxe. O nftables unifica tudo numa única ferramenta, com uma sintaxe mais limpa, melhor desempenho e suporte nativo para conjuntos (sets) e mapas, que aceleram a avaliação de regras.
+      </p>
+    </div>
+  </div>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">📊</div>
+      <h3>iptables</h3>
+      <ul>
+        <li>Quatro ferramentas separadas: iptables, ip6tables, arptables, ebtables.</li>
+        <li>Sintaxe verbosa e por vezes inconsistente.</li>
+        <li>Desempenho degrada com muitas regras.</li>
+        <li>Sem suporte nativo para conjuntos de dados.</li>
+        <li>Regras aplicadas atomicamente apenas em parte.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">⚡</div>
+      <h3>nftables</h3>
+      <ul>
+        <li>Ferramenta única para IPv4, IPv6, ARP e bridge.</li>
+        <li>Sintaxe coerente e mais compacta.</li>
+        <li>Desempenho otimizado mesmo com muitas regras.</li>
+        <li>Conjuntos (sets) e mapas nativos.</li>
+        <li>Aplicação atómica de regras.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Comandos essenciais
+  </h3>
+
+  <div class="code purple-code">
+<span class="comment"># Listar todas as regras</span>
+<span class="prompt">$</span> <span class="cmd">sudo nft list ruleset</span>
+
+<span class="comment"># Criar uma tabela e uma cadeia</span>
+<span class="prompt">$</span> <span class="cmd">sudo nft add table inet filter</span>
+<span class="prompt">$</span> <span class="cmd">sudo nft add chain inet filter input { type filter hook input priority 0 \; policy drop \; }</span>
+
+<span class="comment"># Permitir tráfego loopback</span>
+<span class="prompt">$</span> <span class="cmd">sudo nft add rule inet filter input iif lo accept</span>
+
+<span class="comment"># Permitir SSH apenas da rede interna</span>
+<span class="prompt">$</span> <span class="cmd">sudo nft add rule inet filter input ip saddr 192.168.1.0/24 tcp dport 22 accept</span>
+
+<span class="comment"># Permitir HTTP e HTTPS usando um conjunto (set)</span>
+<span class="prompt">$</span> <span class="cmd">sudo nft add rule inet filter input tcp dport { 80, 443 } accept</span>
+
+<span class="comment"># Permitir respostas a ligações estabelecidas</span>
+<span class="prompt">$</span> <span class="cmd">sudo nft add rule inet filter input ct state established,related accept</span>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Um ficheiro de configuração completo
+  </h3>
+
+  <div class="code purple-code">
+<span class="comment">#!/usr/sbin/nft -f</span>
+
+<span class="comment"># Limpar tudo</span>
+<span class="kw">flush</span> ruleset
+
+<span class="comment"># Tabela para IPv4 e IPv6 (inet cobre ambos)</span>
+<span class="kw">table</span> inet filter {
+
+  <span class="comment"># Cadeia de entrada</span>
+  <span class="kw">chain</span> input {
+    <span class="kw">type</span> filter hook input priority 0; policy <span class="err">drop</span>;
+
+    <span class="comment"># Loopback</span>
+    iif lo <span class="ok">accept</span>
+
+    <span class="comment"># Ligações estabelecidas</span>
+    ct state established,related <span class="ok">accept</span>
+
+    <span class="comment"># SSH apenas da LAN</span>
+    ip saddr 192.168.1.0/24 tcp dport 22 <span class="ok">accept</span>
+
+    <span class="comment"># HTTP e HTTPS</span>
+    tcp dport { 80, 443 } <span class="ok">accept</span>
+
+    <span class="comment"># ICMP com limitação</span>
+    icmp type echo-request limit rate 1/second <span class="ok">accept</span>
+
+    <span class="comment"># Registar e bloquear o resto</span>
+    <span class="kw">log</span> prefix <span class="str">"FW-DROP: "</span> level warn
+    <span class="err">drop</span>
+  }
+
+  <span class="comment"># Cadeia de saída</span>
+  <span class="kw">chain</span> output {
+    <span class="kw">type</span> filter hook output priority 0; policy <span class="ok">accept</span>;
+  }
+
+  <span class="comment"># Cadeia de encaminhamento</span>
+  <span class="kw">chain</span> forward {
+    <span class="kw">type</span> filter hook forward priority 0; policy <span class="err">drop</span>;
+  }
+}
+  </div>
+
+  <div class="term">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação — nftables em ação</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd">sudo nft list ruleset</span>
+<span class="info">table inet filter {</span>
+<span class="info">  chain input {</span>
+<span class="info">    type filter hook input priority filter; policy drop;</span>
+<span class="ok">    iif "lo" accept</span>
+<span class="ok">    ct state established,related accept</span>
+<span class="ok">    ip saddr 192.168.1.0/24 tcp dport 22 accept</span>
+<span class="ok">    tcp dport { 80, 443 } accept</span>
+<span class="ok">    icmp type echo-request limit rate 1/second accept</span>
+<span class="warn">    log prefix "FW-DROP: " level warn</span>
+<span class="err">    drop</span>
+<span class="info">  }</span>
+<span class="info">  chain output {</span>
+<span class="info">    type filter hook output priority filter; policy accept;</span>
+<span class="info">  }</span>
+<span class="info">  chain forward {</span>
+<span class="info">    type filter hook forward priority filter; policy drop;</span>
+<span class="info">  }</span>
+<span class="info">}</span>
+
+<span class="prompt">$</span> <span class="cmd">sudo nft -c -f /etc/nftables.conf</span>
+<span class="ok"># verificação de sintaxe passou sem erros</span>
+
+<span class="prompt">$</span> <span class="cmd">sudo systemctl enable --now nftables</span>
+<span class="ok">Created symlink /etc/systemd/system/multi-user.target.wants/nftables.service</span>
+    </div>
+  </div>
+</section>
+
+<!-- BOAS PRÁTICAS -->
+<section id="boas-praticas" class="container">
+  <div class="section-label">05 — Síntese</div>
+  <h2 class="section-title">Boas práticas</h2>
+  <p class="section-desc">
+    Configurar uma firewall não é apenas escrever regras. É definir uma política de segurança, documentá-la, testá-la e mantê-la atualizada. Estas são as práticas que distinguem uma firewall eficaz de uma que dá falsa sensação de segurança.
+  </p>
+
+  <div class="compare-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">✅</div>
+      <h3>Fazer</h3>
+      <ul>
+        <li><strong>Negar por omissão:</strong> política padrão DROP, permitir apenas o necessário.</li>
+        <li><strong>Documentar cada regra:</strong> quem a pediu, porquê, quando expira.</li>
+        <li><strong>Revisões periódicas:</strong> regras antigas acumulam-se e tornam-se risco.</li>
+        <li><strong>Testar após alterações:</strong> uma regra mal escrita pode bloquear serviços críticos.</li>
+        <li><strong>Registar eventos:</strong> logs de bloqueio são essenciais para detetar ataques.</li>
+        <li><strong>Segmentar a rede:</strong> zonas desmilitarizadas (DMZ) para serviços expostos.</li>
+        <li><strong>Automatizar a configuração:</strong> infraestrutura como código, versionada.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🚫</div>
+      <h3>Evitar</h3>
+      <ul>
+        <li><strong>Regra "permitir tudo":</strong> anula o propósito da firewall.</li>
+        <li><strong>Regras órfãs:</strong> regras que ninguém sabe para que servem.</li>
+        <li><strong>Confiar só na firewall:</strong> defesa em profundidade é essencial.</li>
+        <li><strong>Esquecer IPv6:</strong> muitas firewalls só filtram IPv4.</li>
+        <li><strong>Ignorar tráfego de saída:</strong> malware comunica para o exterior.</li>
+        <li><strong>Nunca testar:</strong> uma firewall não testada é uma firewall quebrada.</li>
+        <li><strong>Deixar a gestão exposta:</strong> interfaces de administração devem ser restritas.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Cenários práticos
+  </h3>
+
+  <div class="scenario kali">
+    <h5>🏢 Servidor web exposto à Internet</h5>
+    <p>
+      Permitir apenas as portas 80 e 443 de qualquer origem. SSH restrito a IPs de administração. Política padrão DROP em INPUT e FORWARD. Logs de pacotes bloqueados ativos. Regras de saída limitadas às atualizações de sistema e repositórios conhecidos.
+    </p>
+  </div>
+
+  <div class="scenario purple">
+    <h5>🏠 Rede doméstica com router Linux</h5>
+    <p>
+      Cadeia FORWARD para permitir tráfego da LAN para a WAN, mas bloquear o inverso exceto respostas. INPUT restrito à gestão local. NAT configurado na tabela nat. Regras explícitas para IoT, que devem ficar isolados numa VLAN separada.
+    </p>
+  </div>
+
+  <div class="scenario meta">
+    <h5>☁️ Servidor cloud com múltiplos serviços</h5>
+    <p>
+      Combinar firewall do sistema operativo (nftables/iptables) com security groups do fornecedor cloud. Usar etiquetas em vez de IPs fixos. Rever regras regularmente, remover as obsoletas e aplicar o princípio do menor privilégio a cada serviço.
+    </p>
+  </div>
+
+  <div class="term" style="margin-top:48px;">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — diagnóstico de firewall</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd"># Ver regras ativas</span>
+<span class="prompt">$</span> <span class="cmd">sudo nft list ruleset | head -30</span>
+<span class="info">table inet filter { ... }</span>
+
+<span class="prompt">$</span> <span class="cmd"># Testar se uma porta está acessível externamente</span>
+<span class="prompt">$</span> <span class="cmd">nc -zv exemplo.pt 443</span>
+<span class="ok">Connection to exemplo.pt 443 port [tcp/https] succeeded!</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar portas em escuta na máquina local</span>
+<span class="prompt">$</span> <span class="cmd">ss -tulpn</span>
+<span class="info">Netid State  Local Address:Port  Process</span>
+<span class="info">tcp   LISTEN 0.0.0.0:22         sshd</span>
+<span class="info">tcp   LISTEN 0.0.0.0:80         nginx</span>
+<span class="info">tcp   LISTEN 0.0.0.0:443        nginx</span>
+
+<span class="prompt">$</span> <span class="cmd"># Ver logs de pacotes bloqueados</span>
+<span class="prompt">$</span> <span class="cmd">sudo journalctl -k | grep "FW-DROP" | tail -5</span>
+<span class="warn">FW-DROP: IN=eth0 OUT= SRC=203.0.113.42 DST=10.0.0.5 PROTO=TCP DPT=23</span>
+<span class="dim">^ tentativa de acesso a Telnet (porta 23) — bloqueada</span>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:32px;">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Para saber mais</h5>
+      <p>
+        A documentação oficial do <strong>nftables</strong> está em <em>nftables.org</em> e inclui a referência completa da linguagem. O <strong>wiki do Arch Linux</strong> tem um artigo excelente sobre nftables, e a <strong>página de manual do iptables</strong> continua a ser a referência para sistemas mais antigos. Para firewalls empresariais, o <strong>NIST SP 800-41</strong> é o guia de referência.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Firewalls — Aula interativa · Fundamentos e prática em Linux</p>
+    <p style="margin-top:8px; font-size:12px;">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

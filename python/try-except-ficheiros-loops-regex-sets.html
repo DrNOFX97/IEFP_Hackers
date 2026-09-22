@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 03 — Try/Except, Ficheiros, Loops, Regex e Sets</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:700px) { .nav-links { display:none; } }
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .ok { color:var(--ok); }
+  .code .err { color:var(--err); }
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); } td.warn { color:var(--warn); }
+  td.err { color:var(--err); } td.kali { color:var(--kali); } td.meta { color:var(--meta); }
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px; border:2px solid var(--bg-0); }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo"><span class="dot"></span><span>aula://excecoes-regex-sets</span></div>
+    <div class="nav-links">
+      <a href="#try">Try/Except</a>
+      <a href="#with">With Open</a>
+      <a href="#loops">For/While</a>
+      <a href="#regex">Regex</a>
+      <a href="#sets">Sets</a>
+      <a href="#integrado">Integrado</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="badge"><span class="live"></span>AULA 03 • PYTHON PRÁTICO</div>
+    <h1>
+      <span class="grad-kali">Try/Except</span>, Ficheiros,<br>
+      Loops, <span class="grad-meta">Regex</span> e Sets
+    </h1>
+    <p class="sub">
+      As cinco ferramentas que transformam um script frágil num programa robusto.
+      Com exemplos concretos e um caso integrado no fim.
+    </p>
+  </div>
+</header>
+
+<section id="try">
+  <div class="container">
+    <div class="section-label">// 01 — Tratar erros</div>
+    <h2 class="section-title">try / except</h2>
+    <p class="section-desc">
+      O programa não pode rebentar quando algo corre mal. O <code>try/except</code>
+      apanha o erro e permite reagir com elegância.
+    </p>
+
+    <div class="compare-grid">
+      <div class="card meta">
+        <div class="card-icon">💥</div>
+        <h3>Sem try/except</h3>
+        <div class="role">O programa crasha</div>
+        <div class="code">
+          numero = <span class="kw">int</span>(<span class="kw">input</span>(<span class="str">"Número: "</span>))<br>
+          <span class="comment"># user escreve "abc" → ValueError → crash</span>
+        </div>
+      </div>
+
+      <div class="card kali">
+        <div class="card-icon">🛡️</div>
+        <h3>Com try/except</h3>
+        <div class="role">O programa aguenta</div>
+        <div class="code">
+          <span class="kw">try</span>:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;numero = <span class="kw">int</span>(<span class="kw">input</span>(<span class="str">"Número: "</span>))<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(<span class="num">10</span> / numero)<br>
+          <span class="kw">except</span> ValueError:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(<span class="str">"Isso não é um número!"</span>)<br>
+          <span class="kw">except</span> ZeroDivisionError:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(<span class="str">"Não podes dividir por zero!"</span>)
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Estrutura completa</h3>
+
+    <div class="code">
+      <span class="kw">try</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># código que pode falhar</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;ficheiro = <span class="kw">open</span>(<span class="str">"dados.txt"</span>)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;conteudo = ficheiro.read()<br>
+      <span class="kw">except</span> FileNotFoundError:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(<span class="str">"Ficheiro não existe"</span>)<br>
+      <span class="kw">except</span> Exception <span class="kw">as</span> e:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(<span class="str">f"Erro inesperado: {e}"</span>)<br>
+      <span class="kw">else</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(<span class="str">"Correu tudo bem"</span>)  <span class="comment"># só se NÃO houve erro</span><br>
+      <span class="kw">finally</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;ficheiro.close()  <span class="comment"># corre SEMPRE</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Erro</th><th>Quando acontece</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono meta">ValueError</td><td>Conversão falhada (<code>int("abc")</code>)</td></tr>
+          <tr><td class="mono meta">TypeError</td><td>Tipo errado (<code>"a" + 1</code>)</td></tr>
+          <tr><td class="mono meta">KeyError</td><td>Chave inexistente em dict</td></tr>
+          <tr><td class="mono meta">IndexError</td><td>Índice fora da lista</td></tr>
+          <tr><td class="mono meta">FileNotFoundError</td><td>Ficheiro não existe</td></tr>
+          <tr><td class="mono meta">ZeroDivisionError</td><td>Divisão por zero</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>Regras de ouro</h5>
+        <p>
+          Apanha erros <strong>específicos</strong>, não <code>except:</code> à solução.
+          Um <code>except:</code> vazio esconde bugs — evita. Usa <code>finally</code>
+          para limpar recursos.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="with">
+  <div class="container">
+    <div class="section-label">// 02 — Ficheiros seguros</div>
+    <h2 class="section-title">with open</h2>
+    <p class="section-desc">
+      Abrir ficheiros sem <code>with</code> é pedir problemas. O context manager
+      garante que o ficheiro é fechado, aconteça o que acontecer.
+    </p>
+
+    <div class="compare-grid">
+      <div class="card meta">
+        <div class="card-icon">❌</div>
+        <h3>Sem with</h3>
+        <div class="role">Memory leak</div>
+        <div class="code">
+          f = <span class="kw">open</span>(<span class="str">"dados.txt"</span>, <span class="str">"r"</span>)<br>
+          conteudo = f.read()<br>
+          f.close()<br>
+          <span class="comment"># se algo falhar antes, o ficheiro fica aberto!</span>
+        </div>
+      </div>
+
+      <div class="card kali">
+        <div class="card-icon">✅</div>
+        <h3>Com with</h3>
+        <div class="role">Fecho automático</div>
+        <div class="code">
+          <span class="kw">with</span> <span class="kw">open</span>(<span class="str">"dados.txt"</span>, <span class="str">"r"</span>) <span class="kw">as</span> f:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;conteudo = f.read()<br>
+          <span class="comment"># ficheiro fechado automaticamente</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Modos de abertura</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Modo</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono kali">"r"</td><td>Ler (default) — erro se não existir</td></tr>
+          <tr><td class="mono kali">"w"</td><td>Escrever — <strong>apaga</strong> o conteúdo existente</td></tr>
+          <tr><td class="mono kali">"a"</td><td>Append — acrescenta ao fim</td></tr>
+          <tr><td class="mono kali">"x"</td><td>Criar — erro se já existir</td></tr>
+          <tr><td class="mono kali">"rb" / "wb"</td><td>Modo binário</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Ler linha a linha (recomendado)</h3>
+
+    <div class="code">
+      <span class="kw">with</span> <span class="kw">open</span>(<span class="str">"dados.txt"</span>, <span class="str">"r"</span>) <span class="kw">as</span> f:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span> linha <span class="kw">in</span> f:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(linha.strip())
+    </div>
+  </div>
+</section>
+
+<section id="loops">
+  <div class="container">
+    <div class="section-label">// 03 — Repetição</div>
+    <h2 class="section-title">for vs while</h2>
+    <p class="section-desc">
+      O <code>for</code> usa-se quando sabes sobre o quê iteras. O <code>while</code>
+      quando a repetição depende de uma condição.
+    </p>
+
+    <div class="compare-grid">
+      <div class="card kali">
+        <div class="card-icon">🔁</div>
+        <h3>for</h3>
+        <div class="role">Sabes sobre o quê</div>
+        <div class="code">
+          <span class="kw">for</span> fruta <span class="kw">in</span> [<span class="str">"maçã"</span>, <span class="str">"banana"</span>]:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(fruta)<br><br>
+          <span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="num">5</span>):<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(i)<br><br>
+          <span class="kw">for</span> i, fruta <span class="kw">in</span> <span class="kw">enumerate</span>([<span class="str">"a"</span>,<span class="str">"b"</span>]):<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(i, fruta)
+        </div>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">♾️</div>
+        <h3>while</h3>
+        <div class="role">Depende de condição</div>
+        <div class="code">
+          senha = <span class="str">""</span><br>
+          <span class="kw">while</span> senha != <span class="str">"1234"</span>:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;senha = <span class="kw">input</span>(<span class="str">"Senha: "</span>)<br>
+          <span class="kw">print</span>(<span class="str">"Acesso concedido"</span>)<br><br>
+          <span class="kw">while</span> <span class="kw">True</span>:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;cmd = <span class="kw">input</span>(<span class="str">"> "</span>)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> cmd == <span class="str">"sair"</span>: <span class="kw">break</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Quando usar cada um</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Situação</th><th>Usa</th></tr></thead>
+        <tbody>
+          <tr><td>Percorrer lista/tupla/dict</td><td class="kali">for</td></tr>
+          <tr><td>Repetir N vezes conhecido</td><td class="kali">for + range</td></tr>
+          <tr><td>Repetir até condição mudar</td><td class="meta">while</td></tr>
+          <tr><td>Loop infinito com break</td><td class="meta">while True</td></tr>
+          <tr><td>Ler até EOF</td><td class="kali">for linha in f</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code" style="margin-top:24px;">
+      <span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="num">10</span>):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> i == <span class="num">3</span>: <span class="kw">continue</span>   <span class="comment"># salta para a próxima</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> i == <span class="num">7</span>: <span class="kw">break</span>      <span class="comment"># sai do loop</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(i)
+    </div>
+  </div>
+</section>
+
+<section id="regex">
+  <div class="container">
+    <div class="section-label">// 04 — Padrões em texto</div>
+    <h2 class="section-title">Regex com re</h2>
+    <p class="section-desc">
+      O módulo <code>re</code> serve para procurar, validar e extrair padrões em strings.
+    </p>
+
+    <div class="compare-grid">
+      <div class="card kali">
+        <div class="card-icon">🔍</div>
+        <h3>re.search</h3>
+        <div class="role">Primeira ocorrência</div>
+        <div class="code">
+          <span class="kw">import</span> re<br><br>
+          texto = <span class="str">"email: joao@exemplo.com"</span><br>
+          m = re.search(<span class="str">r"\w+@\w+\.\w+"</span>, texto)<br>
+          <span class="kw">if</span> m:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(m.group())<br>
+          <span class="comment"># joao@exemplo.com</span>
+        </div>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">📋</div>
+        <h3>re.findall</h3>
+        <div class="role">Todas as ocorrências</div>
+        <div class="code">
+          texto = <span class="str">"ana@x.com, rui@y.pt"</span><br>
+          emails = re.findall(<span class="str">r"\w+@\w+\.\w+"</span>, texto)<br>
+          <span class="kw">print</span>(emails)<br>
+          <span class="comment"># ['ana@x.com', 'rui@y.pt']</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Símbolos essenciais</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Significa</th></tr></thead>
+        <tbody>
+          <tr><td class="mono kali">\d</td><td>Um dígito</td></tr>
+          <tr><td class="mono kali">\w</td><td>Letra, dígito ou _</td></tr>
+          <tr><td class="mono kali">\s</td><td>Espaço, tab, newline</td></tr>
+          <tr><td class="mono kali">.</td><td>Qualquer caractere</td></tr>
+          <tr><td class="mono kali">*</td><td>0 ou mais</td></tr>
+          <tr><td class="mono kali">+</td><td>1 ou mais</td></tr>
+          <tr><td class="mono kali">?</td><td>0 ou 1</td></tr>
+          <tr><td class="mono kali">{3}</td><td>Exatamente 3</td></tr>
+          <tr><td class="mono kali">[abc]</td><td>a, b ou c</td></tr>
+          <tr><td class="mono kali">^ $</td><td>Início / fim da string</td></tr>
+          <tr><td class="mono kali">(...)</td><td>Grupo de captura</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Exemplo: validar NIF</h3>
+
+    <div class="code">
+      <span class="kw">import</span> re<br><br>
+      <span class="kw">def</span> <span class="ok">nif_valido</span>(nif):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="kw">bool</span>(re.search(<span class="str">r"^\d{9}$"</span>, nif))<br><br>
+      <span class="kw">print</span>(nif_valido(<span class="str">"123456789"</span>))  <span class="comment"># True</span><br>
+      <span class="kw">print</span>(nif_valido(<span class="str">"12345"</span>))      <span class="comment"># False</span>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Exemplo: extrair horas de um log</h3>
+
+    <div class="code">
+      log = <span class="str">"""[10:23:45] Login OK<br>
+      [10:24:01] Erro 500<br>
+      [10:25:30] Login OK"""</span><br><br>
+      horas = re.findall(<span class="str">r"\[(\d{2}:\d{2}:\d{2})\]"</span>, log)<br>
+      <span class="kw">print</span>(horas)  <span class="comment"># ['10:23:45', '10:24:01', '10:25:30']</span>
+    </div>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>Usa raw strings</h5>
+        <p>
+          <code>re.search("\d+", texto)</code> funciona mas é arriscado.
+          Usa <code>re.search(r"\d+", texto)</code> — o <code>r</code> evita
+          problemas com o caractere <code>\</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sets">
+  <div class="container">
+    <div class="section-label">// 05 — Conjuntos</div>
+    <h2 class="section-title">set</h2>
+    <p class="section-desc">
+      Um <code>set</code> é uma coleção sem ordem e sem elementos repetidos.
+      Serve para garantir unicidade e testar pertença rapidamente.
+    </p>
+
+    <div class="code">
+      frutas = {<span class="str">"maçã"</span>, <span class="str">"banana"</span>, <span class="str">"pera"</span>, <span class="str">"maçã"</span>}<br>
+      <span class="kw">print</span>(frutas)  <span class="comment"># {'maçã', 'banana', 'pera'}</span>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Operações de conjuntos</h3>
+
+    <div class="code">
+      a = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>}<br>
+      b = {<span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>}<br><br>
+      <span class="kw">print</span>(a | b)   <span class="comment"># união        → {1,2,3,4,5,6}</span><br>
+      <span class="kw">print</span>(a & b)   <span class="comment"># interseção   → {3,4}</span><br>
+      <span class="kw">print</span>(a - b)   <span class="comment"># diferença    → {1,2}</span><br>
+      <span class="kw">print</span>(a ^ b)   <span class="comment"># dif. simétrica → {1,2,5,6}</span>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">add, remove, discard, update</h3>
+
+    <div class="code">
+      s = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>}<br>
+      s.add(<span class="num">4</span>)          <span class="comment"># {1,2,3,4}</span><br>
+      s.remove(<span class="num">2</span>)       <span class="comment"># {1,3,4} — erro se não existir</span><br>
+      s.discard(<span class="num">99</span>)     <span class="comment"># não dá erro se não existir</span><br><br>
+      s.update([<span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>])  <span class="comment"># junta outro iterável</span><br>
+      <span class="comment"># s.update modifica no lugar, devolve None</span>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">List vs Set</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>list</th><th>set</th></tr></thead>
+        <tbody>
+          <tr><td>Ordem</td><td class="kali">Sim</td><td class="meta">Não</td></tr>
+          <tr><td>Duplicados</td><td class="kali">Sim</td><td class="meta">Não</td></tr>
+          <tr><td>Acesso por índice</td><td class="kali">Sim</td><td class="meta">Não</td></tr>
+          <tr><td>Procura <code>in</code></td><td class="warn">Lenta O(n)</td><td class="ok">Rápida O(1)</td></tr>
+          <tr><td>Caso de uso</td><td class="kali">Sequência ordenada</td><td class="meta">Unicidade</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Exemplo: palavras únicas de um texto</h3>
+
+    <div class="code">
+      texto = <span class="str">"o gato viu o cão e o cão viu o gato"</span><br>
+      palavras = <span class="kw">set</span>(texto.split())<br>
+      <span class="kw">print</span>(palavras)       <span class="comment"># {'o', 'gato', 'viu', 'cão', 'e'}</span><br>
+      <span class="kw">print</span>(<span class="kw">len</span>(palavras))  <span class="comment"># 5 palavras únicas</span>
+    </div>
+  </div>
+</section>
+
+<section id="integrado">
+  <div class="container">
+    <div class="section-label">// 06 — Tudo junto</div>
+    <h2 class="section-title">Exemplo integrado</h2>
+    <p class="section-desc">
+      Ler um ficheiro de log, extrair emails únicos e guardar num novo ficheiro.
+      Repara como todos os conceitos aparecem juntos.
+    </p>
+
+    <div class="code">
+      <span class="kw">import</span> re<br><br>
+      <span class="kw">def</span> <span class="ok">extrair_emails</span>(ficheiro_entrada, ficheiro_saida):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">try</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">with</span> <span class="kw">open</span>(ficheiro_entrada, <span class="str">"r"</span>, encoding=<span class="str">"utf-8"</span>) <span class="kw">as</span> f:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texto = f.read()<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">except</span> FileNotFoundError:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(<span class="str">"Ficheiro de entrada não existe."</span>)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span><br><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># findall devolve lista; set remove duplicados</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;emails = <span class="kw">set</span>(re.findall(<span class="str">r"[\w.+-]+@[\w-]+\.[\w.]+"</span>, texto))<br><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">try</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">with</span> <span class="kw">open</span>(ficheiro_saida, <span class="str">"w"</span>, encoding=<span class="str">"utf-8"</span>) <span class="kw">as</span> f:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span> email <span class="kw">in</span> <span class="kw">sorted</span>(emails):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f.write(email + <span class="str">"\n"</span>)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(<span class="str">f"{len(emails)} emails únicos guardados."</span>)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">except</span> PermissionError:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">print</span>(<span class="str">"Sem permissão para escrever."</span>)<br><br>
+      extrair_emails(<span class="str">"log.txt"</span>, <span class="str">"emails.txt"</span>)
+    </div>
+
+    <div class="info-box">
+      <div class="icon">🧠</div>
+      <div>
+        <h5>Conceitos usados</h5>
+        <p>
+          <code>try/except</code> → tratar ficheiros inexistentes ·
+          <code>with open</code> → ler e escrever com segurança ·
+          <code>for</code> → iterar sobre o set ordenado ·
+          <code>re.findall</code> → extrair padrões ·
+          <code>set</code> → remover duplicados.
+        </p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px; margin-bottom:16px; font-size:20px;">Resumo final</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Conceito</th><th>Para que serve</th><th>Regra de ouro</th></tr></thead>
+        <tbody>
+          <tr><td class="kali">try/except</td><td>Tratar erros sem crashar</td><td>Apanha erros específicos</td></tr>
+          <tr><td class="kali">with open</td><td>Ficheiros seguros</td><td>Usa <strong>sempre</strong></td></tr>
+          <tr><td class="kali">for</td><td>Iterar sobre algo</td><td>Quando sabes sobre o quê</td></tr>
+          <tr><td class="kali">while</td><td>Repetir até condição</td><td>Quando não sabes quantas vezes</td></tr>
+          <tr><td class="kali">re.search</td><td>1º match</td><td>"Existe?" / "Onde?"</td></tr>
+          <tr><td class="kali">re.findall</td><td>Todos os matches</td><td>"Dá-me todos"</td></tr>
+          <tr><td class="kali">set</td><td>Sem duplicados</td><td>Unicidade e pertença rápida</td></tr>
+          <tr><td class="kali">update</td><td>Juntar ao set</td><td>Modifica no lugar</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">🧠</div>
+      <div>
+        <h5>Frase para memorizar</h5>
+        <p>
+          <em>"try/except protege, with open fecha, for percorre, while insiste, re encontra, set limpa."</em>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Aula 03 • <strong style="color:var(--kali)">Try/Except</strong>, Ficheiros, Loops, <strong style="color:var(--meta)">Regex</strong> e Sets</p>
+    <p style="margin-top:10px; opacity:0.6">Material educativo • Python prático</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

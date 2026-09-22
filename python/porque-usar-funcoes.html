@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 02 — Porquê usar Funções?</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:700px) { .nav-links { display:none; } }
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .ok { color:var(--ok); }
+  .code .err { color:var(--err); }
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); } td.warn { color:var(--warn); }
+  td.err { color:var(--err); } td.kali { color:var(--kali); } td.meta { color:var(--meta); }
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px; border:2px solid var(--bg-0); }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo"><span class="dot"></span><span>aula://funcoes</span></div>
+    <div class="nav-links">
+      <a href="#problema">Problema</a>
+      <a href="#solucao">Solução</a>
+      <a href="#razoes">Razões</a>
+      <a href="#resumo">Resumo</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="badge"><span class="live"></span>AULA 02 • BOAS PRÁTICAS</div>
+    <h1>
+      Porquê usar <span class="grad-kali">Funções</span>?<br>
+      <span class="grad-meta">DRY</span> na prática
+    </h1>
+    <p class="sub">
+      Escrever a mesma lógica 5 vezes é o caminho para o inferno da manutenção.
+      As funções resolvem isso — e muito mais.
+    </p>
+  </div>
+</header>
+
+<section id="problema">
+  <div class="container">
+    <div class="section-label">// 01 — O problema</div>
+    <h2 class="section-title">Sem funções: repetição</h2>
+    <p class="section-desc">
+      Imagina calcular a média de 3 números em 5 sítios diferentes do programa.
+    </p>
+
+    <div class="code">
+      <span class="comment"># Sítio 1</span><br>
+      media = (a + b + c) / <span class="num">3</span><br>
+      <span class="kw">print</span>(media)<br><br>
+      <span class="comment"># Sítio 2</span><br>
+      media = (x + y + z) / <span class="num">3</span><br>
+      <span class="kw">print</span>(media)<br><br>
+      <span class="comment"># Sítio 3</span><br>
+      media = (p + q + r) / <span class="num">3</span><br>
+      <span class="kw">print</span>(media)
+    </div>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>Consequências da repetição</h5>
+        <p>
+          Escreves a mesma lógica 5× · corriges erros em 5 sítios · mudas em 5 sítios ·
+          código longo e repetitivo. Isto viola o princípio <strong>DRY — Don't Repeat Yourself</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="solucao">
+  <div class="container">
+    <div class="section-label">// 02 — A solução</div>
+    <h2 class="section-title">Com funções: uma definição</h2>
+    <p class="section-desc">
+      Uma única definição. Se mudares a lógica, mudas num só lugar.
+    </p>
+
+    <div class="code">
+      <span class="kw">def</span> <span class="ok">media</span>(a, b, c):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> (a + b + c) / <span class="num">3</span><br><br>
+      <span class="comment"># Sítio 1</span><br>
+      <span class="kw">print</span>(<span class="ok">media</span>(a, b, c))<br><br>
+      <span class="comment"># Sítio 2</span><br>
+      <span class="kw">print</span>(<span class="ok">media</span>(x, y, z))<br><br>
+      <span class="comment"># Sítio 3</span><br>
+      <span class="kw">print</span>(<span class="ok">media</span>(p, q, r))
+    </div>
+
+    <div class="info-box">
+      <div class="icon">💡</div>
+      <div>
+        <h5>Abstração em ação</h5>
+        <p>
+          Quem usa a função <strong>não precisa de saber como funciona por dentro</strong>.
+          Só precisa de saber o que recebe (parâmetros) e o que devolve (retorno).
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="razoes">
+  <div class="container">
+    <div class="section-label">// 03 — As razões, uma a uma</div>
+    <h2 class="section-title">10 motivos para usar funções</h2>
+    <p class="section-desc">
+      Cada razão resolve um problema real de engenharia de software.
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h4>Reutilização de código</h4>
+          <p>Escreves uma vez, usas N vezes. É o benefício mais óbvio.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h4>Evitar repetição (DRY)</h4>
+          <p>Menos código = menos bugs = menos manutenção.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h4>Abstração</h4>
+          <p>Esconde a complexidade. Usas <code>sorted()</code> sem saber o algoritmo de ordenação.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h4>Legibilidade</h4>
+          <p>O nome da função documenta a intenção. <code>media_positivos(numeros)</code> diz logo o que faz.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <h4>Manutenção</h4>
+          <p>Se a média está mal, corriges num único sítio. Sem funções, tinhas de caçar todas as cópias.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">06</div>
+        <div class="step-body">
+          <h4>Testabilidade</h4>
+          <p>Uma função é uma unidade isolada que podes testar sozinha.</p>
+          <div class="code">
+            assert media(<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>) == <span class="num">2</span><br>
+            assert media(<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>) == <span class="num">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">07</div>
+        <div class="step-body">
+          <h4>Modularidade</h4>
+          <p>Programas grandes dividem-se em módulos, que se dividem em funções.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">08</div>
+        <div class="step-body">
+          <h4>Evitar colisões de nomes (scope)</h4>
+          <p>Variáveis dentro de uma função são locais. Não interferem com o resto.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">09</div>
+        <div class="step-body">
+          <h4>Trabalho em equipa</h4>
+          <p>Tu fazes <code>autenticar()</code>, o colega faz <code>enviar_email()</code>. Cada um na sua.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">10</div>
+        <div class="step-body">
+          <h4>Reduzir complexidade</h4>
+          <p>Um problema grande parte-se em problemas pequenos. Cada função resolve uma coisa só.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">🎯</div>
+      <div>
+        <h5>Regra de ouro</h5>
+        <p>
+          <strong>Uma função deve fazer uma coisa, e fazê-la bem.</strong>
+          Se a tua função se chama <code>calcula_e_envia_email_e_guarda_ficheiro</code>,
+          provavelmente devia ser três funções.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="resumo">
+  <div class="container">
+    <div class="section-label">// 04 — Resumo</div>
+    <h2 class="section-title">Tabela final</h2>
+    <p class="section-desc">
+      As 10 razões, condensadas numa tabela.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Razão</th><th>Benefício</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="kali">Reutilização</td><td>Escreves 1×, usas N×</td></tr>
+          <tr><td class="kali">DRY</td><td>Menos código, menos bugs</td></tr>
+          <tr><td class="kali">Abstração</td><td>Escondes a complexidade</td></tr>
+          <tr><td class="kali">Legibilidade</td><td>O nome documenta a intenção</td></tr>
+          <tr><td class="kali">Manutenção</td><td>Corriges num só sítio</td></tr>
+          <tr><td class="kali">Testabilidade</td><td>Testas unidades isoladas</td></tr>
+          <tr><td class="kali">Modularidade</td><td>Programas grandes ficam geríveis</td></tr>
+          <tr><td class="kali">Scope</td><td>Evitas conflitos de variáveis</td></tr>
+          <tr><td class="kali">Equipa</td><td>Trabalho paralelo sem caos</td></tr>
+          <tr><td class="kali">Complexidade</td><td>Partes o grande em pequeno</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">🧠</div>
+      <div>
+        <h5>Frase para memorizar</h5>
+        <p>
+          <em>"Funções são a forma de dizer ao computador: isto é uma coisa, chama-se assim, e usa quando precisares."</em>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Aula 02 • <strong style="color:var(--kali)">Porquê</strong> usar <strong style="color:var(--meta)">Funções</strong></p>
+    <p style="margin-top:10px; opacity:0.6">Material educativo • Boas práticas de programação</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

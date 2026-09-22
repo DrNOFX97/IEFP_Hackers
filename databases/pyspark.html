@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PySpark — Aula Interativa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:900px) { .nav-links { display:none; } }
+
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card.purple { border-top:2px solid var(--accent); }
+  .card.purple:hover { border-color:var(--accent);
+    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card.purple .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card.purple h3 { color:var(--accent); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .card.purple ul li::before { color:var(--accent); }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .triple-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  @media (max-width:980px) { .triple-grid { grid-template-columns:1fr; } }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code.meta-code::before { background:var(--meta); }
+  .code.purple-code::before { background:var(--accent); }
+  .code .prompt { color:var(--meta); user-select:none; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .cmd { color:#e8ecf4; }
+  .code .ph { color:var(--warn); font-weight:600; }
+  .code .ok { color:var(--ok); }
+  .code .dim { color:var(--text-faint); }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .bad { color:var(--err); font-weight:600; }
+  .code .good { color:var(--ok); font-weight:600; }
+  .code .key { color:#00d4ff; }
+
+  .term { background:#000; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; margin:32px 0; font-family:var(--font-mono); }
+  .term-bar { display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-1); border-bottom:1px solid var(--border); }
+  .term-bar .b { width:12px; height:12px; border-radius:50%; }
+  .term-bar .b.r { background:#ff5f57; }
+  .term-bar .b.y { background:#febc2e; }
+  .term-bar .b.g { background:#28c840; }
+  .term-bar .title { margin-left:8px; font-size:12px; color:var(--text-faint); }
+  .term-body { padding:18px 20px; font-size:13px; line-height:1.8; min-height:120px;
+    max-height:500px; overflow-y:auto; color:#a8ffcb; white-space:pre-wrap;
+    word-break:break-word; }
+  .term-body .prompt { color:var(--meta); }
+  .term-body .info { color:var(--kali); }
+  .term-body .ok { color:var(--ok); }
+  .term-body .err { color:var(--err); }
+  .term-body .warn { color:var(--warn); }
+  .term-body .dim { color:var(--text-faint); }
+
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); }
+  td.warn { color:var(--warn); }
+  td.err { color:var(--err); }
+  td.kali { color:var(--kali); }
+  td.meta { color:var(--meta); }
+  td.purple { color:var(--accent); }
+
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+
+  .danger-box { background:linear-gradient(135deg,rgba(255,59,107,0.08),rgba(255,77,77,0.04));
+    border:1px solid rgba(255,59,107,0.25); border-left:3px solid var(--meta);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .danger-box .icon { font-size:22px; flex-shrink:0; }
+  .danger-box h5 { color:var(--meta); font-size:15px; margin-bottom:4px; }
+  .danger-box p { color:var(--text-dim); font-size:14px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px;
+    border:2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background:#1c2233; }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+
+  .tag { display:inline-block; font-family:var(--font-mono); font-size:11px;
+    padding:3px 10px; border-radius:100px; letter-spacing:0.5px; margin-left:8px;
+    vertical-align:middle; }
+  .tag.kali { background:rgba(0,212,255,0.1); color:var(--kali);
+    border:1px solid rgba(0,212,255,0.25); }
+  .tag.meta { background:rgba(255,59,107,0.1); color:var(--meta);
+    border:1px solid rgba(255,59,107,0.25); }
+  .tag.purple { background:rgba(124,92,255,0.1); color:var(--accent);
+    border:1px solid rgba(124,92,255,0.25); }
+
+  .flow { display:flex; align-items:center; justify-content:center;
+    flex-wrap:wrap; gap:12px; margin:32px 0; font-family:var(--font-mono); font-size:13px; }
+  .flow-node { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:12px; padding:12px 20px; color:var(--text-dim); text-align:center; }
+  .flow-node.kali { border-color:rgba(0,212,255,0.4); color:var(--kali); }
+  .flow-node.meta { border-color:rgba(255,59,107,0.4); color:var(--meta); }
+  .flow-node.purple { border-color:rgba(124,92,255,0.4); color:var(--accent); }
+  .flow-arrow { color:var(--text-faint); font-size:18px; }
+
+  .scenario { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:16px; }
+  .scenario h5 { font-size:15px; margin-bottom:8px; }
+  .scenario p { color:var(--text-dim); font-size:14px; }
+  .scenario.kali { border-left:3px solid var(--kali); }
+  .scenario.kali h5 { color:var(--kali); }
+  .scenario.purple { border-left:3px solid var(--accent); }
+  .scenario.purple h5 { color:var(--accent); }
+  .scenario.meta { border-left:3px solid var(--meta); }
+  .scenario.meta h5 { color:var(--meta); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      PySpark<span style="color:var(--kali)">//</span>PT
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#dataframes">DataFrames</a>
+      <a href="#operacoes">Operações</a>
+      <a href="#sql">Spark SQL</a>
+      <a href="#boas-praticas">Boas práticas</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · processamento distribuído
+  </div>
+  <h1>
+    <span class="grad-kali">Py</span><span class="grad-meta">Spark</span>
+  </h1>
+  <p class="sub">
+    A API Python para Apache Spark. Processamento de dados em larga escala, distribuído e em tempo real, com a simplicidade e legibilidade do Python. Nesta aula, exploramos desde a criação de uma SparkSession até às operações fundamentais com DataFrames, Spark SQL e as boas práticas para pipelines de produção.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">O que é o PySpark?</h2>
+  <p class="section-desc">
+    O PySpark é a API Python para o Apache Spark, o motor de análise unificado para processamento de dados em larga escala. Combina a facilidade de aprendizagem do Python com o poder do Spark para processar e analisar dados de qualquer tamanho, num ambiente distribuído [citation:1][citation:11].
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">2009</span>
+      <span class="label">Nascimento do Spark (UC Berkeley)</span>
+    </div>
+    <div class="stat">
+      <span class="num">Python</span>
+      <span class="label">API mais usada do Spark</span>
+    </div>
+    <div class="stat">
+      <span class="num">Lazy</span>
+      <span class="label">Avaliação diferida (otimização)</span>
+    </div>
+    <div class="stat">
+      <span class="num">DataFrames</span>
+      <span class="label">Abstração principal</span>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Componentes do ecossistema PySpark
+  </h3>
+
+  <div class="triple-grid">
+    <div class="card kali">
+      <div class="card-icon">📊</div>
+      <h3>Spark SQL & DataFrames</h3>
+      <div class="role">Dados estruturados</div>
+      <ul>
+        <li>Leitura, escrita e transformação de dados.</li>
+        <li>Mistura de SQL com código Python.</li>
+        <li>Mesmo motor de execução para ambos.</li>
+        <li>Principal API recomendada [citation:1].</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🌊</div>
+      <h3>Structured Streaming</h3>
+      <div class="role">Streaming escalável</div>
+      <ul>
+        <li>Processamento contínuo de dados em tempo real.</li>
+        <li>Mesma API dos DataFrames estáticos.</li>
+        <li>Tolerante a falhas.</li>
+        <li>Substitui o legado Spark Streaming [citation:1].</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🤖</div>
+      <h3>MLlib</h3>
+      <div class="role">Machine Learning distribuído</div>
+      <ul>
+        <li>Algoritmos escaláveis.</li>
+        <li>Pipelines de ML.</li>
+        <li>Integração com DataFrames.</li>
+        <li>Ajuste de hiperparâmetros [citation:1].</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>DataFrames vs RDDs — uma escolha importante</h5>
+      <p>
+        O Spark começou com RDDs (Resilient Distributed Datasets), uma API de baixo nível poderosa mas difícil de usar e sem otimização automática. Os DataFrames, introduzidos mais tarde, organizam os dados em colunas nomeadas (como uma tabela SQL) e permitem que o Spark construa automaticamente o plano de execução mais eficiente. A documentação oficial recomenda usar DataFrames em vez de RDDs para a maioria dos casos [citation:1][citation:11].
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- DATAFRAMES -->
+<section id="dataframes" class="container">
+  <div class="section-label">02 — DataFrames</div>
+  <h2 class="section-title">A abstração principal</h2>
+  <p class="section-desc">
+    Um DataFrame é uma coleção distribuída e imutável de dados organizada em colunas nomeadas. É conceptualmente semelhante a uma tabela SQL ou a um DataFrame do Pandas, mas otimizado para processamento distribuído [citation:2][citation:6].
+  </p>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Criar uma SparkSession
+  </h3>
+
+  <p style="color:var(--text-dim); font-size:15px; max-width:820px; margin-bottom:24px;">
+    A SparkSession é o ponto de entrada para usar todas as funcionalidades do Spark. Deve ser criada uma vez e reutilizada em toda a aplicação [citation:3][citation:15].
+  </p>
+
+  <div class="code">
+<span class="comment"># Criar uma SparkSession com configuração padrão</span>
+<span class="kw">from</span> pyspark.sql <span class="kw">import</span> SparkSession
+
+spark = SparkSession.builder \
+    .appName(<span class="str">"minha-app"</span>) \
+    .getOrCreate()
+
+<span class="comment"># Verificar a versão do Spark</span>
+<span class="prompt">&gt;&gt;&gt;</span> spark.version
+<span class="ok">'4.0.0'</span>
+
+<span class="comment"># Criar uma SparkSession com configurações específicas</span>
+spark = SparkSession.builder \
+    .master(<span class="str">"local[8]"</span>) \
+    .appName(<span class="str">"intake-sql"</span>) \
+    .config(<span class="str">"spark.executor.memory"</span>, <span class="str">"4g"</span>) \
+    .config(<span class="str">"spark.driver.memory"</span>, <span class="str">"6g"</span>) \
+    .getOrCreate()
+
+<span class="comment"># Definir o nível de log (evitar ruído)</span>
+spark.sparkContext.setLogLevel(<span class="str">"WARN"</span>)
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Criar DataFrames
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>A partir de dados Python</h4>
+        <p>
+          O método <code>createDataFrame</code> permite criar um DataFrame diretamente a partir de uma lista de tuplas, com um esquema inferido ou explícito [citation:5][citation:19].
+        </p>
+        <div class="code">
+<span class="comment"># Criar DataFrame a partir de lista de tuplas</span>
+df = spark.createDataFrame(
+    data=[(<span class="str">"Ana"</span>, <span class="num">34</span>), (<span class="str">"Bruno"</span>, <span class="num">29</span>), (<span class="str">"Carla"</span>, <span class="num">41</span>)],
+    schema=[<span class="str">"nome"</span>, <span class="str">"idade"</span>]
+)
+df.show()
+<span class="info">+-----+-----+</span>
+<span class="info">| nome|idade|</span>
+<span class="info">+-----+-----+</span>
+<span class="info">|  Ana|   34|</span>
+<span class="info">|Bruno|   29|</span>
+<span class="info">|Carla|   41|</span>
+<span class="info">+-----+-----+</span>
+
+<span class="comment"># Com esquema explícito</span>
+<span class="kw">from</span> pyspark.sql.types <span class="kw">import</span> StructType, StructField, StringType, IntegerType
+
+schema = StructType([
+    StructField(<span class="str">"nome"</span>, StringType(), True),
+    StructField(<span class="str">"idade"</span>, IntegerType(), True)
+])
+
+df = spark.createDataFrame(
+    data=[(<span class="str">"Ana"</span>, <span class="num">34</span>), (<span class="str">"Bruno"</span>, <span class="num">29</span>)],
+    schema=schema
+)
+df.printSchema()
+<span class="info">root</span>
+<span class="info"> |-- nome: string (nullable = true)</span>
+<span class="info"> |-- idade: integer (nullable = true)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>A partir de ficheiros CSV</h4>
+        <p>
+          O <code>DataFrameReader</code> suporta CSV, JSON, Parquet, JDBC e muitos outros formatos. Para CSV, é essencial controlar o esquema e as opções de parsing [citation:4][citation:9][citation:16].
+        </p>
+        <div class="code">
+<span class="comment"># Ler CSV com inferência de esquema (rápido mas menos seguro)</span>
+df = spark.read \
+    .format(<span class="str">"csv"</span>) \
+    .option(<span class="str">"header"</span>, True) \
+    .option(<span class="str">"inferSchema"</span>, True) \
+    .load(<span class="str">"dados/produtos.csv"</span>)
+
+<span class="comment"># Ler CSV com esquema explícito (recomendado para produção)</span>
+schema = <span class="str">"id INT, nome STRING, preco DOUBLE, categoria STRING"</span>
+
+df = spark.read \
+    .option(<span class="str">"header"</span>, True) \
+    .schema(schema) \
+    .option(<span class="str">"delimiter"</span>, <span class="str">","</span>) \
+    .option(<span class="str">"mode"</span>, <span class="str">"DROPMALFORMED"</span>) \
+    .csv(<span class="str">"dados/produtos.csv"</span>)
+
+df.printSchema()
+<span class="info">root</span>
+<span class="info"> |-- id: integer (nullable = true)</span>
+<span class="info"> |-- nome: string (nullable = true)</span>
+<span class="info"> |-- preco: double (nullable = true)</span>
+<span class="info"> |-- categoria: string (nullable = true)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>A partir de Parquet</h4>
+        <p>
+          O Parquet é o formato colunar nativo do Spark. Armazena o esquema no próprio ficheiro, pelo que não é necessário inferi-lo. É mais rápido e eficiente para analytics e leituras repetidas [citation:7][citation:16].
+        </p>
+        <div class="code">
+<span class="comment"># Ler Parquet (esquema preservado automaticamente)</span>
+df = spark.read.parquet(<span class="str">"dados/curated/utilizadores/"</span>)
+
+<span class="comment"># O esquema é o mesmo que foi escrito</span>
+df.printSchema()
+
+<span class="comment"># Escrever em Parquet com particionamento</span>
+df.write \
+    .mode(<span class="str">"overwrite"</span>) \
+    .partitionBy(<span class="str">"pais"</span>, <span class="str">"data_ingestao"</span>) \
+    .parquet(<span class="str">"dados/warehouse/utilizadores/"</span>)
+
+<span class="comment"># O particionamento cria diretórios que aceleram filtros</span>
+<span class="comment"># dados/warehouse/utilizadores/pais=PT/data_ingestao=2024-01-15/part-*.parquet</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OPERAÇÕES -->
+<section id="operacoes" class="container">
+  <div class="section-label">03 — Operações</div>
+  <h2 class="section-title">Transformações e ações</h2>
+  <p class="section-desc">
+    O Spark distingue dois tipos de operações: transformações (lazy) e ações (eager). As transformações constroem um plano lógico; as ações disparam a execução e devolvem resultados [citation:6][citation:13].
+  </p>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Selecionar e manipular colunas
+  </h3>
+
+  <div class="code purple-code">
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> col, round
+
+<span class="comment"># Selecionar colunas</span>
+df.select(<span class="str">"nome"</span>, <span class="str">"preco"</span>).show()
+
+<span class="comment"># Criar nova coluna</span>
+df_com_iva = df.withColumn(<span class="str">"preco_iva"</span>, round(col(<span class="str">"preco"</span>) * <span class="num">1.23</span>, <span class="num">2</span>))
+
+<span class="comment"># Renomear coluna</span>
+df_renomeado = df.withColumnRenamed(<span class="str">"preco"</span>, <span class="str">"preco_base"</span>)
+
+<span class="comment"># Converter tipo</span>
+df_casting = df.withColumn(<span class="str">"id"</span>, col(<span class="str">"id"</span>).cast(<span class="str">"string"</span>))
+
+<span class="comment"># Eliminar colunas</span>
+df_sem_preco = df.drop(<span class="str">"preco"</span>)
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Filtrar e ordenar
+  </h3>
+
+  <div class="code meta-code">
+<span class="comment"># Filtrar com uma condição</span>
+df.filter(col(<span class="str">"preco"</span>) &gt; <span class="num">100</span>).show()
+
+<span class="comment"># Filtrar com múltiplas condições (AND, OR)</span>
+df.filter((col(<span class="str">"categoria"</span>) == <span class="str">"informática"</span>) & (col(<span class="str">"preco"</span>) &lt; <span class="num">500</span>)).show()
+
+<span class="comment"># Valores nulos</span>
+df.filter(col(<span class="str">"nome"</span>).isNotNull()).show()
+
+<span class="comment"># Ordenar</span>
+df.orderBy(col(<span class="str">"preco"</span>).desc()).show()
+
+<span class="comment"># Remover duplicados</span>
+df.distinct().show()
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Agrupar e agregar
+  </h3>
+
+  <div class="code">
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> count, sum, avg, max, min
+
+<span class="comment"># Contagem por categoria</span>
+df.groupBy(<span class="str">"categoria"</span>).count().show()
+
+<span class="comment"># Múltiplas agregações</span>
+df.groupBy(<span class="str">"categoria"</span>).agg(
+    count(<span class="str">"*"</span>).alias(<span class="str">"total"</span>),
+    avg(<span class="str">"preco"</span>).alias(<span class="str">"preco_medio"</span>),
+    max(<span class="str">"preco"</span>).alias(<span class="str">"preco_max"</span>),
+    min(<span class="str">"preco"</span>).alias(<span class="str">"preco_min"</span>)
+).show()
+
+<span class="info">+------------+-----+-----------+----------+----------+</span>
+<span class="info">|   categoria|total|preco_medio|preco_max |preco_min |</span>
+<span class="info">+------------+-----+-----------+----------+----------+</span>
+<span class="info">| informática|   42|      89.90|    249.00|     29.90|</span>
+<span class="info">|  periféricos|   18|      45.50|     89.90|     19.90|</span>
+<span class="info">+------------+-----+-----------+----------+----------+</span>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Junções
+  </h3>
+
+  <div class="code">
+<span class="comment"># Inner join</span>
+df_resultado = df_produtos.join(
+    df_categorias,
+    df_produtos.categoria_id == df_categorias.id,
+    <span class="str">"inner"</span>
+)
+
+<span class="comment"># Left join</span>
+df_resultado = df_produtos.join(
+    df_categorias,
+    on=<span class="str">"categoria_id"</span>,
+    how=<span class="str">"left"</span>
+)
+
+<span class="comment"># Tipos disponíveis: inner, left, right, outer, left_anti, left_semi</span>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">⚡</span>
+    <div>
+      <h5>Lazy evaluation — porque é importante</h5>
+      <p>
+        As transformações no Spark não executam imediatamente. O Spark constrói um plano lógico e só o executa quando uma ação é invocada (<code>show</code>, <code>count</code>, <code>write</code>, etc.). Isto permite ao motor otimizar o plano completo — por exemplo, reordenar filtros, eliminar colunas não usadas ou combinar operações. Esta é uma diferença fundamental em relação ao Pandas, que executa cada operação imediatamente [citation:6][citation:13].
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SQL -->
+<section id="sql" class="container">
+  <div class="section-label">04 — Spark SQL</div>
+  <h2 class="section-title">Misturar SQL com Python</h2>
+  <p class="section-desc">
+    Uma das grandes vantagens do PySpark é a capacidade de misturar SQL com código Python sem atrito. Um DataFrame pode ser registado como vista temporária e consultado com SQL, e o resultado é novamente um DataFrame [citation:2][citation:7].
+  </p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Registar uma vista temporária</h4>
+        <p>
+          Uma vista temporária existe apenas durante a sessão Spark. É uma forma leve de dar um nome a um DataFrame e consultá-lo com SQL.
+        </p>
+        <div class="code">
+<span class="comment"># Registar vista temporária</span>
+df.createOrReplaceTempView(<span class="str">"produtos"</span>)
+
+<span class="comment"># Consultar com SQL</span>
+spark.sql(<span class="str">"""
+    SELECT categoria, COUNT(*) as total, AVG(preco) as media
+    FROM produtos
+    WHERE preco > 50
+    GROUP BY categoria
+    ORDER BY total DESC
+"""</span>).show()
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>SQL direto sobre ficheiros</h4>
+        <p>
+          É possível consultar ficheiros diretamente com SQL, sem os carregar explicitamente num DataFrame. Útil para exploração rápida e ad-hoc [citation:7][citation:9].
+        </p>
+        <div class="code">
+<span class="comment">-- Consultar CSV diretamente com read_files (Databricks 13.3+)</span>
+<span class="kw">SELECT</span> *
+<span class="kw">FROM</span> read_files(
+    <span class="str">'dados/produtos.csv'</span>,
+    format =&gt; <span class="str">'csv'</span>,
+    header =&gt; <span class="kw">true</span>
+)
+<span class="kw">WHERE</span> preco &gt; <span class="num">100</span>;
+
+<span class="comment">-- Criar vista temporária sobre CSV</span>
+<span class="kw">CREATE TEMPORARY VIEW</span> produtos_csv
+<span class="kw">USING</span> CSV
+<span class="kw">OPTIONS</span> (
+    path <span class="str">'dados/produtos.csv'</span>,
+    header <span class="str">'true'</span>,
+    mode <span class="str">'FAILFAST'</span>
+);
+
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> produtos_csv <span class="kw">LIMIT</span> <span class="num">10</span>;
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Converter entre SQL e DataFrame API</h4>
+        <p>
+          As duas APIs são intercambiáveis. Um DataFrame pode ser consultado com SQL e o resultado é um DataFrame que pode continuar a ser manipulado com a API programática.
+        </p>
+        <div class="code">
+<span class="comment"># DataFrame → SQL → DataFrame</span>
+df.createOrReplaceTempView(<span class="str">"vendas"</span>)
+
+df_agregado = spark.sql(<span class="str">"""
+    SELECT categoria, SUM(total) as total_vendas
+    FROM vendas
+    GROUP BY categoria
+"""</span>)
+
+<span class="comment"># Continuar a manipular com DataFrame API</span>
+df_agregado_filtrado = df_agregado.filter(col(<span class="str">"total_vendas"</span>) &gt; <span class="num">10000</span>)
+df_agregado_filtrado.show()
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOAS PRÁTICAS -->
+<section id="boas-praticas" class="container">
+  <div class="section-label">05 — Síntese</div>
+  <h2 class="section-title">Boas práticas</h2>
+  <p class="section-desc">
+    O PySpark é poderoso, mas mal usado pode ser lento, consumir recursos desnecessários ou produzir resultados incorretos. Estas são as práticas que distinguem pipelines robustos de pipelines frágeis.
+  </p>
+
+  <div class="compare-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">✅</div>
+      <h3>Fazer</h3>
+      <ul>
+        <li><strong>Preferir DataFrames a RDDs:</strong> otimização automática e API mais expressiva [citation:1][citation:11].</li>
+        <li><strong>Definir esquemas explicitamente:</strong> evita inferência dispendiosa e erros de tipo [citation:16].</li>
+        <li><strong>Usar Parquet para analytics:</strong> colunar, comprimido, com esquema preservado [citation:16].</li>
+        <li><strong>Particionar dados com sabedoria:</strong> chaves de baixa cardinalidade para evitar muitos ficheiros pequenos [citation:16].</li>
+        <li><strong>Controlar o número de partições:</strong> <code>repartition</code> ou <code>coalesce</code> antes de escrever [citation:16].</li>
+        <li><strong>Reutilizar SparkSession:</strong> criar uma só por aplicação [citation:3][citation:15].</li>
+        <li><strong>Usar cache com parcimónia:</strong> apenas quando um DataFrame é reutilizado múltiplas vezes.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🚫</div>
+      <h3>Evitar</h3>
+      <ul>
+        <li><strong>collect() em dados grandes:</strong> traz tudo para o driver e pode esgotar memória.</li>
+        <li><strong>Muitos ficheiros pequenos:</strong> degrada o desempenho de leitura.</li>
+        <li><strong>inferSchema=True em produção:</strong> lento e imprevisível [citation:16].</li>
+        <li><strong>Ignorar o plano de execução:</strong> usar <code>explain()</code> para diagnosticar.</li>
+        <li><strong>Misturar Pandas e Spark sem necessidade:</strong> conversões têm custo.</li>
+        <li><strong>Esquecer o particionamento em writes:</strong> escrever tudo num único diretório.</li>
+        <li><strong>Usar UDFs Python sem necessidade:</strong> quebram a otimização do Catalyst.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Cenários práticos
+  </h3>
+
+  <div class="scenario kali">
+    <h5>📊 Pipeline de analytics com dados de vendas</h5>
+    <p>
+      Ler CSV de vendas com esquema explícito. Limpar e transformar com DataFrame API. Registar vista temporária e agregar por região e mês com SQL. Escrever resultado em Parquet particionado por ano e mês para consultas futuras rápidas.
+    </p>
+  </div>
+
+  <div class="scenario purple">
+    <h5>🌊 Streaming de eventos em tempo real</h5>
+    <p>
+      Structured Streaming lê de Kafka. Janelas de agregação de 5 minutos. Escrita em Delta Lake ou Parquet com checkpointing. A mesma API do batch, mas com <code>writeStream</code> em vez de <code>write</code>. Tolerância a falhas garantida pelo checkpoint.
+    </p>
+  </div>
+
+  <div class="scenario meta">
+    <h5>🤖 Pipeline de Machine Learning em larga escala</h5>
+    <p>
+      Carregar dados de Parquet. Feature engineering com DataFrame API. MLlib para treino de modelo distribuído. Pipelines com <code>Pipeline</code> e <code>CrossValidator</code>. Guardar modelo treinado e usar em produção com <code>Model.transform()</code>.
+    </p>
+  </div>
+
+  <div class="term" style="margin-top:48px;">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — PySpark no terminal</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd">pyspark</span>
+<span class="ok">Python 3.11.6 (main, ...)</span>
+<span class="ok">Welcome to</span>
+<span class="ok">      ____              __</span>
+<span class="ok">     / __/__  ___ _____/ /__</span>
+<span class="ok">    _\ \/ _ \/ _ `/ __/  '_/</span>
+<span class="ok">   /__ / .__/\_,_/_/ /_/\_\   version 4.0.0</span>
+<span class="ok">      /_/</span>
+
+<span class="prompt">&gt;&gt;&gt;</span> <span class="cmd">spark = SparkSession.builder.appName("teste").getOrCreate()</span>
+<span class="prompt">&gt;&gt;&gt;</span> <span class="cmd">df = spark.createDataFrame([("Ana", 34), ("Bruno", 29)], ["nome", "idade"])</span>
+
+<span class="comment"># Ver o plano de execução</span>
+<span class="prompt">&gt;&gt;&gt;</span> <span class="cmd">df.filter("idade &gt; 30").explain()</span>
+<span class="info">== Physical Plan ==</span>
+<span class="info">*(1) Filter (isnotnull(idade#0) AND (idade#0 &gt; 30))</span>
+<span class="info">+- Scan ExistingRDD[nome#1,idade#0]</span>
+
+<span class="comment"># Ações disparam execução</span>
+<span class="prompt">&gt;&gt;&gt;</span> <span class="cmd">df.filter("idade &gt; 30").show()</span>
+<span class="info">+-----+-----+</span>
+<span class="info">| nome|idade|</span>
+<span class="info">+-----+-----+</span>
+<span class="info">|  Ana|   34|</span>
+<span class="info">+-----+-----+</span>
+
+<span class="prompt">&gt;&gt;&gt;</span> <span class="cmd">spark.stop()</span>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:32px;">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Para saber mais</h5>
+      <p>
+        A documentação oficial do PySpark (spark.apache.org/docs/api/python) é a referência essencial, com a lista completa de funções e exemplos. O livro <em>"Spark: The Definitive Guide"</em> de Bill Chambers e Matei Zaharia (criador do Spark) é uma excelente referência conceptual. Para prática, a <strong>Databricks Academy</strong> oferece cursos gratuitos de PySpark, e o <strong>GitHub do Apache Spark</strong> tem exemplos e testes que demonstram a API em uso.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>PySpark — Aula interativa · Processamento distribuído com Python</p>
+    <p style="margin-top:8px; font-size:12px;">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

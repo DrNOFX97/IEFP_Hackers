@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VPN &amp; Proxies — Aula Interativa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:900px) { .nav-links { display:none; } }
+
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card.purple { border-top:2px solid var(--accent); }
+  .card.purple:hover { border-color:var(--accent);
+    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card.purple .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card.purple h3 { color:var(--accent); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .card.purple ul li::before { color:var(--accent); }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .triple-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  @media (max-width:980px) { .triple-grid { grid-template-columns:1fr; } }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code.meta-code::before { background:var(--meta); }
+  .code.purple-code::before { background:var(--accent); }
+  .code .prompt { color:var(--meta); user-select:none; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .cmd { color:#e8ecf4; }
+  .code .ph { color:var(--warn); font-weight:600; }
+  .code .ok { color:var(--ok); }
+  .code .dim { color:var(--text-faint); }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .bad { color:var(--err); font-weight:600; }
+  .code .good { color:var(--ok); font-weight:600; }
+
+  .term { background:#000; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; margin:32px 0; font-family:var(--font-mono); }
+  .term-bar { display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-1); border-bottom:1px solid var(--border); }
+  .term-bar .b { width:12px; height:12px; border-radius:50%; }
+  .term-bar .b.r { background:#ff5f57; }
+  .term-bar .b.y { background:#febc2e; }
+  .term-bar .b.g { background:#28c840; }
+  .term-bar .title { margin-left:8px; font-size:12px; color:var(--text-faint); }
+  .term-body { padding:18px 20px; font-size:13px; line-height:1.8; min-height:120px;
+    max-height:500px; overflow-y:auto; color:#a8ffcb; white-space:pre-wrap;
+    word-break:break-word; }
+  .term-body .prompt { color:var(--meta); }
+  .term-body .info { color:var(--kali); }
+  .term-body .ok { color:var(--ok); }
+  .term-body .err { color:var(--err); }
+  .term-body .warn { color:var(--warn); }
+  .term-body .dim { color:var(--text-faint); }
+
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); }
+  td.warn { color:var(--warn); }
+  td.err { color:var(--err); }
+  td.kali { color:var(--kali); }
+  td.meta { color:var(--meta); }
+  td.purple { color:var(--accent); }
+
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+
+  .danger-box { background:linear-gradient(135deg,rgba(255,59,107,0.08),rgba(255,77,77,0.04));
+    border:1px solid rgba(255,59,107,0.25); border-left:3px solid var(--meta);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .danger-box .icon { font-size:22px; flex-shrink:0; }
+  .danger-box h5 { color:var(--meta); font-size:15px; margin-bottom:4px; }
+  .danger-box p { color:var(--text-dim); font-size:14px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px;
+    border:2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background:#1c2233; }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+
+  .tag { display:inline-block; font-family:var(--font-mono); font-size:11px;
+    padding:3px 10px; border-radius:100px; letter-spacing:0.5px; margin-left:8px;
+    vertical-align:middle; }
+  .tag.kali { background:rgba(0,212,255,0.1); color:var(--kali);
+    border:1px solid rgba(0,212,255,0.25); }
+  .tag.meta { background:rgba(255,59,107,0.1); color:var(--meta);
+    border:1px solid rgba(255,59,107,0.25); }
+  .tag.purple { background:rgba(124,92,255,0.1); color:var(--accent);
+    border:1px solid rgba(124,92,255,0.25); }
+
+  .flow { display:flex; align-items:center; justify-content:center;
+    flex-wrap:wrap; gap:12px; margin:32px 0; font-family:var(--font-mono); font-size:13px; }
+  .flow-node { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:12px; padding:12px 20px; color:var(--text-dim); text-align:center; }
+  .flow-node.kali { border-color:rgba(0,212,255,0.4); color:var(--kali); }
+  .flow-node.meta { border-color:rgba(255,59,107,0.4); color:var(--meta); }
+  .flow-node.purple { border-color:rgba(124,92,255,0.4); color:var(--accent); }
+  .flow-arrow { color:var(--text-faint); font-size:18px; }
+
+  .scenario { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:16px; }
+  .scenario h5 { font-size:15px; margin-bottom:8px; }
+  .scenario p { color:var(--text-dim); font-size:14px; }
+  .scenario.kali { border-left:3px solid var(--kali); }
+  .scenario.kali h5 { color:var(--kali); }
+  .scenario.purple { border-left:3px solid var(--accent); }
+  .scenario.purple h5 { color:var(--accent); }
+  .scenario.meta { border-left:3px solid var(--meta); }
+  .scenario.meta h5 { color:var(--meta); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      VPN<span style="color:var(--kali)">/</span>PROXY
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#vpn">VPN</a>
+      <a href="#proxies">Proxies</a>
+      <a href="#comparacao">Comparação</a>
+      <a href="#boas-praticas">Boas práticas</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · privacidade e segurança de rede
+  </div>
+  <h1>
+    <span class="grad-kali">VPN</span> &amp; <span class="grad-meta">Proxies</span>
+  </h1>
+  <p class="sub">
+    Esconder, proteger e intermediar. VPNs e proxies são duas formas de interpor um intermediário entre o utilizador e a Internet, mas resolvem problemas diferentes. Nesta aula, exploramos como funcionam, que tipos existem, quando usar cada um e que mitos convém desfazer.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">Dois intermediários, dois propósitos</h2>
+  <p class="section-desc">
+    Tanto uma VPN como um proxy colocam um intermediário entre o cliente e o destino. A diferença está na profundidade da intermediação: um proxy atua tipicamente a nível de aplicação e apenas para tráfego específico; uma VPN cria um túnel a nível de rede que captura <em>todo</em> o tráfego do dispositivo.
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">1969</span>
+      <span class="label">Primeira VPN (ARPANET)</span>
+    </div>
+    <div class="stat">
+      <span class="num">L2/L3</span>
+      <span class="label">Camadas típicas da VPN</span>
+    </div>
+    <div class="stat">
+      <span class="num">L7</span>
+      <span class="label">Camada típica do proxy</span>
+    </div>
+    <div class="stat">
+      <span class="num">IPsec</span>
+      <span class="label">Protocolo VPN mais comum</span>
+    </div>
+  </div>
+
+  <div class="compare-grid" style="margin-top:48px;">
+    <div class="card kali">
+      <div class="card-icon">🔐</div>
+      <h3>VPN</h3>
+      <div class="role">Virtual Private Network</div>
+      <ul>
+        <li>Cria um túnel cifrado entre o dispositivo e um servidor VPN.</li>
+        <li>Captura todo o tráfego — HTTP, DNS, VoIP, jogos, tudo.</li>
+        <li>O destino final vê o IP do servidor VPN, não o do utilizador.</li>
+        <li>O operador da VPN vê o tráfego (a menos que seja no-logs).</li>
+        <li>Usada para privacidade, acesso remoto e contornar censura.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🔀</div>
+      <h3>Proxy</h3>
+      <div class="role">Servidor intermediário</div>
+      <ul>
+        <li>Intermedeia pedidos de aplicações específicas (browser, cliente).</li>
+        <li>Não captura todo o tráfego do sistema, só o configurado.</li>
+        <li>Pode ou não cifrar a comunicação com o cliente.</li>
+        <li>Versátil: cache, filtragem, anonimização, inspeção.</li>
+        <li>Usado para controlo, desempenho e privacidade parcial.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>A analogia do túnel e do mensageiro</h5>
+      <p>
+        Uma <strong>VPN</strong> é como um túnel privado construído entre a sua casa e um ponto remoto: tudo o que entra no túnel viaja protegido e ninguém pelo caminho consegue ver o que vai lá dentro. Um <strong>proxy</strong> é como contratar um mensageiro para entregar as suas cartas: ele leva-as ao destino, mas cada carta é tratada individualmente, e ele pode ler o que vai em cada uma.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VPN -->
+<section id="vpn" class="container">
+  <div class="section-label">02 — Virtual Private Network</div>
+  <h2 class="section-title">VPN em detalhe</h2>
+  <p class="section-desc">
+    Uma VPN estabelece um túnel cifrado entre o dispositivo do utilizador e um servidor remoto. Todo o tráfego de rede do dispositivo é encaminhado por esse túnel, tornando impossível para um observador na rede local ver o conteúdo ou o destino real.
+  </p>
+
+  <div class="flow">
+    <div class="flow-node kali">Dispositivo do utilizador</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node purple">Túnel cifrado</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node meta">Servidor VPN</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Internet</div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Tipos de VPN <span class="tag kali">essencial</span>
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>VPN de acesso remoto (Remote Access VPN)</h4>
+        <p>
+          Também designada client-to-site. Um utilizador individual liga-se a uma rede corporativa a partir de casa, de um hotel ou de um café. É o tipo mais comum em teletrabalho e o que a maioria das pessoas conhece como "usar a VPN".
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: ligação a uma VPN OpenVPN a partir da linha de comandos</span>
+<span class="prompt">$</span> <span class="cmd">sudo openvpn --config escritorio.ovpn</span>
+<span class="ok">TLS: Initial packet from [AF_INET]203.0.113.42:1194</span>
+<span class="ok">VERIFY OK: depth=1, CN=Empresa CA</span>
+<span class="ok">Initialization Sequence Completed</span>
+<span class="dim">^ túnel estabelecido; todo o tráfego passa pelo servidor da empresa</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>VPN site-to-site</h4>
+        <p>
+          Liga duas redes inteiras — por exemplo, o escritório de Lisboa ao do Porto. Os routers de cada lado estabelecem o túnel e todo o tráfego entre as duas redes passa por ele, de forma transparente para os utilizadores.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: túnel IPsec entre dois routers (configuração conceptual)</span>
+<span class="kw">conn</span> lisboa-porto
+  <span class="kw">left</span>=203.0.113.10        <span class="comment"># IP público do router de Lisboa</span>
+  <span class="kw">leftsubnet</span>=10.1.0.0/24   <span class="comment"># rede interna de Lisboa</span>
+  <span class="kw">right</span>=198.51.100.20      <span class="comment"># IP público do router do Porto</span>
+  <span class="kw">rightsubnet</span>=10.2.0.0/24  <span class="comment"># rede interna do Porto</span>
+  <span class="kw">ike</span>=aes256-sha2_256-modp2048!
+  <span class="kw">esp</span>=aes256-sha2_256!
+  <span class="kw">keyexchange</span>=ikev2
+  <span class="kw">auto</span>=start
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>VPN comercial / consumer</h4>
+        <p>
+          Serviços como Mullvad, ProtonVPN ou IVPN vendem acesso a servidores VPN distribuídos pelo mundo. O objetivo principal é privacidade face ao ISP e à rede local, e por vezes contornar bloqueios geográficos. A confiança desloca-se do ISP para o operador da VPN.
+        </p>
+        <div class="code">
+<span class="comment"># Verificar se a VPN está ativa (o IP público deve ser diferente do ISP)</span>
+<span class="prompt">$</span> <span class="cmd">curl -s https://ifconfig.me</span>
+<span class="ok">185.65.134.42</span>
+<span class="dim">^ este IP pertence ao servidor VPN, não à ligação doméstica</span>
+
+<span class="prompt">$</span> <span class="cmd">curl -s https://ipinfo.io/185.65.134.42</span>
+<span class="info">{</span>
+<span class="info">  "city": "Stockholm",</span>
+<span class="info">  "country": "SE",</span>
+<span class="info">  "org": "M247 Europe SRL"</span>
+<span class="info">}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>VPN pessoal (self-hosted)</h4>
+        <p>
+          Montar o próprio servidor VPN — em casa, numa VPS ou num Raspberry Pi — para acesso remoto à rede doméstica ou para sair pela ligação de casa quando se está fora. Requer mais conhecimento técnico, mas elimina a dependência de terceiros.
+        </p>
+        <div class="code">
+<span class="comment"># Instalar WireGuard (Debian/Ubuntu)</span>
+<span class="prompt">$</span> <span class="cmd">sudo apt install wireguard</span>
+
+<span class="comment"># Gerar par de chaves</span>
+<span class="prompt">$</span> <span class="cmd">wg genkey | tee privatekey | wg pubkey &gt; publickey</span>
+
+<span class="comment"># Configuração do servidor (/etc/wireguard/wg0.conf)</span>
+<span class="kw">[Interface]</span>
+<span class="kw">Address</span> = 10.8.0.1/24
+<span class="kw">ListenPort</span> = 51820
+<span class="kw">PrivateKey</span> = &lt;chave-privada-do-servidor&gt;
+
+<span class="kw">[Peer]</span>
+<span class="kw">PublicKey</span> = &lt;chave-pública-do-cliente&gt;
+<span class="kw">AllowedIPs</span> = 10.8.0.2/32
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Protocolos VPN mais comuns
+  </h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Protocolo</th>
+          <th>Camada</th>
+          <th>Velocidade</th>
+          <th>Segurança</th>
+          <th>Uso típico</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="kali mono">WireGuard</td>
+          <td>L3</td>
+          <td class="ok">Muito alta</td>
+          <td class="ok">Excelente</td>
+          <td>Moderno, recomendado</td>
+        </tr>
+        <tr>
+          <td class="kali mono">OpenVPN</td>
+          <td>L3/L4</td>
+          <td class="warn">Média</td>
+          <td class="ok">Excelente</td>
+          <td>Compatibilidade ampla</td>
+        </tr>
+        <tr>
+          <td class="purple mono">IPsec/IKEv2</td>
+          <td>L3</td>
+          <td class="ok">Alta</td>
+          <td class="ok">Excelente</td>
+          <td>Site-to-site, mobile</td>
+        </tr>
+        <tr>
+          <td class="meta mono">L2TP/IPsec</td>
+          <td>L2</td>
+          <td class="warn">Média</td>
+          <td class="warn">Boa</td>
+          <td>Legado, mobile</td>
+        </tr>
+        <tr>
+          <td class="err mono">PPTP</td>
+          <td>L2</td>
+          <td class="ok">Alta</td>
+          <td class="err">Obsoleto</td>
+          <td>Não usar</td>
+        </tr>
+        <tr>
+          <td class="warn mono">SSTP</td>
+          <td>L4</td>
+          <td class="warn">Média</td>
+          <td class="warn">Boa</td>
+          <td>Windows, atrás de firewalls</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warning">
+    <span class="icon">⚠️</span>
+    <div>
+      <h5>A VPN não é uma solução mágica de privacidade</h5>
+      <p>
+        Uma VPN apenas desloca a confiança: em vez de confiar no seu ISP, passa a confiar no operador da VPN. Se o operador registar tráfego, cooperar com autoridades ou sofrer uma intrusão, a privacidade é perdida. A escolha de um operador com política <em>no-logs</em> auditada e jurisdição adequada é essencial.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PROXIES -->
+<section id="proxies" class="container">
+  <div class="section-label">03 — Servidores proxy</div>
+  <h2 class="section-title">Proxies em detalhe</h2>
+  <p class="section-desc">
+    Um proxy é um servidor que intermedeia pedidos entre um cliente e um servidor de destino. Ao contrário de uma VPN, atua tipicamente a nível de aplicação e apenas no tráfego que lhe é explicitamente dirigido. Isso torna-o mais leve, mais específico e mais versátil.
+  </p>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Tipos de proxy por função
+  </h3>
+
+  <div class="triple-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">➡️</div>
+      <h3>Forward Proxy</h3>
+      <div class="role">Intermedeia o cliente</div>
+      <ul>
+        <li>O cliente configura-o explicitamente no browser ou sistema.</li>
+        <li>O servidor de destino vê o IP do proxy, não o do cliente.</li>
+        <li>Usado para anonimização, filtragem, cache.</li>
+        <li>Exemplos: Squid, Privoxy, proxies SOCKS5.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">⬅️</div>
+      <h3>Reverse Proxy</h3>
+      <div class="role">Intermedeia o servidor</div>
+      <ul>
+        <li>Fica em frente de um ou mais servidores web.</li>
+        <li>Distribui carga, termina TLS, filtra pedidos.</li>
+        <li>O cliente pensa que fala diretamente com o servidor.</li>
+        <li>Exemplos: Nginx, HAProxy, Traefik, Caddy.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🎭</div>
+      <h3>Transparent Proxy</h3>
+      <div class="role">Sem configuração do cliente</div>
+      <ul>
+        <li>Interceta tráfego sem o cliente saber.</li>
+        <li>Configurado no gateway ou no router.</li>
+        <li>Usado em empresas, hotéis e ISPs.</li>
+        <li>Frequentemente combinado com filtragem de conteúdo.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Tipos de proxy por protocolo
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>HTTP/HTTPS proxy</h4>
+        <p>
+          O tipo mais comum. Intermedeia pedidos HTTP e HTTPS. Em HTTPS, o proxy só vê o destino (via CONNECT), não o conteúdo — a menos que faça inspeção TLS, o que requer instalar um certificado de confiança no cliente.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: pedido via proxy HTTP com curl</span>
+<span class="prompt">$</span> <span class="cmd">curl -x http://proxy.empresa.pt:8080 https://exemplo.pt</span>
+<span class="dim">^ o proxy recebe CONNECT exemplo.pt:443 e estabelece um túnel</span>
+
+<span class="comment"># Proxy com autenticação</span>
+<span class="prompt">$</span> <span class="cmd">curl -x http://utilizador:password@proxy.empresa.pt:8080 https://exemplo.pt</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>SOCKS5 proxy</h4>
+        <p>
+          Opera a nível 4/5, encaminhando pacotes TCP e UDP sem interpretar a aplicação. Não entende HTTP, DNS ou outros protocolos — apenas transmite dados. É mais versátil que um proxy HTTP, mas não oferece cache nem filtragem de conteúdo.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: ligação SSH a funcionar como SOCKS5 (túnel dinâmico)</span>
+<span class="prompt">$</span> <span class="cmd">ssh -D 1080 -N utilizador@servidor.remoto.pt</span>
+
+<span class="comment"># Depois, no browser ou noutra aplicação:</span>
+<span class="comment">#   Host: localhost   Porta: 1080   Tipo: SOCKS5</span>
+
+<span class="comment"># Testar o túnel com curl</span>
+<span class="prompt">$</span> <span class="cmd">curl --socks5 localhost:1080 https://ifconfig.me</span>
+<span class="ok">203.0.113.55</span>
+<span class="dim">^ o pedido saiu pelo servidor remoto, não pela ligação local</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Reverse proxy</h4>
+        <p>
+          Colocado em frente de servidores web, distribui carga, termina TLS, aplica regras de segurança e cache. É peça central de qualquer arquitetura web moderna. Não é "um proxy para o utilizador", mas "um proxy para o servidor".
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: configuração de Nginx como reverse proxy</span>
+<span class="kw">server</span> {
+    <span class="kw">listen</span> <span class="num">443</span> ssl http2;
+    <span class="kw">server_name</span> exemplo.pt;
+
+    <span class="kw">ssl_certificate</span>     /etc/letsencrypt/live/exemplo.pt/fullchain.pem;
+    <span class="kw">ssl_certificate_key</span> /etc/letsencrypt/live/exemplo.pt/privkey.pem;
+
+    <span class="kw">location</span> / {
+        <span class="kw">proxy_pass</span> http://127.0.0.1:3000;
+        <span class="kw">proxy_set_header</span> Host $host;
+        <span class="kw">proxy_set_header</span> X-Real-IP $remote_addr;
+        <span class="kw">proxy_set_header</span> X-Forwarded-For $proxy_add_x_forwarded_for;
+        <span class="kw">proxy_set_header</span> X-Forwarded-Proto $scheme;
+    }
+}
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Proxy residencial e proxy de datacenter</h4>
+        <p>
+          Proxies comerciais dividem-se em duas grandes categorias. Os de datacenter correm em servidores cloud e são rápidos mas facilmente identificáveis. Os residenciais usam IPs de ligações domésticas reais, tornando-se difíceis de bloquear — mas levantam questões éticas sobre consentimento dos utilizadores cujas ligações são usadas.
+        </p>
+        <div class="code">
+<span class="comment"># Comparação de características</span>
+<span class="info">Datacenter</span>  <span class="ok">Rápido</span>  <span class="ok">Barato</span>  <span class="err">Fácil de detetar</span>
+<span class="info">Residencial</span> <span class="warn">Lento</span>   <span class="err">Caro</span>    <span class="ok">Difícil de detetar</span>
+<span class="info">ISP/Mobile</span>  <span class="warn">Médio</span>  <span class="err">Caro</span>    <span class="ok">Muito difícil de detetar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">🔗</span>
+    <div>
+      <h5>Proxy chains — proxies em cascata</h5>
+      <p>
+        É possível encadear vários proxies, de modo que cada um só conhece o anterior e o seguinte. O destino final vê apenas o último proxy da cadeia. É a ideia subjacente ao <strong>Tor</strong>, que usa três relays por circuito para separar quem pede, quem transmite e quem entrega.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARAÇÃO -->
+<section id="comparacao" class="container">
+  <div class="section-label">04 — Comparação</div>
+  <h2 class="section-title">VPN vs Proxy</h2>
+  <p class="section-desc">
+    A escolha entre VPN e proxy depende do que se pretende proteger ou contornar. Em muitas situações, a resposta correta é usar ambos — ou nenhum, se o modelo de ameaça não o justificar.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Critério</th>
+          <th>VPN</th>
+          <th>Proxy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">Cobertura</td>
+          <td class="kali">Todo o tráfego do dispositivo</td>
+          <td class="meta">Apenas aplicações configuradas</td>
+        </tr>
+        <tr>
+          <td class="mono">Camada OSI</td>
+          <td class="kali">L2/L3</td>
+          <td class="meta">L4/L7</td>
+        </tr>
+        <tr>
+          <td class="mono">Cifra</td>
+          <td class="ok">Sim, obrigatória</td>
+          <td class="warn">Depende do protocolo</td>
+        </tr>
+        <tr>
+          <td class="mono">Configuração</td>
+          <td class="kali">Simples (a nível de sistema)</td>
+          <td class="meta">Por aplicação, mais granular</td>
+        </tr>
+        <tr>
+          <td class="mono">Desempenho</td>
+          <td class="warn">Overhead de cifra</td>
+          <td class="ok">Geralmente mais leve</td>
+        </tr>
+        <tr>
+          <td class="mono">Anonimato</td>
+          <td class="warn">Parcial</td>
+          <td class="ok">Potencialmente maior com cadeia</td>
+        </tr>
+        <tr>
+          <td class="mono">Cache</td>
+          <td class="err">Não</td>
+          <td class="ok">Sim, possível</td>
+        </tr>
+        <tr>
+          <td class="mono">Filtragem de conteúdo</td>
+          <td class="err">Limitada</td>
+          <td class="ok">Granular</td>
+        </tr>
+        <tr>
+          <td class="mono">Uso típico</td>
+          <td class="kali">Privacidade, acesso remoto</td>
+          <td class="meta">Controlo, cache, anonimização</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Quando usar cada um?
+  </h3>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">🎯</div>
+      <h3>Use VPN quando…</h3>
+      <ul>
+        <li>Precisa de proteger todo o tráfego do dispositivo, não só o browser.</li>
+        <li>Está numa rede pública (Wi-Fi de hotel, aeroporto) e quer cifra ponta-a-ponta até ao destino.</li>
+        <li>Trabalha em teletrabalho e precisa de aceder a recursos internos da empresa.</li>
+        <li>Quer que o seu IP público seja diferente face a todos os serviços.</li>
+        <li>Viaja frequentemente e quer uma experiência de rede consistente.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🎯</div>
+      <h3>Use proxy quando…</h3>
+      <ul>
+        <li>Precisa de intermediação apenas para uma aplicação ou browser.</li>
+        <li>Quer cache para reduzir tráfego e acelerar acesso.</li>
+        <li>Precisa de filtrar conteúdo por categoria, URL ou palavra-chave.</li>
+        <li>Está a fazer scraping ou automação que requer rotação de IPs.</li>
+        <li>Precisa de inspecionar tráfego HTTP/HTTPS numa organização.</li>
+        <li>Quer fazer reverse proxy para balancear carga entre servidores.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="danger-box">
+    <span class="icon">🚨</span>
+    <div>
+      <h5>Mitos frequentes</h5>
+      <p>
+        <strong>"VPN torna-me anónimo":</strong> falso. A VPN apenas substitui a confiança no ISP pela confiança no operador. Sem boas práticas de navegação, o anonimato é uma ilusão.<br>
+        <strong>"HTTPS é suficiente, não preciso de VPN":</strong> parcialmente verdade para confidencialidade do conteúdo, mas o ISP continua a ver que sites visita e quando. A VPN esconde esse metadado.<br>
+        <strong>"Proxy é mais rápido que VPN":</strong> depende. Sem cifra, sim; com inspeção TLS, um proxy pode ser tão lento quanto uma VPN mal configurada.<br>
+        <strong>"VPN gratuita é igual a VPN paga":</strong> raramente. Se o produto é grátis, o produto é você — os dados de navegação são o modelo de negócio.
+      </p>
+    </div>
+  </div>
+
+  <div class="flow" style="margin-top:48px;">
+    <div class="flow-node kali">Modelo de ameaça</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node purple">O que quero proteger / contornar?</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node meta">Escolher ferramenta adequada</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Testar e validar</div>
+  </div>
+</section>
+
+<!-- BOAS PRÁTICAS -->
+<section id="boas-praticas" class="container">
+  <div class="section-label">05 — Síntese</div>
+  <h2 class="section-title">Boas práticas</h2>
+  <p class="section-desc">
+    Nem VPNs nem proxies são soluções mágicas. São ferramentas com pressupostos, limitações e riscos. Uma implementação descuidada pode dar falsa sensação de segurança ou até introduzir novas vulnerabilidades.
+  </p>
+
+  <div class="compare-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">✅</div>
+      <h3>Fazer</h3>
+      <ul>
+        <li><strong>Escolher protocolos modernos:</strong> WireGuard, IKEv2, OpenVPN.</li>
+        <li><strong>Verificar configurações:</strong> DNS leak, WebRTC leak, kill switch.</li>
+        <li><strong>Ativar MFA no operador VPN:</strong> a conta é a chave do túnel.</li>
+        <li><strong>Confiar em operadores auditados:</strong> com política no-logs verificada.</li>
+        <li><strong>Preferir HTTPS sempre:</strong> a VPN não substitui o TLS.</li>
+        <li><strong>Configurar SOCKS5 com autenticação:</strong> proxies abertos são um risco.</li>
+        <li><strong>Documentar proxies internos:</strong> quem usa, para quê, com que regras.</li>
+        <li><strong>Monitorizar logs de proxy:</strong> detetar abusos e falhas.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🚫</div>
+      <h3>Evitar</h3>
+      <ul>
+        <li><strong>Usar PPTP:</strong> obsoleto e inseguro, sem qualquer dúvida.</li>
+        <li><strong>Confiar em VPNs gratuitas:</strong> o preço é frequentemente a sua privacidade.</li>
+        <li><strong>Assumir anonimato total:</strong> metadados, cookies e fingerprinting persistem.</li>
+        <li><strong>Ignorar vazamentos:</strong> DNS, IPv6 e WebRTC podem revelar o IP real.</li>
+        <li><strong>Proxy aberto na internet:</strong> porta aberta para abusos e bloqueios.</li>
+        <li><strong>Inspeção TLS sem transparência:</strong> quebra a confiança e a privacidade.</li>
+        <li><strong>Deixar de usar TLS:</strong> "porque tenho VPN" é um erro grave.</li>
+        <li><strong>Assumir que "VPN = segurança":</strong> é uma peça, não a solução.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Cenários práticos
+  </h3>
+
+  <div class="scenario kali">
+    <h5>💼 Trabalhador remoto a aceder a sistemas internos</h5>
+    <p>
+      VPN corporativa de acesso remoto com WireGuard ou IKEv2. Autenticação com certificados + MFA. Split tunneling configurado para que apenas o tráfego interno passe pelo túnel, mantendo o tráfego pessoal (streaming, redes sociais) na ligação local. Kill switch ativo para evitar fugas.
+    </p>
+  </div>
+
+  <div class="scenario purple">
+    <h5>🛒 Empresa com filtragem de conteúdo e cache</h5>
+    <p>
+      Forward proxy (Squid) em modo transparente no gateway. Regras de categorias de sites bloqueados. Cache de objetos estáticos para poupar largura de banda. Logs centralizados. HTTPS tratado com CONNECT (sem inspeção) por omissão; inspeção TLS apenas para categorias específicas, com transparência para os utilizadores.
+    </p>
+  </div>
+
+  <div class="scenario meta">
+    <h5>🌍 Jornalista a comunicar de região censurada</h5>
+    <p>
+      Combinação de Tor (cadeia de proxies) para navegação sensível, com VPN sobre Tor (VPN-over-Tor) para maior resiliência. Comunicações com fontes via Signal. Contas em serviços descartáveis. Verificações regulares de vazamentos. Plano de contingência com múltiplos canais.
+    </p>
+  </div>
+
+  <div class="term" style="margin-top:48px;">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — fugas e estado da VPN</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd"># Ver IP público atual (deve ser o do servidor VPN quando ativa)</span>
+<span class="prompt">$</span> <span class="cmd">curl -s https://ifconfig.me &amp;&amp; echo</span>
+<span class="ok">185.65.134.42</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar DNS em uso (deve corresponder ao operador VPN)</span>
+<span class="prompt">$</span> <span class="cmd">resolvectl status | grep "Current DNS"</span>
+<span class="ok">Current DNS Server: 10.64.0.1</span>
+<span class="dim">^ servidor DNS interno do operador VPN, não do ISP local</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar interfaces de rede ativas</span>
+<span class="prompt">$</span> <span class="cmd">ip -brief addr</span>
+<span class="info">lo      UNKNOWN  127.0.0.1/8 ::1/128</span>
+<span class="info">wlan0   UP       192.168.1.42/24</span>
+<span class="ok">wg0     UNKNOWN  10.8.0.2/32</span>
+<span class="dim">^ interface wg0 é o túnel WireGuard ativo</span>
+
+<span class="prompt">$</span> <span class="cmd"># Testar se um proxy responde</span>
+<span class="prompt">$</span> <span class="cmd">curl -x http://proxy.empresa.pt:8080 -sI https://exemplo.pt | head -1</span>
+<span class="ok">HTTP/2 200</span>
+
+<span class="prompt">$</span> <span class="cmd"># Confirmar que o proxy está a ser usado (o IP visto deve ser o do proxy)</span>
+<span class="prompt">$</span> <span class="cmd">curl -x http://proxy.empresa.pt:8080 -s https://ifconfig.me</span>
+<span class="ok">203.0.113.5</span>
+<span class="dim">^ este é o IP de saída do proxy, não o do cliente</span>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:32px;">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Para saber mais</h5>
+      <p>
+        Para VPNs, a documentação do <strong>WireGuard</strong> (wireguard.com) é excelente e concisa. O <strong>OpenVPN</strong> tem manuais completos em openvpn.net. Para proxies, o <strong>Squid</strong> (squid-cache.org) continua a ser a referência open source, e o <strong>Nginx</strong> (nginx.org) tem documentação detalhada sobre reverse proxy e terminação TLS. O livro <em>"Tor: From the Dark Web to the Future of Privacy"</em> de Ben Collier oferece contexto histórico e técnico sobre cadeias de proxies.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>VPN &amp; Proxies — Aula interativa · Privacidade e segurança de rede</p>
+    <p style="margin-top:8px; font-size:12px;">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

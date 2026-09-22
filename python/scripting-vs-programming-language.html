@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 01 — Scripting vs Programming Language</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:700px) { .nav-links { display:none; } }
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .ok { color:var(--ok); }
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); } td.warn { color:var(--warn); }
+  td.err { color:var(--err); } td.kali { color:var(--kali); } td.meta { color:var(--meta); }
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px; border:2px solid var(--bg-0); }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo"><span class="dot"></span><span>aula://scripting-vs-programming</span></div>
+    <div class="nav-links">
+      <a href="#definicao">Definição</a>
+      <a href="#comparacao">Comparação</a>
+      <a href="#fronteira">Fronteira</a>
+      <a href="#resumo">Resumo</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="badge"><span class="live"></span>AULA 01 • FUNDAMENTOS</div>
+    <h1>
+      <span class="grad-kali">Scripting</span> vs<br>
+      <span class="grad-meta">Programming</span> Language
+    </h1>
+    <p class="sub">
+      A distinção mais mal-entendida da programação. Vamos ver porque é que
+      <strong>toda a scripting language é uma programming language</strong> — mas o contrário nem sempre é verdade.
+    </p>
+  </div>
+</header>
+
+<section id="definicao">
+  <div class="container">
+    <div class="section-label">// 01 — Definições</div>
+    <h2 class="section-title">Duas definições, uma verdade</h2>
+    <p class="section-desc">
+      Programming language é o <strong>guarda-chuva</strong>. Scripting language é uma <strong>especialização</strong>
+      desse conceito, com contexto histórico próprio.
+    </p>
+
+    <div class="compare-grid">
+      <div class="card kali">
+        <div class="card-icon">⚙️</div>
+        <h3>Programming Language</h3>
+        <div class="role">Guardar-chuva</div>
+        <ul>
+          <li>Qualquer linguagem formal para dar instruções ao computador</li>
+          <li>Tipicamente <strong>compilada</strong> para código máquina</li>
+          <li>Tipagem <strong>estática</strong> (verificada em compilação)</li>
+          <li>Performance elevada</li>
+          <li>Exemplos: <strong>C, C++, Java, Rust, Go</strong></li>
+        </ul>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">📜</div>
+        <h3>Scripting Language</h3>
+        <div class="role">Especialização</div>
+        <ul>
+          <li>Pensada para <strong>automatizar</strong> e "colar" componentes</li>
+          <li>Tipicamente <strong>interpretada</strong> ou JIT</li>
+          <li>Tipagem <strong>dinâmica</strong> (verificada em execução)</li>
+          <li>Ciclo de desenvolvimento rápido</li>
+          <li>Exemplos: <strong>Python, JavaScript, Ruby, Bash, Lua</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">💡</div>
+      <div>
+        <h5>A verdade fundamental</h5>
+        <p>
+          <strong>Toda a scripting language é uma programming language.</strong>
+          O contrário é que nem sempre é verdade. "Scripting" é um rótulo
+          histórico/cultural, não uma categoria técnica rígida.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="comparacao">
+  <div class="container">
+    <div class="section-label">// 02 — Comparação direta</div>
+    <h2 class="section-title">Onde diferem (na teoria)</h2>
+    <p class="section-desc">
+      Estas são as características típicas associadas a cada rótulo — mas atenção,
+      são tendências, não regras absolutas.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Critério</th><th>Programming</th><th>Scripting</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Execução</td><td class="kali">Compilada → binário</td><td class="meta">Interpretada / JIT</td></tr>
+          <tr><td>Tipagem</td><td class="kali">Estática</td><td class="meta">Dinâmica</td></tr>
+          <tr><td>Performance</td><td class="kali">Alta</td><td class="meta">Menor (a melhorar)</td></tr>
+          <tr><td>Ciclo dev</td><td class="kali">Compilar → correr</td><td class="meta">Escrever → correr</td></tr>
+          <tr><td>Verificação de erros</td><td class="kali">Em compilação</td><td class="meta">Em execução</td></tr>
+          <tr><td>Uso típico</td><td class="kali">Sistemas, apps grandes</td><td class="meta">Automação, web, glue</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="num">1×</span><span class="label">Guarda-chuva</span></div>
+      <div class="stat"><span class="num">2×</span><span class="label">Rótulos</span></div>
+      <div class="stat"><span class="num">∞</span><span class="label">Casos híbridos</span></div>
+      <div class="stat"><span class="num">0</span><span class="label">Regras absolutas</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="fronteira">
+  <div class="container">
+    <div class="section-label">// 03 — A fronteira é difusa</div>
+    <h2 class="section-title">Porque a divisão já não funciona</h2>
+    <p class="section-desc">
+      A separação clássica esbateu-se. Hoje, "scripting" e "programming" fazem
+      exatamente as mesmas coisas.
+    </p>
+
+    <div class="compare-grid">
+      <div class="card kali">
+        <div class="card-icon">🌐</div>
+        <h3>JavaScript</h3>
+        <div class="role">"Scripting" que corre o mundo</div>
+        <ul>
+          <li>Chamada scripting language</li>
+          <li>Mas corre <strong>Node.js, React, backends inteiros</strong></li>
+          <li>É a linguagem mais usada do planeta</li>
+        </ul>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">🐍</div>
+        <h3>Python</h3>
+        <div class="role">"Scripting" que faz ML</div>
+        <ul>
+          <li>Chamada scripting language</li>
+          <li>Usada em <strong>machine learning, data science, backends</strong></li>
+          <li>Coisas pesadas e críticas</li>
+        </ul>
+      </div>
+
+      <div class="card kali">
+        <div class="card-icon">☕</div>
+        <h3>Java</h3>
+        <div class="role">"Programming" com JIT</div>
+        <ul>
+          <li>Chamada programming language</li>
+          <li>Mas usa <strong>JIT compilation</strong> e JVM</li>
+          <li>Tal como muitas scripting languages modernas</li>
+        </ul>
+      </div>
+
+      <div class="card meta">
+        <div class="card-icon">🔷</div>
+        <h3>TypeScript</h3>
+        <div class="role">Onde fica?</div>
+        <ul>
+          <li>É JavaScript... <strong>com tipagem estática</strong></li>
+          <li>Scripting language ou programming language?</li>
+          <li>Prova que a divisão é arbitrária</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>Cuidado com os rótulos</h5>
+        <p>
+          "Scripting language" é mais um <strong>rótulo histórico/cultural</strong>
+          do que uma categoria técnica. Escolhe-se a linguagem pelo <strong>problema</strong>,
+          não pelo rótulo.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="resumo">
+  <div class="container">
+    <div class="section-label">// 04 — Resumo</div>
+    <h2 class="section-title">O que levar para o exame</h2>
+    <p class="section-desc">
+      Cinco pontos que resumem tudo o que precisas de saber.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Ponto</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono kali">1</td><td>Toda a scripting language é uma programming language</td></tr>
+          <tr><td class="mono kali">2</td><td>A distinção vem de contexto histórico</td></tr>
+          <tr><td class="mono kali">3</td><td>Hoje a fronteira é difusa</td></tr>
+          <tr><td class="mono kali">4</td><td>O que importa: compilado vs interpretado, tipagem estática vs dinâmica</td></tr>
+          <tr><td class="mono kali">5</td><td>Escolhe-se a linguagem pelo problema, não pelo rótulo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">🧠</div>
+      <div>
+        <h5>Frase para memorizar</h5>
+        <p>
+          <em>"Scripting language é uma programming language com uma reputação informal."</em>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Aula 01 • <strong style="color:var(--kali)">Scripting</strong> vs <strong style="color:var(--meta)">Programming</strong> Language</p>
+    <p style="margin-top:10px; opacity:0.6">Material educativo • Fundamentos de programação</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -106,7 +106,8 @@ Ambientes sandbox com CodeMirror 5.65.16 (tema Dracula), executados inteiramente
 
 ### Cheatsheets e Referência
 - `cheatsheet_python.html`, `cheatsheet_cybersec.html`, `cheatsheet_sql_cybersec.html` — páginas de referência standalone
-- `redes/*.html` — referência de Redes (TCP/IP, OSI, UDP, IP, topologias, switch/VLAN/router), acessível via submenu na sidebar
+- `redes/*.html` — referência de Redes (TCP/IP, OSI, UDP, IP, topologias, switch/VLAN/router), acessível via menu Materiais na sidebar
+- `seguranca/*.html`, `databases/*.html`, `web-security/*.html`, `python/*.html` — restantes categorias do menu Materiais (Security Concepts, Databases, Web Security, Python), lista completa em `SKILLS_CATEGORIES` (`templates/js/skills.js`)
 - `CyberMap.html` — mapa/visualização de conceitos de cibersegurança
 
 ### Administração
@@ -183,7 +184,11 @@ IEFP_Hackers/
 ├── db/schema.sql                 # Schema PostgreSQL do backend legado
 ├── docs/                         # PDFs/imagens de referência do curso (horários, cronograma)
 │
-├── redes/                        # Páginas HTML standalone de referência de Redes
+├── redes/                        # Páginas HTML standalone — menu Materiais: Networking
+├── seguranca/                    # Páginas HTML standalone — menu Materiais: Security Concepts
+├── databases/                    # Páginas HTML standalone — menu Materiais: Databases
+├── web-security/                 # Páginas HTML standalone — menu Materiais: Web Security
+├── python/                       # Páginas HTML standalone — menu Materiais: Python
 ├── cheatsheet_*.html             # Páginas HTML standalone de cheatsheets
 ├── CyberMap.html / CyberMap (beta).html
 │
@@ -337,7 +342,7 @@ Apenas o ficheiro mais recente é lido — período do curso, carga horária tot
 
 ### Hosting
 
-- `public: "."` com `ignore` extenso — só `dashboard.html`, `admin.html`, assets estáticos, `redes/`, `cheatsheet_*.html`, `CyberMap*.html` são publicados; `data/`, `docs/`, `api/`, `db/`, `*.py`, `*.md` ficam de fora
+- `public: "."` com `ignore` extenso — só `dashboard.html`, `admin.html`, assets estáticos, `redes/`, `seguranca/`, `databases/`, `web-security/`, `python/`, `cheatsheet_*.html`, `CyberMap*.html` são publicados; `data/`, `docs/`, `api/`, `db/`, `*.py`, `*.md` ficam de fora
 - Rewrites: `/` → `dashboard.html`, `/admin` → `admin.html`
 - `Cache-Control: no-cache, no-store, must-revalidate` em todo o HTML (evita servir builds antigos)
 - CSP, HSTS, `X-Frame-Options`, `X-Content-Type-Options`, `Permissions-Policy` aplicados globalmente; CSPs mais restritivas por página em `admin.html`, `cheatsheet_*.html`, `CyberMap.html`, `redes/**`

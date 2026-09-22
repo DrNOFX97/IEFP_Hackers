@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDS &amp; IPS — Aula Interativa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
+    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
+    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
+    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
+    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
+    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
+    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
+    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  .bg-grid { position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events:none; }
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
+    animation:float 18s ease-in-out infinite; }
+  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
+  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
+    animation-delay:-6s; }
+  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
+    animation-delay:-12s; opacity:0.18; }
+  @keyframes float {
+    0%,100% { transform:translate(0,0) scale(1); }
+    33% { transform:translate(40px,-30px) scale(1.08); }
+    66% { transform:translate(-30px,25px) scale(0.95); }
+  }
+  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
+  nav .container { display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px; }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
+    font-weight:700; font-size:15px; }
+  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .nav-links { display:flex; gap:28px; }
+  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
+    font-weight:500; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  @media (max-width:900px) { .nav-links { display:none; } }
+
+  .hero { text-align:center; padding:80px 0 60px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
+    border-radius:100px; background:var(--surface); border:1px solid var(--border);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    letter-spacing:0.5px; margin-bottom:28px; }
+  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
+  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
+    letter-spacing:-3px; margin-bottom:24px; }
+  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
+    max-width:680px; margin:0 auto 40px; }
+
+  section { padding:80px 0; position:relative; }
+  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
+    letter-spacing:-1.5px; margin-bottom:16px; }
+  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
+
+  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
+    border-radius:20px; padding:32px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; }
+  .card.kali { border-top:2px solid var(--kali); }
+  .card.kali:hover { border-color:var(--kali);
+    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
+  .card.meta { border-top:2px solid var(--meta); }
+  .card.meta:hover { border-color:var(--meta);
+    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
+  .card.purple { border-top:2px solid var(--accent); }
+  .card.purple:hover { border-color:var(--accent);
+    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
+  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
+  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
+  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
+  .card.purple .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
+  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
+  .card.kali h3 { color:var(--kali); }
+  .card.meta h3 { color:var(--meta); }
+  .card.purple h3 { color:var(--accent); }
+  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
+  .card ul { list-style:none; }
+  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
+    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .card ul li:last-child { border-bottom:none; }
+  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
+  .card.kali ul li::before { color:var(--kali); }
+  .card.meta ul li::before { color:var(--meta); }
+  .card.purple ul li::before { color:var(--accent); }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .triple-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  @media (max-width:980px) { .triple-grid { grid-template-columns:1fr; } }
+  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
+
+  .steps { display:flex; flex-direction:column; gap:0; }
+  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
+    padding:28px 0; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-family:var(--font-mono);
+    font-weight:700; font-size:18px; background:var(--bg-1);
+    border:1px solid var(--border); color:var(--kali); }
+  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
+
+  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
+    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7; }
+  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
+    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
+  .code.meta-code::before { background:var(--meta); }
+  .code.purple-code::before { background:var(--accent); }
+  .code .prompt { color:var(--meta); user-select:none; }
+  .code .comment { color:var(--text-faint); font-style:italic; }
+  .code .cmd { color:#e8ecf4; }
+  .code .ph { color:var(--warn); font-weight:600; }
+  .code .ok { color:var(--ok); }
+  .code .dim { color:var(--text-faint); }
+  .code .kw { color:#7c5cff; font-weight:600; }
+  .code .str { color:#ffb020; }
+  .code .num { color:#00d4ff; }
+  .code .bad { color:var(--err); font-weight:600; }
+  .code .good { color:var(--ok); font-weight:600; }
+
+  .term { background:#000; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; margin:32px 0; font-family:var(--font-mono); }
+  .term-bar { display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:var(--bg-1); border-bottom:1px solid var(--border); }
+  .term-bar .b { width:12px; height:12px; border-radius:50%; }
+  .term-bar .b.r { background:#ff5f57; }
+  .term-bar .b.y { background:#febc2e; }
+  .term-bar .b.g { background:#28c840; }
+  .term-bar .title { margin-left:8px; font-size:12px; color:var(--text-faint); }
+  .term-body { padding:18px 20px; font-size:13px; line-height:1.8; min-height:120px;
+    max-height:500px; overflow-y:auto; color:#a8ffcb; white-space:pre-wrap;
+    word-break:break-word; }
+  .term-body .prompt { color:var(--meta); }
+  .term-body .info { color:var(--kali); }
+  .term-body .ok { color:var(--ok); }
+  .term-body .err { color:var(--err); }
+  .term-body .warn { color:var(--warn); }
+  .term-body .dim { color:var(--text-faint); }
+
+  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; margin-top:24px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead { background:var(--bg-2); }
+  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
+    font-weight:600; border-bottom:1px solid var(--border); }
+  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
+  td.mono { font-family:var(--font-mono); font-size:13px; }
+  td.ok { color:var(--ok); }
+  td.warn { color:var(--warn); }
+  td.err { color:var(--err); }
+  td.kali { color:var(--kali); }
+  td.meta { color:var(--meta); }
+  td.purple { color:var(--accent); }
+
+  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
+    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:32px; }
+  .warning .icon { font-size:22px; flex-shrink:0; }
+  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
+  .warning p { color:var(--text-dim); font-size:14px; }
+
+  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
+    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .info-box .icon { font-size:22px; flex-shrink:0; }
+  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
+  .info-box p { color:var(--text-dim); font-size:14px; }
+
+  .danger-box { background:linear-gradient(135deg,rgba(255,59,107,0.08),rgba(255,77,77,0.04));
+    border:1px solid rgba(255,59,107,0.25); border-left:3px solid var(--meta);
+    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
+    align-items:flex-start; margin-top:24px; }
+  .danger-box .icon { font-size:22px; flex-shrink:0; }
+  .danger-box h5 { color:var(--meta); font-size:15px; margin-bottom:4px; }
+  .danger-box p { color:var(--text-dim); font-size:14px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px; margin-top:40px; }
+  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
+    padding:24px; text-align:center; transition:all 0.3s; }
+  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
+  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
+    background:linear-gradient(135deg,var(--kali),var(--accent));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
+  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
+    letter-spacing:1.5px; font-family:var(--font-mono); }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
+    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
+
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px;
+    border:2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background:#1c2233; }
+  ::selection { background:var(--kali); color:var(--bg-0); }
+
+  .tag { display:inline-block; font-family:var(--font-mono); font-size:11px;
+    padding:3px 10px; border-radius:100px; letter-spacing:0.5px; margin-left:8px;
+    vertical-align:middle; }
+  .tag.kali { background:rgba(0,212,255,0.1); color:var(--kali);
+    border:1px solid rgba(0,212,255,0.25); }
+  .tag.meta { background:rgba(255,59,107,0.1); color:var(--meta);
+    border:1px solid rgba(255,59,107,0.25); }
+  .tag.purple { background:rgba(124,92,255,0.1); color:var(--accent);
+    border:1px solid rgba(124,92,255,0.25); }
+
+  .flow { display:flex; align-items:center; justify-content:center;
+    flex-wrap:wrap; gap:12px; margin:32px 0; font-family:var(--font-mono); font-size:13px; }
+  .flow-node { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:12px; padding:12px 20px; color:var(--text-dim); text-align:center; }
+  .flow-node.kali { border-color:rgba(0,212,255,0.4); color:var(--kali); }
+  .flow-node.meta { border-color:rgba(255,59,107,0.4); color:var(--meta); }
+  .flow-node.purple { border-color:rgba(124,92,255,0.4); color:var(--accent); }
+  .flow-arrow { color:var(--text-faint); font-size:18px; }
+
+  .scenario { background:var(--bg-1); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:16px; }
+  .scenario h5 { font-size:15px; margin-bottom:8px; }
+  .scenario p { color:var(--text-dim); font-size:14px; }
+  .scenario.kali { border-left:3px solid var(--kali); }
+  .scenario.kali h5 { color:var(--kali); }
+  .scenario.purple { border-left:3px solid var(--accent); }
+  .scenario.purple h5 { color:var(--accent); }
+  .scenario.meta { border-left:3px solid var(--meta); }
+  .scenario.meta h5 { color:var(--meta); }
+
+  .alert-row { display:flex; align-items:center; gap:12px; padding:10px 0;
+    border-bottom:1px solid rgba(255,255,255,0.04); font-family:var(--font-mono);
+    font-size:13px; }
+  .alert-row:last-child { border-bottom:none; }
+  .alert-pill { display:inline-block; padding:2px 10px; border-radius:100px;
+    font-size:11px; font-weight:700; letter-spacing:0.5px; flex-shrink:0; }
+  .alert-pill.critical { background:rgba(255,77,77,0.15); color:var(--err);
+    border:1px solid rgba(255,77,77,0.35); }
+  .alert-pill.high { background:rgba(255,59,107,0.15); color:var(--meta);
+    border:1px solid rgba(255,59,107,0.35); }
+  .alert-pill.medium { background:rgba(255,176,32,0.15); color:var(--warn);
+    border:1px solid rgba(255,176,32,0.35); }
+  .alert-pill.low { background:rgba(0,212,255,0.15); color:var(--kali);
+    border:1px solid rgba(0,212,255,0.35); }
+  .alert-pill.info { background:rgba(124,92,255,0.15); color:var(--accent);
+    border:1px solid rgba(124,92,255,0.35); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      IDS<span style="color:var(--kali)">/</span>IPS
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#tipos">Tipos</a>
+      <a href="#deteccao">Deteção</a>
+      <a href="#suricata">Suricata</a>
+      <a href="#boas-praticas">Boas práticas</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · segurança de redes
+  </div>
+  <h1>
+    <span class="grad-kali">IDS</span> &amp; <span class="grad-meta">IPS</span>
+  </h1>
+  <p class="sub">
+    Detetar e responder a intrusões. Enquanto uma firewall decide o que passa com base em regras predefinidas, um IDS ou IPS analisa o tráfego em profundidade para identificar padrões suspeitos e reagir. Nesta aula, exploramos os sistemas de deteção e prevenção de intrusões, os seus tipos, métodos de deteção e ferramentas práticas como o Suricata.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">O que são IDS e IPS?</h2>
+  <p class="section-desc">
+    Um <strong>IDS</strong> (Intrusion Detection System) monitoriza o tráfego de rede ou a atividade de um sistema para identificar atividades maliciosas e gerar alertas. Um <strong>IPS</strong> (Intrusion Prevention System) faz o mesmo, mas acrescenta a capacidade de <em>bloquear ativamente</em> o tráfego malicioso. A diferença essencial está entre <em>observar</em> e <em>intervir</em>.
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">1980s</span>
+      <span class="label">Origens (Dorothy Denning)</span>
+    </div>
+    <div class="stat">
+      <span class="num">NIDS</span>
+      <span class="label">Baseado em rede</span>
+    </div>
+    <div class="stat">
+      <span class="num">HIDS</span>
+      <span class="label">Baseado em host</span>
+    </div>
+    <div class="stat">
+      <span class="num">IPS</span>
+      <span class="label">Modo ativo com bloqueio</span>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-node kali">Tráfego de rede</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node purple">Sensor IDS/IPS</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node meta">Alerta (IDS) ou Bloqueio (IPS)</div>
+  </div>
+
+  <div class="compare-grid" style="margin-top:32px;">
+    <div class="card kali">
+      <div class="card-icon">👁️</div>
+      <h3>IDS — Deteção</h3>
+      <div class="role">Modo passivo · observa e alerta</div>
+      <ul>
+        <li>Analisa uma cópia do tráfego (span port, tap).</li>
+        <li>Não interfere com o tráfego em produção.</li>
+        <li>Gera alertas, registos e notificações.</li>
+        <li>Requer intervenção humana para responder.</li>
+        <li>Não introduz latência nem ponto de falha.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🛡️</div>
+      <h3>IPS — Prevenção</h3>
+      <div class="role">Modo ativo · bloqueia em tempo real</div>
+      <ul>
+        <li>Colocado em linha com o tráfego (inline).</li>
+        <li>Bloqueia pacotes maliciosos antes de chegarem ao destino.</li>
+        <li>Responde automaticamente, sem intervenção humana.</li>
+        <li>Introduz latência (mínima) e é ponto de falha potencial.</li>
+        <li>Falsos positivos podem bloquear tráfego legítimo.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>A analogia do segurança</h5>
+      <p>
+        Um <strong>IDS</strong> é como um vigilante que observa as câmaras de segurança e chama a polícia quando vê algo suspeito — vê tudo, mas não intervém diretamente. Um <strong>IPS</strong> é como um segurança à porta que revista e impede a entrada de qualquer pessoa suspeita — intervém antes que o dano aconteça, mas corre o risco de barrar alguém inocente.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TIPOS -->
+<section id="tipos" class="container">
+  <div class="section-label">02 — Classificação</div>
+  <h2 class="section-title">Tipos de IDS/IPS</h2>
+  <p class="section-desc">
+    Os sistemas de deteção e prevenção de intrusões classificam-se principalmente pelo que monitorizam (rede ou host) e pela forma como se distribuem (centralizado ou distribuído). Cada tipo tem o seu lugar numa arquitetura de defesa em profundidade.
+  </p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>NIDS — Network Intrusion Detection System</h4>
+        <p>
+          Monitoriza o tráfego de rede em pontos estratégicos: routers, switches, firewalls. Analisa cabeçalhos e payloads de pacotes à procura de assinaturas de ataques conhecidos, anomalias de protocolo ou comportamentos suspeitos. É o tipo mais comum em ambientes empresariais.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: captura de tráfego numa interface para análise</span>
+<span class="prompt">$</span> <span class="cmd">sudo tcpdump -i eth0 -w captura.pcap 'tcp port 80 or tcp port 443'</span>
+<span class="dim">tcpdump: listening on eth0, link-type EN10MB (Ethernet)</span>
+<span class="dim">^ a captura pode depois ser analisada pelo sensor NIDS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>HIDS — Host Intrusion Detection System</h4>
+        <p>
+          Instalado diretamente num servidor ou estação de trabalho. Monitoriza ficheiros críticos, chamadas ao sistema, processos, registos de autenticação e integridade do sistema operativo. Deteta ataques que não passam pela rede, como escalada de privilégios ou alterações a ficheiros de configuração.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo: verificar integridade de ficheiros críticos com AIDE</span>
+<span class="prompt">$</span> <span class="cmd">sudo aide --check</span>
+<span class="ok">AIDE found NO differences between database and filesystem.</span>
+<span class="dim">^ se houver alterações, AIDE reporta ficheiros modificados, removidos ou adicionados</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>NIPS e HIPS — as versões ativas</h4>
+        <p>
+          As variantes de prevenção (NIPS e HIPS) aplicam as mesmas técnicas de deteção, mas com capacidade de <strong>bloquear ativamente</strong>. Um NIPS colocado em linha pode descartar pacotes maliciosos, redefinir ligações ou bloquear IPs. Um HIPS pode matar processos suspeitos, bloquear chamadas ao sistema ou isolar ficheiros.
+        </p>
+        <div class="code">
+<span class="comment"># Exemplo conceptual de regra IPS em Suricata</span>
+<span class="kw">drop</span> <span class="err">tcp</span> <span class="str">$EXTERNAL_NET</span> <span class="kw">any</span> -&gt; <span class="str">$HOME_NET</span> <span class="num">22</span> (
+  <span class="kw">msg</span>:<span class="str">"SSH brute force detectado"</span>;
+  <span class="kw">threshold</span>: <span class="kw">type</span> both, <span class="kw">track</span> by_src, <span class="kw">count</span> <span class="num">5</span>, <span class="kw">seconds</span> <span class="num">60</span>;
+  <span class="kw">sid</span>:<span class="num">1000001</span>; <span class="kw">rev</span>:<span class="num">1</span>;
+)
+<span class="dim">^ 'drop' bloqueia; 'alert' apenas avisa</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>DIDS — Distributed Intrusion Detection System</h4>
+        <p>
+          Combina múltiplos sensores distribuídos geograficamente, todos a reportar para um centro de gestão centralizado. É a arquitetura típica de grandes organizações, onde é impossível monitorizar tudo a partir de um único ponto. Permite correlacionar eventos de várias fontes e detetar ataques distribuídos.
+        </p>
+        <div class="code">
+<span class="comment"># Arquitetura típica DIDS</span>
+<span class="info">[Sensor Lisboa]</span>    ─┐</span>
+<span class="info">[Sensor Porto]</span>     ─┼──▶ <span class="purple">[Consola central]</span> ──▶ <span class="meta">[SIEM]</span>
+<span class="info">[Sensor Madrid]</span>   ─┤       correlação              alertas
+<span class="info">[Sensor Cloud]</span>    ─┘       e dashboards             e relatórios
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:32px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Monitoriza</th>
+          <th>Capacidade</th>
+          <th>Vantagem principal</th>
+          <th>Limitação principal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="kali">NIDS</td>
+          <td>Tráfego de rede</td>
+          <td class="warn">Deteção</td>
+          <td>Visão global da rede</td>
+          <td>Não vê tráfego cifrado</td>
+        </tr>
+        <tr>
+          <td class="meta">NIPS</td>
+          <td>Tráfego de rede</td>
+          <td class="ok">Deteção + bloqueio</td>
+          <td>Resposta automática</td>
+          <td>Pode bloquear tráfego legítimo</td>
+        </tr>
+        <tr>
+          <td class="purple">HIDS</td>
+          <td>Atividade do host</td>
+          <td class="warn">Deteção</td>
+          <td>Deteta ataques internos</td>
+          <td>Consome recursos do host</td>
+        </tr>
+        <tr>
+          <td class="purple">HIPS</td>
+          <td>Atividade do host</td>
+          <td class="ok">Deteção + bloqueio</td>
+          <td>Protege contra escalada</td>
+          <td>Complexidade de configuração</td>
+        </tr>
+        <tr>
+          <td class="kali">DIDS</td>
+          <td>Múltiplos sensores</td>
+          <td class="warn">Deteção distribuída</td>
+          <td>Correlação de eventos</td>
+          <td>Custo e complexidade elevados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- DETECÇÃO -->
+<section id="deteccao" class="container">
+  <div class="section-label">03 — Métodos de deteção</div>
+  <h2 class="section-title">Como detetar intrusões</h2>
+  <p class="section-desc">
+    Independentemente do tipo de IDS/IPS, todos usam uma ou mais técnicas para identificar tráfego malicioso. As três abordagens clássicas são a deteção por assinaturas, por anomalias e por políticas. Na prática, os sistemas modernos combinam várias.
+  </p>
+
+  <div class="triple-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">🔍</div>
+      <h3>Por assinaturas</h3>
+      <div class="role">Signature-based</div>
+      <ul>
+        <li>Compara o tráfego com padrões de ataques conhecidos.</li>
+        <li>Muito preciso para ameaças conhecidas.</li>
+        <li>Fácil de entender e manter.</li>
+        <li>Não deteta ataques novos (zero-day).</li>
+        <li>Requer atualização constante da base de assinaturas.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">📈</div>
+      <h3>Por anomalias</h3>
+      <div class="role">Anomaly-based</div>
+      <ul>
+        <li>Constrói uma linha de base do comportamento normal.</li>
+        <li>Deteta desvios face a essa linha de base.</li>
+        <li>Pode detetar ataques zero-day.</li>
+        <li>Tendência para falsos positivos.</li>
+        <li>Difícil de afinar (o que é "normal"?).</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">📋</div>
+      <h3>Por políticas</h3>
+      <div class="role">Policy-based</div>
+      <ul>
+        <li>Verifica o cumprimento de políticas definidas.</li>
+        <li>Exemplo: nenhum SSH da rede externa.</li>
+        <li>Muito eficaz em ambientes regulados.</li>
+        <li>Não deteta ataques que não violem políticas.</li>
+        <li>Complementa assinaturas e anomalias.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Que tipos de ataques se detetam?
+  </h3>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">🎯</div>
+      <h3>Ataques detetáveis</h3>
+      <ul>
+        <li><strong>Varreduras de portas:</strong> nmap, masscan.</li>
+        <li><strong>Força bruta:</strong> SSH, RDP, formulários web.</li>
+        <li><strong>Exploits conhecidos:</strong> CVEs públicos.</li>
+        <li><strong>Malware em trânsito:</strong> downloads, C2.</li>
+        <li><strong>Injeções:</strong> SQLi, XSS, command injection.</li>
+        <li><strong>DDoS:</strong> volumétrico, protocolo, aplicação.</li>
+        <li><strong>Movimento lateral:</strong> SMB, WMI, RPC.</li>
+        <li><strong>Exfiltração:</strong> transferências anómalas.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🚫</div>
+      <h3>Limitações típicas</h3>
+      <ul>
+        <li><strong>Tráfego cifrado:</strong> TLS, VPN, SSH opacos.</li>
+        <li><strong>Ataques lentos:</strong> low and slow, APT.</li>
+        <li><strong>Falsos positivos:</strong> tráfego legítimo bloqueado.</li>
+        <li><strong>Falsos negativos:</strong> ataques que passam.</li>
+        <li><strong>Evasão:</strong> fragmentação, ofuscação, tunelamento.</li>
+        <li><strong>Desempenho:</strong> análise profunda tem custo.</li>
+        <li><strong>Zero-days:</strong> sem assinatura, sem deteção.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="warning">
+    <span class="icon">⚠️</span>
+    <div>
+      <h5>O dilema dos falsos positivos</h5>
+      <p>
+        Um IPS configurado de forma demasiado agressiva bloqueia tráfego legítimo e causa indisponibilidade. Configurado de forma demasiado permissiva, deixa passar ataques. A abordagem recomendada é começar em modo <strong>IDS</strong> (apenas alerta), afinar as regras durante semanas, e só depois ativar o modo <strong>IPS</strong> com regras bem testadas.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SURICATA -->
+<section id="suricata" class="container">
+  <div class="section-label">04 — Prática</div>
+  <h2 class="section-title">Suricata</h2>
+  <p class="section-desc">
+    O Suricata é um dos IDS/IPS open source mais usados no mundo. Desenvolvido pela OISF (Open Information Security Foundation), combina deteção por assinaturas, análise de protocolos, extração de ficheiros e suporte nativo a múltiplas threads. Pode operar em modo IDS ou IPS.
+  </p>
+
+  <div class="info-box">
+    <span class="icon">🚀</span>
+    <div>
+      <h5>Porquê o Suricata?</h5>
+      <p>
+        Ao contrário do Snort, o Suricata foi concebido desde o início para multi-threading, o que lhe permite processar volumes elevados de tráfego em hardware moderno. Suporta o formato de regras do Snort, tem integração nativa com o ELK Stack (Elasticsearch, Logstash, Kibana) e é mantido ativamente pela comunidade e por várias empresas.
+      </p>
+    </div>
+  </div>
+
+  <div class="code">
+<span class="comment"># Instalação em Debian/Ubuntu</span>
+<span class="prompt">$</span> <span class="cmd">sudo apt install suricata suricata-update</span>
+
+<span class="comment"># Atualizar as assinaturas (regras) da base pública</span>
+<span class="prompt">$</span> <span class="cmd">sudo suricata-update</span>
+<span class="ok">Loaded 1 rules.</span>
+<span class="ok">Loaded 34322 rules.</span>
+<span class="ok">Writing rules to /var/lib/suricata/rules/suricata.rules: total: 34322; enabled: 29047; added: 29047; removed: 0</span>
+
+<span class="comment"># Verificar a configuração antes de arrancar</span>
+<span class="prompt">$</span> <span class="cmd">sudo suricata -T -c /etc/suricata/suricata.yaml -v</span>
+<span class="ok">Configuration provided was successfully loaded.</span>
+
+<span class="comment"># Modo IDS: analisar uma interface de rede sem bloquear</span>
+<span class="prompt">$</span> <span class="cmd">sudo suricata -c /etc/suricata/suricata.yaml -i eth0</span>
+<span class="info">[1] 2024-01-15 -- Enabling output "fast"</span>
+<span class="info">[1] 2024-01-15 -- Enabling output "eve"</span>
+<span class="info">[1] 2024-01-15 -- Listening on eth0</span>
+
+<span class="comment"># Modo IPS: bloquear tráfego malicioso (requer NFQUEUE)</span>
+<span class="prompt">$</span> <span class="cmd">sudo suricata -c /etc/suricata/suricata.yaml -q 0</span>
+<span class="dim">^ combinado com regra iptables que envia tráfego para a fila 0</span>
+<span class="prompt">$</span> <span class="cmd">sudo iptables -I FORWARD -j NFQUEUE --queue-num 0</span>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Anatomia de uma regra Suricata
+  </h3>
+
+  <div class="code">
+<span class="comment"># Sintaxe geral:</span>
+<span class="comment"># ação protocolo origem origem_porta direção destino destino_porta (opções)</span>
+
+<span class="comment"># Regra de exemplo: alertar sobre possível SQL injection</span>
+<span class="kw">alert</span> <span class="err">http</span> <span class="str">$EXTERNAL_NET</span> <span class="kw">any</span> -&gt; <span class="str">$HOME_NET</span> <span class="num">80</span> (
+  <span class="kw">msg</span>:<span class="str">"SQL injection tentativa detetada"</span>;
+  <span class="kw">flow</span>:to_server,established;
+  <span class="kw">content</span>:<span class="str">"UNION SELECT"</span>; <span class="kw">nocase</span>;
+  <span class="kw">content</span>:<span class="str">"FROM"</span>; <span class="kw">nocase</span>;
+  <span class="kw">reference</span>:url,<span class="str">"https://owasp.org/Top10/A03_2021-Injection/"</span>;
+  <span class="kw">classtype</span>:web-application-attack;
+  <span class="kw">sid</span>:<span class="num">1000001</span>; <span class="kw">rev</span>:<span class="num">1</span>;
+)
+
+<span class="comment"># Componentes:</span>
+<span class="comment"># alert / drop / reject / pass — ação</span>
+<span class="comment"># http / tcp / udp / icmp / ip — protocolo</span>
+<span class="comment"># $EXTERNAL_NET, $HOME_NET — variáveis definidas no YAML</span>
+<span class="comment"># msg — mensagem legível no alerta</span>
+<span class="comment"># flow — direção e estado da ligação</span>
+<span class="comment"># content — padrão a procurar no payload</span>
+<span class="comment"># sid — identificador único da regra</span>
+<span class="comment"># rev — versão da regra</span>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Ficheiros importantes
+  </h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Ficheiro</th>
+          <th>Função</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono kali">/etc/suricata/suricata.yaml</td>
+          <td>Configuração principal: interfaces, HOME_NET, saídas, motores</td>
+        </tr>
+        <tr>
+          <td class="mono purple">/var/lib/suricata/rules/</td>
+          <td>Regras ativas, geridas por suricata-update</td>
+        </tr>
+        <tr>
+          <td class="mono meta">/var/log/suricata/eve.json</td>
+          <td>Log estruturado em JSON — ideal para SIEM e ELK</td>
+        </tr>
+        <tr>
+          <td class="mono">/var/log/suricata/fast.log</td>
+          <td>Log de alertas em formato compacto e legível</td>
+        </tr>
+        <tr>
+          <td class="mono">/var/log/suricata/stats.log</td>
+          <td>Estatísticas de desempenho do motor</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="term">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">suricata — monitorização em tempo real</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd">sudo tail -f /var/log/suricata/fast.log</span>
+<span class="err">01/15/2024-10:23:41.123456  [**] [1:1000001:1] SQL injection tentativa detetada [**] [Classification: Web Application Attack] [Priority: 1] {TCP} 203.0.113.42:54321 -> 10.0.0.5:80</span>
+<span class="err">01/15/2024-10:23:42.234567  [**] [1:2010935:3] ET SCAN Potential SSH Scan [**] [Classification: Attempted Information Leak] [Priority: 2] {TCP} 198.51.100.17:40123 -> 10.0.0.5:22</span>
+<span class="warn">01/15/2024-10:23:45.345678  [**] [1:2013504:5] ET POLICY GNU/Linux APT User-Agent Outbound likely triggered by APT [**] [Classification: Not Suspicious Traffic] [Priority: 3] {TCP} 10.0.0.5:49876 -> 151.101.2.132:80</span>
+
+<span class="prompt">$</span> <span class="cmd">sudo jq '.alert | {signature, severity, src_ip, dest_ip}' /var/log/suricata/eve.json | tail -20</span>
+<span class="info">{</span>
+<span class="info">  "signature": "SQL injection tentativa detetada",</span>
+<span class="info">  "severity": 1,</span>
+<span class="info">  "src_ip": "203.0.113.42",</span>
+<span class="info">  "dest_ip": "10.0.0.5"</span>
+<span class="info">}</span>
+
+<span class="prompt">$</span> <span class="cmd">sudo suricatasc -c "dump-counters" | jq '.message | {capture, decoder, detect}'</span>
+<span class="info">{</span>
+<span class="info">  "capture": { "kernel_packets": 12847, "kernel_drops": 3 },</span>
+<span class="info">  "decoder": { "bytes": 9876543, "invalid": 2 },</span>
+<span class="info">  "detect": { "alert": 12 }</span>
+<span class="info">}</span>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">📊</span>
+    <div>
+      <h5>Severidade e prioridade</h5>
+      <p>
+        Cada alerta do Suricata tem um nível de severidade definido no campo <code>classtype</code> da regra. A escala vai de 1 (mais grave) a 4 (informativo). Esta classificação é essencial para triagem: uma equipa de segurança não pode investigar todos os alertas com o mesmo nível de urgência.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BOAS PRÁTICAS -->
+<section id="boas-praticas" class="container">
+  <div class="section-label">05 — Síntese</div>
+  <h2 class="section-title">Boas práticas</h2>
+  <p class="section-desc">
+    Um IDS/IPS mal configurado é pior do que não ter nenhum: gera falsa confiança, sobrecarrega a equipa com alertas irrelevantes e pode bloquear tráfego legítimo. Estas são as práticas que distinguem uma implementação eficaz de uma que se torna um problema.
+  </p>
+
+  <div class="compare-grid" style="margin-top:40px;">
+    <div class="card kali">
+      <div class="card-icon">✅</div>
+      <h3>Fazer</h3>
+      <ul>
+        <li><strong>Começar em modo IDS:</strong> observar durante semanas antes de bloquear.</li>
+        <li><strong>Afinar regras progressivamente:</strong> desativar as que geram ruído.</li>
+        <li><strong>Definir HOME_NET corretamente:</strong> sem isso, a deteção é inútil.</li>
+        <li><strong>Correlacionar com SIEM:</strong> um alerta isolado vale pouco.</li>
+        <li><strong>Atualizar assinaturas diariamente:</strong> ameaças novas todos os dias.</li>
+        <li><strong>Testar regras IPS:</strong> validar antes de ativar em produção.</li>
+        <li><strong>Documentar exceções:</strong> regras desativadas precisam de justificação.</li>
+        <li><strong>Monitorizar desempenho:</strong> drops de pacotes indicam sobrecarga.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🚫</div>
+      <h3>Evitar</h3>
+      <ul>
+        <li><strong>Ativar IPS sem afinar:</strong> bloqueará tráfego legítimo.</li>
+        <li><strong>Ignorar alertas:</strong> a fadiga de alertas é o maior inimigo.</li>
+        <li><strong>Colocar em linha sem redundância:</strong> ponto único de falha.</li>
+        <li><strong>Confiar só em assinaturas:</strong> zero-days passam incólumes.</li>
+        <li><strong>Desativar regras sem registo:</strong> perde-se rastreabilidade.</li>
+        <li><strong>Esquecer o tráfego interno:</strong> movimento lateral é crítico.</li>
+        <li><strong>Não cifrar o tráfego de gestão:</strong> o próprio IDS pode ser atacado.</li>
+        <li><strong>Subestimar o TLS:</strong> a maioria do tráfego é cifrada.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px;">
+    Cenários práticos
+  </h3>
+
+  <div class="scenario kali">
+    <h5>🏢 Empresa com rede interna e servidores expostos</h5>
+    <p>
+      NIDS em modo passivo na DMZ, a analisar tráfego de entrada e saída. HIDS nos servidores críticos para detetar alterações a ficheiros. Correlação de eventos num SIEM. IPS em linha apenas para regras de alta confiança (bloqueio de IPs maliciosos conhecidos), evitando bloquear tráfego legítimo.
+    </p>
+  </div>
+
+  <div class="scenario purple">
+    <h5>🏠 Rede doméstica com router Linux</h5>
+    <p>
+      Suricata em modo IDS no router, com regras limitadas às categorias mais relevantes. Alertas por email ou notificação quando surgem eventos de severidade alta. Não vale a pena IPS em casa: o risco de bloquear tráfego legítimo (jogos online, streaming) é elevado e o esforço de afinação não compensa.
+    </p>
+  </div>
+
+  <div class="scenario meta">
+    <h5>☁️ Infraestrutura cloud com múltiplas regiões</h5>
+    <p>
+      Sensores Suricata em cada região, a enviar eventos para um cluster Elasticsearch central. Kibana para dashboards e correlação. Regras IPS aplicadas apenas em sub-redes de produção, com modo IDS em ambientes de desenvolvimento. Revisão semanal de alertas e ajuste contínuo das regras.
+    </p>
+  </div>
+
+  <div class="table-wrap" style="margin-top:32px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Severidade</th>
+          <th>Exemplo de evento</th>
+          <th>Tempo de resposta</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="alert-pill critical">CRÍTICA</span></td>
+          <td>Exploit ativo contra serviço exposto</td>
+          <td class="err">Imediata — minutos</td>
+        </tr>
+        <tr>
+          <td><span class="alert-pill high">ALTA</span></td>
+          <td>Força bruta bem-sucedida, malware detetado</td>
+          <td class="meta">1 hora</td>
+        </tr>
+        <tr>
+          <td><span class="alert-pill medium">MÉDIA</span></td>
+          <td>Varrimento de portas, tentativas falhadas</td>
+          <td class="warn">24 horas</td>
+        </tr>
+        <tr>
+          <td><span class="alert-pill low">BAIXA</span></td>
+          <td>Tráfego suspeito mas benigno, política violada</td>
+          <td class="kali">1 semana</td>
+        </tr>
+        <tr>
+          <td><span class="alert-pill info">INFO</span></td>
+          <td>Eventos de contexto, estatísticas</td>
+          <td class="purple">Revisão periódica</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="term" style="margin-top:48px;">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — diagnosticar o Suricata</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd"># Verificar se o serviço está ativo</span>
+<span class="prompt">$</span> <span class="cmd">sudo systemctl status suricata</span>
+<span class="ok">● suricata.service - Suricata IDS/IPS</span>
+<span class="ok">     Active: active (running) since Mon 2024-01-15 10:00:00 WET</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar desempenho (drops, memória, ligações)</span>
+<span class="prompt">$</span> <span class="cmd">sudo suricatasc -c "dump-counters" | jq '.message | {kernel_packets, kernel_drops, flow_memuse}'</span>
+<span class="info">{</span>
+<span class="info">  "kernel_packets": 128470,</span>
+<span class="info">  "kernel_drops": 0,</span>
+<span class="info">  "flow_memuse": 4523</span>
+<span class="info">}</span>
+<span class="dim">^ kernel_drops = 0 indica que o sensor acompanha o tráfego</span>
+
+<span class="prompt">$</span> <span class="cmd"># Ver as regras mais acionadas nas últimas 24h</span>
+<span class="prompt">$</span> <span class="cmd">sudo jq -r 'select(.event_type=="alert") | .alert.signature' /var/log/suricata/eve.json | sort | uniq -c | sort -rn | head -5</span>
+<span class="warn">   42 ET SCAN Potential SSH Scan</span>
+<span class="warn">   18 SQL injection tentativa detetada</span>
+<span class="warn">    7 ET POLICY External IP Lookup</span>
+<span class="warn">    3 GPL SNMP public access udp</span>
+<span class="warn">    1 ET MALWARE Possible C2 Beacon</span>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:32px;">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Para saber mais</h5>
+      <p>
+        A documentação oficial do Suricata está em <strong>suricata.io</strong> e inclui guias de instalação, referência de regras e exemplos de configuração. Para regras prontas a usar, a <strong>Emerging Threats Open</strong> é a base pública mais completa. O <strong>Snort</strong> é a alternativa mais conhecida, e ferramentas como o <strong>Zeek</strong> (antes Bro) oferecem uma abordagem complementar, focada em análise de protocolos e geração de logs estruturados.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>IDS &amp; IPS — Aula interativa · Deteção e prevenção de intrusões</p>
+    <p style="margin-top:8px; font-size:12px;">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+    });
+  });
+</script>
+
+</body>
+</html>
