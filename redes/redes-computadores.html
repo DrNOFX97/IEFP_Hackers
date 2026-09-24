@@ -458,7 +458,7 @@
   <h3>Glossário</h3>
   <div class="search-box">
     <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-    <input type="text" id="searchAula01" placeholder="Filtrar termos…" oninput="filterGlossary('searchAula01','glossAula01')">
+    <input type="text" id="searchAula01" placeholder="Filtrar termos…">
   </div>
   <div class="glossary-grid" id="glossAula01">
     <div class="term" data-term="lan"><dt>LAN</dt><dd>Local Area Network — rede local, limitada a um edifício ou campus (ex: rede de uma escola ou escritório).</dd></div>
@@ -866,7 +866,7 @@ AND:     192.168.1.0    →  11000000.10101000.00000001.00000000</pre>
   <h2><span class="aula-num">—</span> Protocolos em detalhe</h2>
   <div class="search-box">
     <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-    <input type="text" id="searchProto" placeholder="Filtrar protocolos…" oninput="filterGlossary('searchProto','glossProto')">
+    <input type="text" id="searchProto" placeholder="Filtrar protocolos…">
   </div>
   <div class="glossary-grid" id="glossProto">
     <div class="term" data-term="http https"><dt>HTTP / HTTPS</dt><dd>Transferência de hipertexto (páginas web). O HTTPS acrescenta encriptação (TLS) sobre o HTTP.</dd></div>
@@ -899,11 +899,11 @@ AND:     192.168.1.0    →  11000000.10101000.00000001.00000000</pre>
     <div class="input-row">
       <div>
         <label>Decimal (0–255)</label>
-        <input type="number" id="decIn" min="0" max="255" value="192" oninput="decToBin()">
+        <input type="number" id="decIn" min="0" max="255" value="192">
       </div>
       <div>
         <label>Binário</label>
-        <input type="text" id="binIn" maxlength="8" value="11000000" oninput="binToDec()" style="max-width:120px">
+        <input type="text" id="binIn" maxlength="8" value="11000000" style="max-width:120px">
       </div>
     </div>
     <div class="bit-row" id="bitWeights">
@@ -922,11 +922,11 @@ AND:     192.168.1.0    →  11000000.10101000.00000001.00000000</pre>
     <div class="input-row">
       <div>
         <label>Octeto A (ex: IP)</label>
-        <input type="number" id="andA" min="0" max="255" value="20" oninput="calcAnd()">
+        <input type="number" id="andA" min="0" max="255" value="20">
       </div>
       <div>
         <label>Octeto B (ex: máscara)</label>
-        <input type="number" id="andB" min="0" max="255" value="0" oninput="calcAnd()">
+        <input type="number" id="andB" min="0" max="255" value="0">
       </div>
     </div>
     <div class="result-box" id="andResult"></div>
@@ -946,7 +946,7 @@ AND:     192.168.1.0    →  11000000.10101000.00000001.00000000</pre>
       </div>
       <div>
         <label>N.º de subnets pretendido</label>
-        <select id="subCount" onchange="calcSubnet()">
+        <select id="subCount">
           <option value="2">2 (/25)</option>
           <option value="4" selected>4 (/26)</option>
           <option value="8">8 (/27)</option>
@@ -955,7 +955,7 @@ AND:     192.168.1.0    →  11000000.10101000.00000001.00000000</pre>
           <option value="64">64 (/30)</option>
         </select>
       </div>
-      <button onclick="calcSubnet()">Calcular</button>
+      <button id="btnCalcSubnet">Calcular</button>
     </div>
     <div class="result-box" id="subInfo" style="margin-bottom:0.75rem"></div>
     <div id="subTable" style="overflow-x:auto"></div>
@@ -964,191 +964,6 @@ AND:     192.168.1.0    →  11000000.10101000.00000001.00000000</pre>
 
 </main>
 
-<script>
-/* ===== Mobile menu ===== */
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('overlay');
-const menuToggle = document.getElementById('menuToggle');
-menuToggle.addEventListener('click', () => {
-  sidebar.classList.toggle('open');
-  overlay.classList.toggle('open');
-});
-overlay.addEventListener('click', () => {
-  sidebar.classList.remove('open');
-  overlay.classList.remove('open');
-});
-document.querySelectorAll('.nav-item').forEach(a => {
-  a.addEventListener('click', () => {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('open');
-  });
-});
-
-/* ===== Active nav on scroll ===== */
-const sections = document.querySelectorAll('section');
-const navItems = document.querySelectorAll('.nav-item');
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      navItems.forEach(n => n.classList.remove('active'));
-      const id = e.target.id;
-      const link = document.querySelector(`.nav-item[href="#${id}"]`);
-      if (link) link.classList.add('active');
-    }
-  });
-}, { rootMargin: '-20% 0px -60% 0px' });
-sections.forEach(s => observer.observe(s));
-
-/* ===== Glossary filter ===== */
-function filterGlossary(inputId, gridId) {
-  const q = document.getElementById(inputId).value.toLowerCase().trim();
-  document.querySelectorAll(`#${gridId} .term`).forEach(t => {
-    const text = (t.dataset.term || '') + ' ' + t.textContent;
-    t.style.display = text.toLowerCase().includes(q) ? '' : 'none';
-  });
-}
-
-/* ===== Binary converter ===== */
-const WEIGHTS = [128, 64, 32, 16, 8, 4, 2, 1];
-
-function renderBitWeights(bits) {
-  const row = document.getElementById('bitWeights');
-  row.innerHTML = WEIGHTS.map((w, i) => `
-    <div class="bit">
-      <div class="weight">${w}</div>
-      <input type="text" maxlength="1" value="${bits[i]}" data-i="${i}"
-        oninput="bitChanged(this)" style="color:${bits[i]==='1' ? 'var(--accent)' : 'var(--text-muted)'}">
-    </div>`).join('');
-}
-
-function bitChanged(el) {
-  let v = el.value.replace(/[^01]/g, '');
-  if (v.length > 1) v = v.slice(-1);
-  el.value = v || '0';
-  el.style.color = el.value === '1' ? 'var(--accent)' : 'var(--text-muted)';
-  const bits = [...document.querySelectorAll('#bitWeights input')].map(i => i.value || '0');
-  const bin = bits.join('');
-  const dec = parseInt(bin, 2);
-  document.getElementById('binIn').value = bin;
-  document.getElementById('decIn').value = dec;
-  showConv(dec, bin, true);
-}
-
-function decToBin() {
-  let d = parseInt(document.getElementById('decIn').value, 10);
-  if (isNaN(d) || d < 0) d = 0;
-  if (d > 255) d = 255;
-  document.getElementById('decIn').value = d;
-  const bin = d.toString(2).padStart(8, '0');
-  document.getElementById('binIn').value = bin;
-  renderBitWeights(bin.split(''));
-  showConv(d, bin, true);
-}
-
-function binToDec() {
-  let b = document.getElementById('binIn').value.replace(/[^01]/g, '').slice(0, 8);
-  document.getElementById('binIn').value = b;
-  b = b.padStart(8, '0');
-  const d = parseInt(b, 2) || 0;
-  document.getElementById('decIn').value = d;
-  renderBitWeights(b.split(''));
-  showConv(d, b, false);
-}
-
-function showConv(dec, bin, fromDec) {
-  document.getElementById('convResult').innerHTML =
-    `<span class="highlight">${dec}</span> = <span class="highlight">${bin}</span>`;
-  let steps = '';
-  if (fromDec) {
-    let rem = dec;
-    const parts = [];
-    WEIGHTS.forEach(w => {
-      if (rem >= w) { parts.push(`1×${w}`); rem -= w; }
-      else parts.push(`0×${w}`);
-    });
-    steps = parts.join(' + ') + ` = <strong>${dec}</strong>`;
-  } else {
-    const parts = bin.split('').map((b, i) => b === '1' ? WEIGHTS[i] : null).filter(Boolean);
-    steps = parts.length ? parts.join(' + ') + ` = <strong>${dec}</strong>` : '0';
-  }
-  document.getElementById('convSteps').innerHTML = steps;
-}
-
-/* init converter */
-renderBitWeights('11000000'.split(''));
-showConv(192, '11000000', true);
-
-/* ===== AND calculator ===== */
-function toBin8(n) {
-  return (n & 255).toString(2).padStart(8, '0');
-}
-
-function calcAnd() {
-  let a = parseInt(document.getElementById('andA').value, 10) || 0;
-  let b = parseInt(document.getElementById('andB').value, 10) || 0;
-  a = Math.max(0, Math.min(255, a));
-  b = Math.max(0, Math.min(255, b));
-  const res = a & b;
-  const ba = toBin8(a), bb = toBin8(b), br = toBin8(res);
-  document.getElementById('andResult').innerHTML =
-    `<span class="highlight">${a}</span> AND <span class="highlight">${b}</span> = <span class="highlight">${res}</span>`;
-  document.getElementById('andSteps').innerHTML = `
-    <div style="font-family:var(--mono); line-height:1.8">
-      A: ${ba}<br>
-      B: ${bb}<br>
-      &nbsp;&nbsp; --------<br>
-      R: <strong style="color:var(--accent)">${br}</strong> = ${res}
-    </div>`;
-}
-calcAnd();
-
-/* ===== Subnetting calculator ===== */
-function calcSubnet() {
-  const baseStr = document.getElementById('subBase').value.trim();
-  const parts = baseStr.split('.').map(Number);
-  if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) {
-    document.getElementById('subInfo').textContent = 'IP inválido. Use formato x.x.x.0';
-    document.getElementById('subTable').innerHTML = '';
-    return;
-  }
-  const count = parseInt(document.getElementById('subCount').value, 10);
-  const bits = Math.log2(count);
-  if (!Number.isInteger(bits)) {
-    document.getElementById('subInfo').textContent = 'Número de subnets deve ser potência de 2.';
-    return;
-  }
-  const hostBits = 8 - bits;
-  const salto = Math.pow(2, hostBits);
-  const maskLast = 256 - salto;
-  const cidr = 24 + bits;
-  const base = parts[0] + '.' + parts[1] + '.' + parts[2] + '.';
-
-  document.getElementById('subInfo').innerHTML =
-    `Máscara: <span class="highlight">255.255.255.${maskLast}</span> (/${cidr}) · ` +
-    `Salto: <span class="highlight">${salto}</span> · ` +
-    `Hosts/subnet: <span class="highlight">${salto - 2}</span>`;
-
-  let rows = '';
-  for (let i = 0; i < count; i++) {
-    const net = i * salto;
-    const first = net + 1;
-    const last = net + salto - 2;
-    const bcast = net + salto - 1;
-    rows += `<tr>
-      <td>${i}</td>
-      <td class="mono">${base}${net}</td>
-      <td class="mono">${base}${first}</td>
-      <td class="mono">${base}${last}</td>
-      <td class="mono">${base}${bcast}</td>
-    </tr>`;
-  }
-  document.getElementById('subTable').innerHTML = `
-    <table>
-      <thead><tr><th>#</th><th>Network ID</th><th>1º host</th><th>Último host</th><th>Broadcast</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-}
-calcSubnet();
-</script>
+<script src="redes-computadores.js"></script>
 </body>
 </html>
