@@ -515,25 +515,25 @@ def main():
     build_ts = str(int(_time.time()))
 
     html = html.replace('__INJECT_CSS__', css)
-    html = html.replace('__INJECT_JS__',  js)
-    html = html.replace('__INJECT_BUILD_TS__', build_ts)
 
-    # Inject data into JS constants (markers live in js/data.js)
-    html = html.replace('__INJECT_UC_MAP__',      json.dumps(uc_map,              ensure_ascii=False))
-    html = html.replace('__INJECT_UC_LIST__',     json.dumps(uc_list,             ensure_ascii=False))
-    html = html.replace('__INJECT_HORARIOS__',    json.dumps(horarios,            ensure_ascii=False))
-    html = html.replace('__INJECT_CRONOGRAMA__',  json.dumps(cronograma,          ensure_ascii=False))
+    # Inject data into JS constants (markers live in js/data.js and js/playground.js —
+    # js now ships as an external file, so these replacements run on `js`, not `html`)
+    js = js.replace('__INJECT_BUILD_TS__', build_ts)
+    js = js.replace('__INJECT_UC_MAP__',      json.dumps(uc_map,              ensure_ascii=False))
+    js = js.replace('__INJECT_UC_LIST__',     json.dumps(uc_list,             ensure_ascii=False))
+    js = js.replace('__INJECT_HORARIOS__',    json.dumps(horarios,            ensure_ascii=False))
+    js = js.replace('__INJECT_CRONOGRAMA__',  json.dumps(cronograma,          ensure_ascii=False))
     def _safe_json(obj):
         """JSON safe for embedding in <script> blocks — escapes </  to prevent premature tag close."""
         return json.dumps(obj, ensure_ascii=False).replace('</', '<\\/')
-    html = html.replace('__INJECT_PG_EXAMPLES__', _safe_json(build_pg_examples()))
+    js = js.replace('__INJECT_PG_EXAMPLES__', _safe_json(build_pg_examples()))
 
     # Cloud Run execution URL — env var overrides the hardcoded default
     _cloudrun_url = os.environ.get(
         'CLOUDRUN_URL',
         'https://cybersec-playground-6cqyexq2pq-ew.a.run.app'
     )
-    html = html.replace('__INJECT_CLOUDRUN_URL__', json.dumps(_cloudrun_url if _cloudrun_url else None))
+    js = js.replace('__INJECT_CLOUDRUN_URL__', json.dumps(_cloudrun_url if _cloudrun_url else None))
 
     # 6. Inject logo (resize to sidebar width, keep transparency)
     logo_b64 = ''
@@ -571,54 +571,13 @@ def main():
             print("Aviso: logo_02.png não encontrado. O logo ficará vazio.")
     html = html.replace('__INJECT_LOGO_B64__', logo_b64)
 
-    # 7. Compute SHA-384 of inline script block → update CSP in firebase.json
-    #    This removes 'unsafe-inline' from script-src and replaces with the exact hash,
-    #    so only this specific bundle is allowed to execute inline.
-    # Find the main inline <script> block (the one that starts with JS comments //)
-    # NOT the last one, which may be inside PG_EXAMPLES string data.
-    _m = _re.search(r'<script>\s*//', html)
-    script_start = _m.start() if _m else html.rfind('<script>')
-    script_end   = html.rfind('</script>')
-    if script_start != -1 and script_end != -1:
-        inline_js_content = html[script_start + len('<script>'):script_end]
-        raw_hash  = hashlib.sha384(inline_js_content.encode('utf-8')).digest()
-        b64_hash  = base64.b64encode(raw_hash).decode('ascii')
-        new_token = f"'sha384-{b64_hash}'"
-
-        fb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'firebase.json')
-        with open(fb_path, 'r', encoding='utf-8') as f_fb:
-            fb_data = json.load(f_fb)
-
-        def _patch_csp(csp_val):
-            parts = csp_val.split(';')
-            patched = []
-            for part in parts:
-                stripped = part.strip()
-                if stripped.startswith('script-src'):
-                    # Update sha384 hash; keep 'unsafe-inline' (required for onclick/oninput event handlers)
-                    part = _re.sub(r"'sha384-[A-Za-z0-9+/=]+'", '', part)
-                    # Ensure 'unsafe-inline' is present (needed for inline event handlers in HTML)
-                    if "'unsafe-inline'" not in part:
-                        part = _re.sub(r"('self')", r"\1 'unsafe-inline'", part)
-                    # Insert new hash after 'self'
-                    part = _re.sub(r"('self')", r"\1 " + new_token, part)
-                    # Collapse multiple spaces
-                    part = _re.sub(r' {2,}', ' ', part)
-                patched.append(part)
-            return ';'.join(patched)
-
-        for hdr_block in fb_data.get('hosting', {}).get('headers', []):
-            if hdr_block.get('source') == '**':
-                for hdr in hdr_block.get('headers', []):
-                    if hdr.get('key') == 'Content-Security-Policy':
-                        hdr['value'] = _patch_csp(hdr['value'])
-
-        with open(fb_path, 'w', encoding='utf-8') as f_fb:
-            json.dump(fb_data, f_fb, indent=2, ensure_ascii=False)
-
-    # 8. Write output
+    # 7. Write output — JS bundle now ships as an external file (dashboard-inline.js)
+    #    instead of being inlined, so script-src no longer needs 'unsafe-inline' or a
+    #    per-build hash for the dashboard. firebase.json's CSP is static going forward.
     with open('dashboard.html', 'w', encoding='utf-8') as f:
         f.write(html)
+    with open('dashboard-inline.js', 'w', encoding='utf-8') as f:
+        f.write(js)
 
     # 8. Inject logo into admin.html (in-place)
     admin_path = os.path.join(os.path.dirname(__file__), 'admin.html')
@@ -633,37 +592,6 @@ def main():
 
     print(f"Dashboard gerado em 'dashboard.html' com {len(horarios)} meses e {len(uc_list)} UCs!")
     print("Para ver o resultado, abre o 'dashboard.html' num navegador.")
-
-    update_csp_hash('dashboard.html', 'firebase.json')
-
-
-def update_csp_hash(html_path='dashboard.html', firebase_path='firebase.json'):
-    if not os.path.exists(html_path) or not os.path.exists(firebase_path):
-        return
-
-    content = open(html_path, encoding='utf-8').read()
-
-    # Encontrar scripts inline (sem atributo src)
-    scripts = _re.findall(r'<script(?![^>]*\bsrc\b)[^>]*>(.*?)</script>', content, _re.DOTALL)
-    if not scripts:
-        print("Aviso: nenhum script inline encontrado em dashboard.html.")
-        return
-
-    # O dashboard tem um único script inline grande — usar o maior
-    script_text = max(scripts, key=len)
-    raw = script_text.encode('utf-8')
-    digest = hashlib.sha384(raw).digest()
-    new_hash = 'sha384-' + base64.b64encode(digest).decode()
-
-    firebase_text = open(firebase_path, encoding='utf-8').read()
-    updated = _re.sub(r'sha384-[A-Za-z0-9+/=]+', new_hash, firebase_text, count=1)
-
-    if updated == firebase_text:
-        print("CSP hash já está atualizado.")
-        return
-
-    open(firebase_path, 'w', encoding='utf-8').write(updated)
-    print(f"CSP hash atualizado em firebase.json: {new_hash[:40]}...")
 
 
 if __name__ == '__main__':
