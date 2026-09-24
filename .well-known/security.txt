@@ -1,0 +1,4 @@
+Contact: mailto:f.nuno.ss@gmail.com
+Expires: 2027-09-24T00:00:00.000Z
+Preferred-Languages: pt-PT, en
+Canonical: https://iefp-hackers.web.app/.well-known/security.txt
