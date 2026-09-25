@@ -517,7 +517,7 @@ function updateArcs(now) {
     a.glow.material.opacity = Math.max(0, Math.min(1, opacity * 0.35));
 
     // Head travels along the arc
-    const headT = Math.min(1, life * 1.2);
+    const headT = Math.max(0, Math.min(1, life * 1.2));
     if (headT < 1) {
       const p = a.curve.getPoint(headT);
       a.head.position.copy(p);
@@ -622,7 +622,7 @@ function animate(t) {
   updateArcs(t);
   renderer.render(scene, camera);
 }
-animate(0);
+requestAnimationFrame(animate);
 
 // ── COUNTRY DETAIL ───────────────────────────────────────────────────────────
 function selectCountry(code) {
