@@ -1,10 +1,7 @@
 import json
 import os
 import glob
-import base64
-import io
 import hashlib
-import re as _re
 
 
 def get_latest_file(pattern):
@@ -534,41 +531,8 @@ def main():
     )
     js = js.replace('__INJECT_CLOUDRUN_URL__', json.dumps(_cloudrun_url if _cloudrun_url else None))
 
-    # 6. Inject logo (resize to sidebar width, keep transparency)
-    logo_b64 = ''
-    logo_path = os.path.join(os.path.dirname(__file__), 'logo_02.png')
-    if os.path.exists(logo_path):
-        try:
-            from PIL import Image
-            img = Image.open(logo_path).convert('RGBA')
-            bbox = img.getbbox()
-            if bbox:
-                img = img.crop(bbox)
-            max_w = 192
-            ratio = max_w / img.width
-            img = img.resize((max_w, int(img.height * ratio)), Image.LANCZOS)
-            buf = io.BytesIO()
-            img.save(buf, 'PNG', optimize=True)
-            logo_b64 = base64.b64encode(buf.getvalue()).decode()
-        except ImportError:
-            # PIL not available — embed original as-is
-            with open(logo_path, 'rb') as f:
-                logo_b64 = base64.b64encode(f.read()).decode()
-    else:
-        # logo_02.png está em .gitignore — tentar recuperar do dashboard.html existente
-        existing_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard.html')
-        if os.path.exists(existing_path):
-            with open(existing_path, 'r', encoding='utf-8') as _f:
-                _existing = _f.read()
-            _m = _re.search(r'data:image/png;base64,([A-Za-z0-9+/=]{100,})', _existing)
-            if _m:
-                logo_b64 = _m.group(1)
-                print("Aviso: logo_02.png não encontrado — logo recuperado do dashboard.html anterior.")
-            else:
-                print("Aviso: logo_02.png não encontrado e dashboard.html anterior não tem logo. O logo ficará vazio.")
-        else:
-            print("Aviso: logo_02.png não encontrado. O logo ficará vazio.")
-    html = html.replace('__INJECT_LOGO_B64__', logo_b64)
+    # 6. Logo: ficheiro estático (logo-cet.png), já referenciado diretamente
+    #    no template — nada para injetar aqui.
 
     # 7. Write output — JS and CSS bundles now ship as external files
     #    (dashboard-inline.js, dashboard.css) instead of being inlined, so
@@ -580,17 +544,6 @@ def main():
         f.write(js)
     with open('dashboard.css', 'w', encoding='utf-8') as f:
         f.write(css)
-
-    # 8. Inject logo into admin.html (in-place)
-    admin_path = os.path.join(os.path.dirname(__file__), 'admin.html')
-    if os.path.exists(admin_path) and logo_b64:
-        with open(admin_path, 'r', encoding='utf-8') as f:
-            admin_html = f.read()
-        if '__INJECT_LOGO_B64__' in admin_html:
-            admin_html = admin_html.replace('__INJECT_LOGO_B64__', logo_b64)
-            with open(admin_path, 'w', encoding='utf-8') as f:
-                f.write(admin_html)
-            print("Logo injetado em 'admin.html'.")
 
     print(f"Dashboard gerado em 'dashboard.html' com {len(horarios)} meses e {len(uc_list)} UCs!")
     print("Para ver o resultado, abre o 'dashboard.html' num navegador.")

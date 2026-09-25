@@ -4,21 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IEFP Hackers</title>
+    <meta name="description" content="Plataforma de aprendizagem em Cibersegurança do CET IEFP Faro: cheatsheets, laboratórios e materiais de estudo.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="IEFP Hackers">
+    <meta property="og:description" content="Plataforma de aprendizagem em Cibersegurança do CET IEFP Faro: cheatsheets, laboratórios e materiais de estudo.">
+    <meta property="og:url" content="https://iefp-hackers.web.app/">
+    <meta property="og:image" content="https://iefp-hackers.web.app/favicon-32x32.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="IEFP Hackers">
+    <meta name="twitter:description" content="Plataforma de aprendizagem em Cibersegurança do CET IEFP Faro: cheatsheets, laboratórios e materiais de estudo.">
+    <meta name="twitter:image" content="https://iefp-hackers.web.app/favicon-32x32.png">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" crossorigin="anonymous">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" integrity="sha384-fCAW/rDWORTbQXSiB7mOg0QtQ5c+r0f544y6XoKjuVva0nMBlCpNUjiFeG5iMdS3" crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" integrity="sha384-sEVIly94UBRLKWdkYoPpSG7GD/e79YHMrxVyZaOk712Ga7+EAw6w1EFi+xBzBdd+" crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" integrity="sha384-EkqK+ezBWJuvO3hfrSx2iVqr3YQbhmnzn8kPhOpBZ+0GMVU5oGSgptwIu8D84HjE" crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js" integrity="sha384-6I0gWsz4FIAr30c0TxIxJnPQuJiZ1FfILdZrgJdjxTH3R8dgPGTvexbyqTvReV6Z" crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" integrity="sha384-M481iNZJtbpypKgvlvZ+78Giq0BsewFLk5r2k+MOcGXlwKCc27DQRZ+WCV/zpmpC" crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js" integrity="sha384-3IYu+dnH2y9gX1s6p9F4D55XbEmZBfJ3D1Ylh8J6bfdqnJCOmDVSRTq1yhJsBY1H" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" integrity="sha384-sEVIly94UBRLKWdkYoPpSG7GD/e79YHMrxVyZaOk712Ga7+EAw6w1EFi+xBzBdd+" crossorigin="anonymous"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" integrity="sha384-EkqK+ezBWJuvO3hfrSx2iVqr3YQbhmnzn8kPhOpBZ+0GMVU5oGSgptwIu8D84HjE" crossorigin="anonymous"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js" integrity="sha384-6I0gWsz4FIAr30c0TxIxJnPQuJiZ1FfILdZrgJdjxTH3R8dgPGTvexbyqTvReV6Z" crossorigin="anonymous"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" integrity="sha384-M481iNZJtbpypKgvlvZ+78Giq0BsewFLk5r2k+MOcGXlwKCc27DQRZ+WCV/zpmpC" crossorigin="anonymous"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js" integrity="sha384-3IYu+dnH2y9gX1s6p9F4D55XbEmZBfJ3D1Ylh8J6bfdqnJCOmDVSRTq1yhJsBY1H" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
@@ -26,7 +36,7 @@
     <!-- ── AUTH GATE ── -->
     <div id="auth-gate">
         <div class="auth-card">
-            <img class="auth-logo-img" src="data:image/png;base64,__INJECT_LOGO_B64__" alt="CET Cibersegurança" />
+            <img class="auth-logo-img" src="logo-cet.png" alt="CET Cibersegurança" />
             <div class="auth-title">CET Cibersegurança — IEFP Faro</div>
             <div class="auth-sub" id="auth-sub-text">Acesso reservado a participantes do curso.<br>Inicia sessão com a tua conta.</div>
             <div id="auth-invite-badge" class="auth-invite-badge">
@@ -53,7 +63,7 @@
         <!-- ── NAV SIDEBAR ── -->
         <nav class="nav-sidebar" id="nav-sidebar">
             <div class="nav-brand">
-                <img class="nav-logo-img" src="data:image/png;base64,__INJECT_LOGO_B64__" alt="IEFP Hackers" />
+                <img class="nav-logo-img" src="logo-cet.png" alt="IEFP Hackers" />
                 <div class="nav-brand-text">
                     <span class="nav-brand-title">CET Cibersegurança</span>
                     <span class="nav-brand-sub">IEFP Faro</span>
@@ -386,7 +396,7 @@
 
             <!-- VIEW: CYBERMAP -->
             <div id="view-cybermap" class="cybermap-view-hidden">
-                <iframe src="CyberMap.html" class="cybermap-iframe" title="CyberMap Live Threat Intelligence"></iframe>
+                <iframe data-src="CyberMap.html" class="cybermap-iframe" title="CyberMap Live Threat Intelligence"></iframe>
             </div>
 
             <!-- VIEW: DEFINIÇÕES -->
@@ -435,7 +445,7 @@
         </main>
     </div>
 
-    <script src="dashboard-inline.js"></script>
+    <script defer src="dashboard-inline.js"></script>
 
     <!-- PDF Modal -->
     <div id="pdf-modal" class="pdf-modal-overlay">

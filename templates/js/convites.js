@@ -141,7 +141,7 @@
             return div;
         }
 
-        function toggleQR(btn, token, link) {
+        async function toggleQR(btn, token, link) {
             const wrap = document.getElementById('qr-' + token);
             if (!wrap) return;
             if (wrap.style.display !== 'none') {
@@ -150,6 +150,13 @@
             }
             wrap.style.display = 'inline-block';
             if (!wrap.dataset.rendered) {
+                try {
+                    await ensureQrLib();
+                } catch (e) {
+                    console.error(e);
+                    wrap.textContent = 'Erro ao carregar QR.';
+                    return;
+                }
                 wrap.dataset.rendered = '1';
                 new QRCode(wrap, { text: link, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.H });
             }

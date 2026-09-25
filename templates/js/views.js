@@ -60,8 +60,13 @@
                 document.getElementById('view-materiais-item').style.display = 'flex';
                 monthSelectContainer.style.display = 'none';
             } else if (view === 'cybermap') {
-                document.getElementById('view-cybermap').style.display = 'block';
+                const cmView = document.getElementById('view-cybermap');
+                cmView.style.display = 'block';
                 monthSelectContainer.style.display = 'none';
+                const cmFrame = cmView.querySelector('iframe');
+                if (cmFrame && !cmFrame.getAttribute('src') && cmFrame.dataset.src) {
+                    cmFrame.src = cmFrame.dataset.src;
+                }
             } else if (view === 'definicoes') {
                 document.getElementById('view-definicoes').style.display = 'block';
                 monthSelectContainer.style.display = 'none';

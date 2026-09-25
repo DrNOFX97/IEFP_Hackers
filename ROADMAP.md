@@ -24,8 +24,19 @@ Validado no browser (Playwright): `window.jspdf`/`window.QRCode` ficam `undefine
 
 Performance real após Fase 1+2: **58 → 68 → 84**. Para tentar passar os 90:
 - [x] Minificar `dashboard-inline.js` (377 KB → 244 KB, -35%), `admin-inline.js` (32 KB → 21 KB, -34%) e `cybermap-inline.js` (41 KB → 27 KB, -34%) com `terser -c -m` — reduz tempo de parse/compile de JS no cliente (o que mais pesa no score sob CPU throttling do Lighthouse)
-- [ ] Re-medir o Lighthouse para confirmar se chegou aos 90 — pendente (depende do próximo scan do utilizador)
-- Se não chegar aos 90: próximos candidatos seriam otimizar imagens (nenhuma grande atualmente) e auditar CSS não usado por página com coverage do DevTools, mas sem dados reais de um novo scan não vale a pena adivinhar
+- [x] Lighthouse depois do Fase 4: **87** (de 84)
+
+## 🟣 Fase 5 — Consolidar otimizações na fonte + CyberMap lazy ✅ CONCLUÍDA
+
+`dashboard.html`/`dashboard-inline.js`/`dashboard.css` são gerados por `gerador_dashboard.py` a partir de `templates/`, mas as Fases 1 e 2 tinham sido aplicadas só ao output — uma regeneração normal perdia tudo. Portadas para a fonte:
+- [x] `gerador_dashboard.py`: removida a injeção de logo em base64 (`__INJECT_LOGO_B64__`) — o template já referencia `logo-cet.png` diretamente (consistente com a Fase 1)
+- [x] `templates/dashboard.html`: `defer` nos scripts, `preconnect`, meta tags OG/Twitter, logo estático — replicados do output já em produção
+- [x] `templates/js/pdf.js` + `templates/js/convites.js` + `templates/js/disciplinas.js`: lazy-load de jsPDF/AutoTable/QRCode (`ensurePdfLibs`/`ensureQrLib`) — replicado da Fase 2
+- [x] **Novo:** iframe do CyberMap (`view-cybermap`) passa a `data-src` em vez de `src` — só carrega `CyberMap.html` (three.js incluído) quando o utilizador abre essa view (`templates/js/views.js`)
+- [x] **Novo:** CSS não-crítico (Google Fonts + KaTeX) deixa de ser `<link>` bloqueante no `<head>` e passa a ser injetado via JS (`templates/js/data.js`) depois do parse do HTML
+- [x] Regenerado (`python gerador_dashboard.py`) e re-minificado `dashboard-inline.js` com `terser -c -m` (244 KB → 244.6 KB, código novo de lazy-load); `dashboard.css` confirmado byte-a-byte igual ao já minificado (só mudou onde é carregado, não o conteúdo)
+- [x] Validado localmente (chrome-devtools MCP, `http.server`): 0 erros de consola; nenhum pedido a `jspdf`/`qrcodejs`/`CyberMap.html` no load inicial (lazy confirmado); LCP 265 ms e 0 bytes render-blocking no trace local (sem throttling — não comparável 1:1 ao Lighthouse, mas confirma que a cadeia crítica ficou limpa)
+- [ ] Re-medir o Lighthouse em produção para confirmar o impacto do CyberMap lazy-load + CSS não-bloqueante — pendente (depende do próximo scan do utilizador)
 
 ## 🟢 Fase 3 — Infraestrutura / opcional ✅ FECHADA (sem ação)
 

@@ -316,9 +316,7 @@
         }
 
         // ── UC DETAIL PDF ────────────────────────────────────────────────
-        function downloadUCPDF(btn) {
-            if (!window.jspdf) { alert('Biblioteca PDF ainda a carregar. Tenta novamente.'); return; }
-            const { jsPDF } = window.jspdf;
+        async function downloadUCPDF(btn) {
             if (!currentUCCode) return;
             const uc = UC_MAP[currentUCCode] || {};
             const sessions = buildUCSchedule(currentUCCode);
@@ -326,6 +324,17 @@
 
             btn.classList.add('loading');
             btn.textContent = '⏳';
+
+            try {
+                await ensurePdfLibs();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível carregar a biblioteca de PDF. Verifica a ligação à internet.');
+                btn.classList.remove('loading');
+                btn.innerHTML = '⬇ PDF';
+                return;
+            }
+            const { jsPDF } = window.jspdf;
 
             setTimeout(() => {
                 try {
