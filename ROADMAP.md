@@ -20,9 +20,9 @@ Ficheiro local de tracking — não é feito deploy (`*.md` está no `.gitignore
 
 Validado no browser (Playwright): `window.jspdf`/`window.QRCode` ficam `undefined` no load inicial e carregam sob demanda sem erros novos.
 
-## 🟢 Fase 3 — Infraestrutura / opcional (não bloqueante)
+## 🟢 Fase 3 — Infraestrutura / opcional ✅ FECHADA (sem ação)
 
-- [ ] Avaliar WAF externo (Cloudflare proxy) — atualmente sem WAF dedicado, mitigado parcialmente pela borda Google/Fastly
+- [x] **WAF externo — decisão: não avançar.** Investigado: nenhum site do projeto (`iefp-hackers`, `flepo`, `gestor-eventos`, `ligafaro-8000`, `sebenta-ai`) tem domínio próprio — todos em `*.web.app`, DNS gerido pela Google, sem zona delegável. Um WAF (Cloudflare) exigiria comprar um domínio próprio + reconfigurar DNS + custom domain no Firebase Hosting. Decisão: site de formação sem dados sensíveis de produção, a proteção de borda Google/Fastly já é suficiente. Retomar se o site ganhar domínio próprio no futuro.
 - [ ] Renovar assinatura PGP do `security.txt` antes de **2027-09-25** (validade da chave) e do **2027-09-24** (campo `Expires`)
 - [ ] DNSSEC — fora de controlo (domínio `*.web.app` gerido pela Google)
 - [ ] OCSP stapling — fora de controlo (terminação TLS gerida pela Google/Fastly)
