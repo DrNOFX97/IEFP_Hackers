@@ -42,7 +42,7 @@
                 { key: 'hadoop', icon: '🐘', label: 'Hadoop', file: 'databases/hadoop.html', status: 'ready' },
             ] },
             { key: 'web-security', icon: '🌐', label: 'Web Security', items: [
-                { key: 'owasp-top10', icon: '🔟', label: 'OWASP Top 10', file: 'web-security/owasp-top10.html', status: 'ready' },
+                { key: 'owasp-top10', icon: '🔟', label: 'OWASP Top 10:2025', file: 'web-security/owasp-top10.html', status: 'ready' },
                 { key: 'sql-injection', icon: '💉', label: 'SQL Injection', file: 'kali/sqlmap.html', status: 'ready' },
                 { key: 'xss-csrf', icon: '🧬', label: 'XSS & CSRF', file: 'web-security/xss-csrf.html', status: 'ready' },
                 { key: 'burp-suite', icon: '🦊', label: 'Burp Suite', file: 'kali/burp.html', status: 'ready' },
@@ -66,6 +66,9 @@
                 { key: 'social-engineering', icon: '🎭', label: 'Social Engineering', status: 'soon' },
                 { key: 'email-attacks', icon: '📧', label: 'Email Attacks', status: 'soon' },
                 { key: 'endpoint-security', icon: '🖥️', label: 'Endpoint Security', status: 'soon' },
+            ] },
+            { key: 'forense-digital', icon: '🕵️', label: 'Forense Digital', items: [
+                { key: 'forense-digital-fundamentos', icon: '🔬', label: 'Forense Digital — Fundamentos', file: 'forense-digital/forense-digital.html', status: 'ready' },
             ] },
             { key: 'password-cracking-extra', icon: '🔓', label: 'Password Cracking & Extra Tools', items: [
                 { key: 'hashcat', icon: '⚙️', label: 'Hashcat', file: 'kali/hashcat.html', status: 'ready' },

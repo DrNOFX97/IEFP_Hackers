@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OWASP Top 10 — Aula Interativa</title>
+<title>OWASP Top 10:2025 — Aula Interativa</title>
 <link rel="stylesheet" href="owasp-top10.css">
 </head>
 <body>
@@ -19,13 +19,14 @@
   <div class="container">
     <div class="logo">
       <span class="dot"></span>
-      OWASP<span class="logo-slash">//</span>TOP10
+      OWASP<span class="logo-slash">//</span>2025
     </div>
     <div class="nav-links">
-      <a href="#intro">Introdução</a>
+      <a href="#historia">História</a>
+      <a href="#evolucao">Evolução</a>
       <a href="#categorias">Categorias</a>
-      <a href="#metodologia">Metodologia</a>
-      <a href="#resumo">Resumo</a>
+      <a href="#ia">IA Generativa</a>
+      <a href="#boas-praticas">Boas práticas</a>
     </div>
   </div>
 </nav>
@@ -38,46 +39,163 @@
   </div>
   <h1>
     OWASP<br>
-    <span class="grad-kali">Top 10</span> <span class="grad-meta">2021</span>
+    <span class="grad-kali">Top 10</span> <span class="grad-meta">2025</span>
   </h1>
   <p class="sub">
-    As dez falhas de segurança mais críticas em aplicações web. Uma referência global para programadores, arquitetos e equipas de segurança. Nesta aula, exploramos cada categoria com descrições claras, exemplos de ataque e contramedidas práticas.
+    A versão mais recente do documento de referência para segurança de aplicações web. A edição de 2025 marca uma mudança de foco: das vulnerabilidades isoladas para as causas-raiz sistémicas, com destaque para a cadeia de fornecimento de software e as configurações de segurança.
   </p>
 </section>
 
-<!-- INTRODUÇÃO -->
-<section id="intro" class="container">
-  <div class="section-label">01 — Enquadramento</div>
-  <h2 class="section-title">O que é o OWASP Top 10?</h2>
+<!-- HISTÓRIA -->
+<section id="historia" class="container">
+  <div class="section-label">01 — Contexto</div>
+  <h2 class="section-title">Uma breve história da OWASP</h2>
   <p class="section-desc">
-    O OWASP Top 10 é um documento de referência que identifica os riscos de segurança mais críticos para aplicações web. Publicado pela Open Worldwide Application Security Project, é atualizado periodicamente com base em dados recolhidos de milhares de aplicações em todo o mundo. A versão mais recente disponível em detalhe é a de 2021.
+    A Open Worldwide Application Security Project (OWASP) é uma organização global sem fins lucrativos dedicada a melhorar a segurança do software. Fundada em 2001 como o Open Web Application Security Project, começou como uma comunidade informal de profissionais preocupados com a falta de informação neutra sobre segurança de aplicações web.
   </p>
 
   <div class="stats">
     <div class="stat">
-      <span class="num">2021</span>
-      <span class="label">Última versão estável</span>
+      <span class="num">2001</span>
+      <span class="label">Fundação da OWASP</span>
     </div>
     <div class="stat">
-      <span class="num">3</span>
-      <span class="label">Novas categorias</span>
+      <span class="num">2003</span>
+      <span class="label">Primeira edição do Top 10</span>
     </div>
     <div class="stat">
-      <span class="num">94%</span>
-      <span class="label">Apps com controlo de acesso quebrado testado</span>
+      <span class="num">2004</span>
+      <span class="label">Constituição da Fundação</span>
     </div>
     <div class="stat">
-      <span class="num">208k+</span>
-      <span class="label">Ocorrências de má configuração</span>
+      <span class="num">250+</span>
+      <span class="label">Capítulos globais hoje</span>
+    </div>
+  </div>
+
+  <div class="steps steps-spaced">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>2001 — O início informal</h4>
+        <p>
+          A OWASP começou como uma lista de correio e um site, criados por um grupo de profissionais de segurança que sentiam falta de informação abrangente e neutra sobre segurança de aplicações web. O objetivo era simples: criar um projeto para definir uma metodologia padrão de testes de segurança para aplicações web.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>2003 — O primeiro Top 10</h4>
+        <p>
+          A primeira edição do OWASP Top 10 foi publicada em 2003, identificando os dez riscos de segurança mais críticos para aplicações web. O documento foi rapidamente reconhecido por organizações como a MITRE e a Comissão Federal do Comércio dos Estados Unidos (FTC) como um padrão da indústria.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>2004 — A Fundação</h4>
+        <p>
+          Em abril de 2004, Jeff Williams e Dave Wichers formalizaram a OWASP Foundation, Inc. no Delaware, tornando-a uma organização sem fins lucrativos 501(c)(3). Esta formalização permitiu à OWASP crescer de forma sustentável, com infraestrutura, governança e projetos coordenados.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Hoje — Expansão global</h4>
+        <p>
+          A OWASP cresceu para mais de 250 capítulos locais em todo o mundo, com centenas de projetos ativos e milhões de utilizadores dos seus recursos. Em 2023, a organização alterou oficialmente o significado da sigla de "Open Web Application Security Project" para "Open Worldwide Application Security Project", refletindo a sua expansão para além do domínio web.
+        </p>
+      </div>
     </div>
   </div>
 
   <div class="info-box">
-    <span class="icon">ℹ️</span>
+    <span class="icon">📚</span>
     <div>
-      <h5>Porquê estudar o Top 10?</h5>
+      <h5>O Top 10 como projeto central</h5>
       <p>
-        Estas dez categorias representam a causa raiz da maioria das vulnerabilidades exploradas em aplicações reais. Compreendê-las permite priorizar esforços de segurança, justificar investimentos em prevenção e comunicar riscos de forma eficaz com equipas técnicas e de negócio.
+        O OWASP Top 10 é um dos projetos mais antigos e reconhecidos da fundação. É um documento de sensibilização padrão para programadores e profissionais de segurança de aplicações web, representando um amplo consenso sobre os riscos mais críticos. O projeto é revisto periodicamente, com versões em 2003, 2004, 2007, 2010, 2013, 2017, 2021 e agora 2025.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- EVOLUÇÃO -->
+<section id="evolucao" class="container">
+  <div class="section-label">02 — Evolução</div>
+  <h2 class="section-title">A evolução das ameaças: 2021 → 2025</h2>
+  <p class="section-desc">
+    A edição de 2025 do OWASP Top 10 representa a maior atualização desde 2021. Duas novas categorias foram adicionadas, uma foi fundida e várias foram reordenadas para refletir as mudanças no panorama de ameaças.
+  </p>
+
+  <div class="compare-grid compare-grid-spaced">
+    <div class="card kali">
+      <div class="card-icon">📈</div>
+      <h3>O que subiu</h3>
+      <ul>
+        <li><strong>Má Configuração de Segurança:</strong> subiu do 5.º para o 2.º lugar, refletindo o aumento de complexidade das implementações modernas.</li>
+        <li><strong>Falhas na Cadeia de Fornecimento:</strong> nova categoria que expande "Componentes Vulneráveis e Desatualizados" para cobrir todo o ecossistema de dependências, builds e distribuição.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">📉</div>
+      <h3>O que desceu</h3>
+      <ul>
+        <li><strong>Falhas Criptográficas:</strong> desceu do 2.º para o 4.º lugar.</li>
+        <li><strong>Injeção:</strong> desceu do 3.º para o 5.º lugar, refletindo melhorias nas práticas de desenvolvimento.</li>
+        <li><strong>Design Inseguro:</strong> desceu do 4.º para o 6.º lugar.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">
+    As três grandes mudanças
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>SSRF fundido em Controlo de Acesso Quebrado</h4>
+        <p>
+          O Server-Side Request Forgery (SSRF), que era uma categoria autónoma em 2021, foi integrado em A01:2025 — Controlo de Acesso Quebrado. A razão é conceptual: quando um atacante consegue fazer a aplicação comunicar com recursos que não deveria, trata-se de um problema de controlo de acesso, não de um caso isolado.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Componentes Vulneráveis → Cadeia de Fornecimento</h4>
+        <p>
+          "Componentes Vulneráveis e Desatualizados" foi expandido para "Falhas na Cadeia de Fornecimento de Software". O âmbito agora cobre não apenas dependências vulneráveis, mas todo o ecossistema: sistemas de build, infraestrutura de distribuição, repositórios e ferramentas de desenvolvimento. Esta categoria apresentou a maior taxa de incidência média (5,19%) nos dados contribuídos.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Nova categoria: Manuseamento de Condições Excecionais</h4>
+        <p>
+          A10:2025 é uma categoria inteiramente nova que cobre 24 CWEs relacionadas com tratamento de erros inadequado, condições de corrida, falha em aberto (fail open) e outros cenários decorrentes de condições anormais. Reflete a necessidade de resiliência e de "esperar o pior" no design de sistemas.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="warning">
+    <span class="icon">⚠️</span>
+    <div>
+      <h5>Porque a cadeia de fornecimento importa agora</h5>
+      <p>
+        Apesar de ter relativamente poucas ocorrências nos dados, a categoria de Falhas na Cadeia de Fornecimento foi a mais votada na sondagem comunitária, com 50% dos inquiridos a classificá-la como prioridade máxima. Os dados de 2025-2026 confirmam esta preocupação: mais de 454.600 novos pacotes open source maliciosos foram detetados em 2025, um aumento de 75% em relação ao ano anterior.
       </p>
     </div>
   </div>
@@ -85,99 +203,107 @@
 
 <!-- CATEGORIAS -->
 <section id="categorias" class="container">
-  <div class="section-label">02 — As dez categorias</div>
-  <h2 class="section-title">Riscos em detalhe</h2>
+  <div class="section-label">03 — Detalhe</div>
+  <h2 class="section-title">As dez categorias de 2025</h2>
   <p class="section-desc">
-    Cada categoria representa um conjunto de vulnerabilidades com causas raiz semelhantes. A ordem reflete a prevalência e o impacto médio observados nos dados de 2021.
+    Cada categoria representa um conjunto de vulnerabilidades com causas-raiz semelhantes. A ordem reflete a prevalência e o impacto observados nos dados de 2025, complementados por votação da comunidade.
   </p>
 
   <!-- A01 -->
   <div class="card kali card-spaced">
     <div class="card-icon">🚪</div>
-    <h3>A01:2021 — Controlo de Acesso Quebrado</h3>
+    <h3>A01:2025 — Controlo de Acesso Quebrado</h3>
     <div class="role">Broken Access Control</div>
     <ul>
-      <li>O controlo de acesso impõe que utilizadores só possam aceder aos recursos e ações para os quais têm autorização.</li>
-      <li>Falhas ocorrem quando restrições não são aplicadas corretamente ou são contornáveis.</li>
-      <li>Exemplos: acesso a dados de outros utilizadores alterando IDs na URL, elevação de privilégios, acesso a funcionalidades administrativas sem autenticação.</li>
-      <li><strong>Como prevenir:</strong> Negar por omissão; implementar verificação de autorização no servidor para cada pedido; usar mecanismos centralizados de controlo de acesso; registar falhas de acesso.</li>
+      <li>Mantém-se como o risco mais crítico pelo segundo ciclo consecutivo.</li>
+      <li>Afeta uma média de <strong>3,73%</strong> das aplicações testadas, com 40 CWEs associadas.</li>
+      <li>Inclui escalada de privilégios, referências diretas inseguras a objetos, más configurações de CORS e manipulação de tokens.</li>
+      <li><strong>SSRF foi fundido nesta categoria</strong> — a fronteira entre acesso de serviço e acesso de utilizador está cada vez mais difusa com microserviços e APIs.</li>
+      <li><strong>Como prevenir:</strong> Negar por omissão; verificar autorização no servidor para cada pedido; usar mecanismos centralizados; registar falhas de acesso.</li>
     </ul>
   </div>
 
   <!-- A02 -->
   <div class="card meta card-spaced">
-    <div class="card-icon">🔐</div>
-    <h3>A02:2021 — Falhas Criptográficas</h3>
-    <div class="role">Cryptographic Failures</div>
+    <div class="card-icon">⚙️</div>
+    <h3>A02:2025 — Má Configuração de Segurança</h3>
+    <div class="role">Security Misconfiguration</div>
     <ul>
-      <li>Focam-se na falha em proteger dados sensíveis em repouso e em trânsito.</li>
-      <li>Causas comuns: algoritmos obsoletos, chaves fracas, dados transmitidos sem HTTPS, armazenamento de passwords sem hash adequado.</li>
-      <li>Consequência típica: exposição de dados sensíveis, como credenciais, dados pessoais ou informação financeira.</li>
-      <li><strong>Como prevenir:</strong> Classificar dados por sensibilidade; usar algoritmos fortes e atuais; forçar HTTPS; nunca armazenar segredos em texto simples; usar gestão de chaves adequada.</li>
+      <li><strong>Subiu do 5.º para o 2.º lugar</strong>, refletindo o aumento de complexidade das implementações modernas.</li>
+      <li>Presente em <strong>3,00%</strong> das aplicações testadas, com 16 CWEs mapeadas.</li>
+      <li>Inclui contas predefinidas expostas, serviços desnecessários, permissões inseguras, cabeçalhos de segurança ausentes e armazenamento cloud mal configurado.</li>
+      <li>O comportamento das aplicações depende cada vez mais de configuração do que de lógica de código.</li>
+      <li><strong>Como prevenir:</strong> Processo de hardening repetível e automatizado; ambientes idênticos com credenciais distintas; revisão regular de configurações; verificação automatizada.</li>
     </ul>
   </div>
 
   <!-- A03 -->
-  <div class="card kali card-spaced">
-    <div class="card-icon">💉</div>
-    <h3>A03:2021 — Injeção</h3>
-    <div class="role">Injection</div>
+  <div class="card purple card-spaced">
+    <div class="card-icon">🔗</div>
+    <h3>A03:2025 — Falhas na Cadeia de Fornecimento de Software</h3>
+    <div class="role">Software Supply Chain Failures</div>
     <ul>
-      <li>Ocorre quando dados não confiáveis são interpretados como comandos ou consultas pelo interpretador.</li>
-      <li>Inclui SQL Injection, NoSQL Injection, Command Injection, XSS (agora nesta categoria).</li>
-      <li>É uma das categorias mais testadas, com 94% das aplicações a apresentar alguma forma de injeção nos testes.</li>
-      <li><strong>Como prevenir:</strong> Validar e sanitizar toda a entrada; usar consultas parametrizadas ou ORM; escapar saída conforme o contexto; aplicar o princípio do menor privilégio nas contas de base de dados.</li>
+      <li><strong>Nova categoria principal</strong>, expandindo o âmbito de "Componentes Vulneráveis e Desatualizados" (A06:2021).</li>
+      <li>Cobre falhas em dependências, sistemas de build, infraestrutura de distribuição e ferramentas de desenvolvimento.</li>
+      <li>Apesar de apenas 11 CVEs mapeadas, apresenta a <strong>maior taxa de incidência média (5,19%)</strong> nos dados contribuídos.</li>
+      <li>Foi a categoria mais votada na sondagem comunitária: <strong>50% dos inquiridos</strong> classificaram-na como prioridade máxima.</li>
+      <li>Exemplos de alto impacto: SolarWinds, Log4Shell, dependências comprometidas em repositórios públicos.</li>
+      <li><strong>Como prevenir:</strong> Manter SBOM (Software Bill of Materials); rastrear dependências transitivas; remover pacotes não usados; automatizar scanning de vulnerabilidades; assinar builds; aplicar menor privilégio em CI/CD.</li>
     </ul>
   </div>
 
   <!-- A04 -->
-  <div class="card meta card-spaced">
-    <div class="card-icon">🏗️</div>
-    <h3>A04:2021 — Design Inseguro</h3>
-    <div class="role">Insecure Design</div>
+  <div class="card kali card-spaced">
+    <div class="card-icon">🔐</div>
+    <h3>A04:2025 — Falhas Criptográficas</h3>
+    <div class="role">Cryptographic Failures</div>
     <ul>
-      <li>Nova categoria em 2021, focada em falhas de conceção e arquitetura, não apenas de implementação.</li>
-      <li>Se um controlo de segurança nunca foi concebido, nenhuma implementação perfeita o pode corrigir.</li>
-      <li>Exemplos: falta de modelação de ameaças, ausência de requisitos de segurança, padrões de design inseguros.</li>
-      <li><strong>Como prevenir:</strong> Integrar modelação de ameaças no ciclo de desenvolvimento; usar padrões de design seguro; definir requisitos de segurança desde o início; adotar um ciclo de vida de desenvolvimento seguro (SSDLC).</li>
+      <li>Desce do 2.º para o 4.º lugar, mas mantém-se crítica.</li>
+      <li>Presente em <strong>3,80%</strong> das aplicações testadas, com 32 CWEs associadas.</li>
+      <li>Continua a ser uma das causas mais frequentes de exposição de dados sensíveis e comprometimento de sistemas.</li>
+      <li>Inclui algoritmos obsoletos, chaves fracas, dados transmitidos sem HTTPS e armazenamento de passwords sem hash adequado.</li>
+      <li><strong>Como prevenir:</strong> Classificar dados por sensibilidade; usar algoritmos fortes e atuais; forçar HTTPS; nunca armazenar segredos em texto simples; gestão de chaves adequada.</li>
     </ul>
   </div>
 
   <!-- A05 -->
-  <div class="card kali card-spaced">
-    <div class="card-icon">⚙️</div>
-    <h3>A05:2021 — Má Configuração de Segurança</h3>
-    <div class="role">Security Misconfiguration</div>
+  <div class="card meta card-spaced">
+    <div class="card-icon">💉</div>
+    <h3>A05:2025 — Injeção</h3>
+    <div class="role">Injection</div>
     <ul>
-      <li>90% das aplicações foram testadas para alguma forma de má configuração.</li>
-      <li>Causas comuns: contas predefinidas ativas, funcionalidades desnecessárias ligadas, mensagens de erro detalhadas, permissões excessivas em serviços cloud.</li>
-      <li>Exemplos: servidor de aplicações com aplicações de exemplo em produção; listagem de diretórios ativa; cabeçalhos de segurança ausentes.</li>
-      <li><strong>Como prevenir:</strong> Processo de hardening repetível; ambientes idênticos com credenciais distintas; plataforma mínima; revisão regular de configurações; automatizar verificação de configurações.</li>
+      <li>Desce do 3.º para o 5.º lugar, mas continua entre as categorias mais testadas.</li>
+      <li>Tem o maior número de CVEs associados às <strong>38 CWEs</strong> nesta categoria.</li>
+      <li>Inclui Cross-Site Scripting (alta frequência, baixo impacto) e SQL Injection (baixa frequência, alto impacto).</li>
+      <li>Reflete uma melhoria geral nas práticas de desenvolvimento, mas continua a ser uma ameaça significativa.</li>
+      <li><strong>Como prevenir:</strong> Validar e sanitizar toda a entrada; usar consultas parametrizadas ou ORM; escapar saída conforme o contexto; aplicar o princípio do menor privilégio nas contas de base de dados.</li>
     </ul>
   </div>
 
   <!-- A06 -->
-  <div class="card meta card-spaced">
-    <div class="card-icon">📦</div>
-    <h3>A06:2021 — Componentes Vulneráveis e Desatualizados</h3>
-    <div class="role">Vulnerable and Outdated Components</div>
+  <div class="card purple card-spaced">
+    <div class="card-icon">🏗️</div>
+    <h3>A06:2025 — Design Inseguro</h3>
+    <div class="role">Insecure Design</div>
     <ul>
-      <li>Única categoria sem CVEs mapeados às CWEs associadas, pelo que usa peso padrão de 5.0 em exploração e impacto.</li>
-      <li>Frequentemente ignorada porque muitas equipas não sabem que dependências usam, ou não monitorizam vulnerabilidades publicadas.</li>
-      <li>Exemplo: vulnerabilidade CVE-2017-5638 no Struts 2, permitindo execução remota de código, causou violações significativas.</li>
-      <li><strong>Como prevenir:</strong> Inventariar continuamente componentes; usar ferramentas como OWASP Dependency Check; remover dependências não usadas; obter componentes apenas de fontes oficiais; aplicar patches de forma tempestiva e baseada em risco.</li>
+      <li>Desce do 4.º para o 6.º lugar, ultrapassado por Má Configuração e Cadeia de Fornecimento.</li>
+      <li>Introduzido em 2021, regista melhorias notáveis na indústria relacionadas com modelação de ameaças e ênfase em design seguro.</li>
+      <li>Foca-se em falhas de conceção e arquitetura, não apenas de implementação.</li>
+      <li>Se um controlo de segurança nunca foi concebido, nenhuma implementação perfeita o pode corrigir.</li>
+      <li><strong>Como prevenir:</strong> Integrar modelação de ameaças no ciclo de desenvolvimento; usar padrões de design seguro; definir requisitos de segurança desde o início; adotar SSDLC (Secure Software Development Lifecycle).</li>
     </ul>
   </div>
 
   <!-- A07 -->
   <div class="card kali card-spaced">
     <div class="card-icon">🔑</div>
-    <h3>A07:2021 — Falhas de Identificação e Autenticação</h3>
-    <div class="role">Identification and Authentication Failures</div>
+    <h3>A07:2025 — Falhas de Autenticação</h3>
+    <div class="role">Authentication Failures</div>
     <ul>
-      <li>Antes designada "Broken Authentication", agora inclui falhas de identificação.</li>
-      <li>Exemplos: permitir passwords fracas, não limitar tentativas de login, gestão de sessão inadequada, exposição de tokens.</li>
-      <li>O uso crescente de frameworks padronizadas de autenticação tem ajudado a reduzir a incidência.</li>
+      <li>Mantém o 7.º lugar com uma ligeira mudança de nome (anteriormente "Falhas de Identificação e Autenticação").</li>
+      <li>Contém <strong>36 CWEs</strong>.</li>
+      <li>O aumento do uso de frameworks padronizadas de autenticação está a ter efeitos benéficos na redução de falhas.</li>
+      <li>Inclui permitir passwords fracas, não limitar tentativas de login, gestão de sessão inadequada e exposição de tokens.</li>
       <li><strong>Como prevenir:</strong> Implementar autenticação multifator; verificar passwords contra listas de passwords comprometidas; limitar tentativas de login; usar gestão de sessão segura no servidor.</li>
     </ul>
   </div>
@@ -185,168 +311,167 @@
   <!-- A08 -->
   <div class="card meta card-spaced">
     <div class="card-icon">📜</div>
-    <h3>A08:2021 — Falhas de Integridade de Software e Dados</h3>
-    <div class="role">Software and Data Integrity Failures</div>
+    <h3>A08:2025 — Falhas de Integridade de Software ou Dados</h3>
+    <div class="role">Software or Data Integrity Failures</div>
     <ul>
-      <li>Nova categoria em 2021, focada em assumir integridade sem verificar.</li>
-      <li>Inclui a antiga "Insecure Deserialization" e problemas em pipelines CI/CD.</li>
-      <li>Exemplos: atualizações de software sem assinatura digital, plugins de fontes não confiáveis, dados críticos sem verificação de integridade.</li>
+      <li>Mantém o 8.º lugar na lista.</li>
+      <li>Foca-se na falha em manter perímetros de confiança e verificar a integridade de artefactos de software, código e dados.</li>
+      <li>Opera num nível inferior às Falhas na Cadeia de Fornecimento de Software — é sobre a integridade do que já foi entregue.</li>
+      <li>Inclui deserialização insegura, atualizações sem assinatura digital, plugins de fontes não confiáveis.</li>
       <li><strong>Como prevenir:</strong> Verificar assinaturas digitais de software; usar fontes confiáveis para dependências; garantir integridade em pipelines CI/CD; não deserializar dados não confiáveis sem validação.</li>
     </ul>
   </div>
 
   <!-- A09 -->
-  <div class="card kali card-spaced">
+  <div class="card purple card-spaced">
     <div class="card-icon">📋</div>
-    <h3>A09:2021 — Falhas de Registo e Monitorização de Segurança</h3>
-    <div class="role">Security Logging and Monitoring Failures</div>
+    <h3>A09:2025 — Falhas de Registo e Alerta</h3>
+    <div class="role">Logging &amp; Alerting Failures</div>
     <ul>
-      <li>Antes designada "Insufficient Logging & Monitoring".</li>
-      <li>Difícil de testar e mal representada nos dados de CVE, mas críticas porque afetam a visibilidade, alerta de incidentes e forense.</li>
-      <li>Exemplos: eventos de login não registados, falhas de controlo de acesso não alertadas, logs armazenados apenas localmente e sem proteção.</li>
-      <li><strong>Como prevenir:</strong> Registar eventos de autenticação, controlo de acesso e validação de entrada; garantir que logs são gerados em formato consumível; estabelecer monitorização e alertas eficazes; testar planos de resposta a incidentes.</li>
+      <li>Mantém o 9.º lugar com nome atualizado — "Alerta" substitui "Monitorização" para enfatizar a ação.</li>
+      <li>Frequentemente sub-representada nos dados, mas consistentemente votada para a lista pela comunidade.</li>
+      <li>A ênfase no <strong>alerta</strong> reflete uma verdade incómoda: logs que ninguém vê em tempo útil são uma ferramenta forense, não um controlo.</li>
+      <li>Inclui eventos de login não registados, falhas de controlo de acesso não alertadas, logs armazenados apenas localmente.</li>
+      <li><strong>Como prevenir:</strong> Registar eventos de autenticação, controlo de acesso e validação de entrada; estabelecer monitorização e alertas eficazes; testar planos de resposta a incidentes.</li>
     </ul>
   </div>
 
   <!-- A10 -->
   <div class="card meta card-spaced">
-    <div class="card-icon">🌐</div>
-    <h3>A10:2021 — Falsificação de Pedido do Lado do Servidor</h3>
-    <div class="role">Server-Side Request Forgery (SSRF)</div>
+    <div class="card-icon">⚠️</div>
+    <h3>A10:2025 — Manuseamento Incorreto de Condições Excecionais</h3>
+    <div class="role">Mishandling of Exceptional Conditions</div>
     <ul>
-      <li>Adicionada em 2021 após votação da comunidade, apesar de baixa incidência nos dados.</li>
-      <li>Ocorre quando a aplicação obtém um recurso remoto sem validar o URL fornecido pelo utilizador.</li>
-      <li>Pode permitir acesso a serviços internos, leitura de ficheiros locais ou interação com sistemas internos não expostos.</li>
-      <li><strong>Como prevenir:</strong> Validar e sanitizar URLs fornecidos; usar listas de permissões para domínios e esquemas; segmentar a rede; não devolver respostas brutas de pedidos internos.</li>
+      <li><strong>Nova categoria em 2025</strong>, contendo <strong>24 CWEs</strong>.</li>
+      <li>Foca-se em tratamento de erros inadequado, erros lógicos, falha em aberto (failing open) e outros cenários decorrentes de condições anormais.</li>
+      <li>Inclui os clássicos "tudo estava bem até a rede falhar" — bugs que transformam casos limite em incidentes de segurança quando o tratamento de erros é ausente ou equivocado.</li>
+      <li>Reflete a necessidade de resiliência e de "esperar o pior" no design de sistemas.</li>
+      <li><strong>Como prevenir:</strong> Tratar casos excecionais em todas as camadas; testes automatizados para cenários anormais; validação de input multi-camada; logging e monitorização de condições excecionais; falhar de forma segura.</li>
     </ul>
   </div>
 </section>
 
-<!-- METODOLOGIA -->
-<section id="metodologia" class="container">
-  <div class="section-label">03 — Metodologia</div>
-  <h2 class="section-title">Como o Top 10 é construído</h2>
+<!-- IA -->
+<section id="ia" class="container">
+  <div class="section-label">04 — Contexto</div>
+  <h2 class="section-title">A era da IA generativa</h2>
   <p class="section-desc">
-    A edição de 2021 é mais orientada por dados do que as anteriores, mas não cegamente. Foram analisados quase 400 CWEs, agrupados em categorias com base na causa raiz sempre que possível.
+    A IA generativa transformou o panorama de ameaças. Embora não tenha entrado diretamente no Top 10 de 2025, a IA foi incluída numa secção de "próximos passos" como uma área em observação.
   </p>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Categoria</th>
-          <th>CWEs mapeadas</th>
-          <th>Taxa de incidência média</th>
-          <th>Cobertura média</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="kali">A01 — Controlo de acesso quebrado</td>
-          <td class="mono">34</td>
-          <td class="warn">—</td>
-          <td class="mono">—</td>
-        </tr>
-        <tr>
-          <td class="meta">A02 — Falhas criptográficas</td>
-          <td class="mono">29</td>
-          <td class="warn">—</td>
-          <td class="mono">—</td>
-        </tr>
-        <tr>
-          <td class="kali">A03 — Injeção</td>
-          <td class="mono">33</td>
-          <td class="warn">—</td>
-          <td class="mono">—</td>
-        </tr>
-        <tr>
-          <td class="meta">A04 — Design inseguro</td>
-          <td class="mono">40</td>
-          <td class="warn">3.00%</td>
-          <td class="mono">42.51%</td>
-        </tr>
-        <tr>
-          <td class="kali">A05 — Má configuração</td>
-          <td class="mono">20</td>
-          <td class="warn">4.51%</td>
-          <td class="mono">44.84%</td>
-        </tr>
-        <tr>
-          <td class="meta">A06 — Componentes vulneráveis</td>
-          <td class="mono">3</td>
-          <td class="warn">8.77%</td>
-          <td class="mono">22.47%</td>
-        </tr>
-        <tr>
-          <td class="kali">A07 — Autenticação</td>
-          <td class="mono">36</td>
-          <td class="warn">—</td>
-          <td class="mono">—</td>
-        </tr>
-        <tr>
-          <td class="meta">A08 — Integridade</td>
-          <td class="mono">10</td>
-          <td class="warn">—</td>
-          <td class="mono">—</td>
-        </tr>
-        <tr>
-          <td class="kali">A09 — Registo e monitorização</td>
-          <td class="mono">4</td>
-          <td class="warn">—</td>
-          <td class="mono">—</td>
-        </tr>
-        <tr>
-          <td class="meta">A10 — SSRF</td>
-          <td class="mono">1</td>
-          <td class="warn">—</td>
-          <td class="mono">—</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="triple-grid triple-grid-spaced">
+    <div class="card kali">
+      <div class="card-icon">🤖</div>
+      <h3>Vibe Coding</h3>
+      <div class="role">X03:2025 — Confiança Inapropriada em Código Gerado por IA</div>
+      <ul>
+        <li>Categoria em observação para futuras edições.</li>
+        <li>Desenvolvedores devem ler e compreender completamente o código gerado por IA antes de o submeter.</li>
+        <li>O risco não está na IA em si, mas na confiança cega no seu output.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">⚡</div>
+      <h3>Aceleração de ataques</h3>
+      <div class="role">Machine speed</div>
+      <ul>
+        <li>A IA permite ataques à "velocidade da máquina".</li>
+        <li>Intrusões podem progredir em minutos em vez de dias.</li>
+        <li>O ciclo de vulnerabilidade colapsou: identificação e exploração ocorrem quase simultaneamente.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🎣</div>
+      <h3>Phishing e engenharia social</h3>
+      <div class="role">Amplificação do fator humano</div>
+      <ul>
+        <li>A IA amplifica a eficácia da engenharia social.</li>
+        <li>Deepfakes e conteúdo personalizado reduzem a capacidade de identificar ataques.</li>
+        <li>O fator humano torna-se um vetor de compromisso ainda mais crítico.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">🔮</span>
+    <div>
+      <h5>O que esperar no futuro</h5>
+      <p>
+        A IA generativa está a mudar a forma como os ataques são conduzidos. Modelos avançados podem identificar vulnerabilidades em escala, gerar exploits complexos e encadear ataques autonomamente. A resposta não é abandonar a IA, mas usá-la também para defesa: deteção em tempo real, resposta automatizada e análise de grandes volumes de dados. O OWASP mantém um projeto separado para riscos de LLM e aplicações GenAI, onde a injeção de prompt lidera a lista.
+      </p>
+    </div>
   </div>
 
   <div class="warning">
     <span class="icon">⚠️</span>
     <div>
-      <h5>Nota sobre dados de incidência</h5>
+      <h5>Shadow AI — a nova sombra</h5>
       <p>
-        Nem todas as categorias têm dados de incidência divulgados publicamente. A metodologia de 2021 analisou quase 400 CWEs e utilizou métricas de exploração e impacto baseadas em CVSSv2 e CVSSv3. O objetivo é focar na causa raiz das vulnerabilidades, em vez de sintomas como "exposição de dados sensíveis".
+        O fenómeno de "shadow AI" — uso não autorizado de ferramentas generativas em contexto empresarial — está a crescer. Cerca de 90% das empresas usam aplicações de IA generativa, mas mais de 70% desses usos são não supervisionados. Cada prompt não controlado ou plugin não verificado é uma potencial fonte de fuga de dados.
       </p>
     </div>
   </div>
 </section>
 
-<!-- RESUMO -->
-<section id="resumo" class="container">
-  <div class="section-label">04 — Síntese</div>
-  <h2 class="section-title">Resumo e recomendações</h2>
+<!-- BOAS PRÁTICAS -->
+<section id="boas-praticas" class="container">
+  <div class="section-label">05 — Síntese</div>
+  <h2 class="section-title">Boas práticas e recomendações</h2>
   <p class="section-desc">
-    O OWASP Top 10 não é uma checklist para cumprir mecanicamente. É um guia para compreender onde os esforços de segurança devem ser concentrados.
+    O OWASP Top 10:2025 não é uma checklist para cumprir mecanicamente. É um guia para compreender onde os esforços de segurança devem ser concentrados, com ênfase crescente em causas-raiz e resiliência sistémica.
   </p>
 
   <div class="compare-grid compare-grid-spaced">
     <div class="card kali">
       <div class="card-icon">✅</div>
-      <h3>Boas práticas transversais</h3>
+      <h3>Fazer</h3>
       <ul>
-        <li>Validar e sanitizar toda a entrada, independentemente da fonte.</li>
-        <li>Aplicar o princípio do menor privilégio em todos os componentes.</li>
-        <li>Manter todas as dependências atualizadas e monitorizar vulnerabilidades conhecidas.</li>
-        <li>Registar eventos de segurança e configurar alertas para atividades suspeitas.</li>
-        <li>Integrar segurança no ciclo de desenvolvimento desde a conceção.</li>
+        <li><strong>Manter SBOM:</strong> inventário de dependências é essencial para gerir a cadeia de fornecimento.</li>
+        <li><strong>Automatizar hardening:</strong> configurações seguras e repetíveis em todos os ambientes.</li>
+        <li><strong>Implementar MFA:</strong> especialmente em contas administrativas e de CI/CD.</li>
+        <li><strong>Assinar builds e artefactos:</strong> verificar integridade em toda a pipeline.</li>
+        <li><strong>Centralizar logs e alertas:</strong> logs sem alertas têm valor limitado.</li>
+        <li><strong>Testar condições excecionais:</strong> não ficar apenas no happy path.</li>
+        <li><strong>Adotar threat modeling:</strong> integrar segurança desde o design.</li>
       </ul>
     </div>
     <div class="card meta">
-      <div class="card-icon">🎯</div>
-      <h3>Prioridades por categoria</h3>
+      <div class="card-icon">🚫</div>
+      <h3>Evitar</h3>
       <ul>
-        <li><strong>A01:</strong> Verificação de autorização no servidor em cada pedido.</li>
-        <li><strong>A03:</strong> Consultas parametrizadas e escapar saída.</li>
-        <li><strong>A05:</strong> Processo de hardening repetível e automatizado.</li>
-        <li><strong>A06:</strong> Inventário contínuo de dependências e patches tempestivos.</li>
-        <li><strong>A10:</strong> Validação rigorosa de URLs em pedidos do servidor.</li>
+        <li><strong>Confiar cegamente em dependências:</strong> a cadeia de fornecimento é um vetor de ataque.</li>
+        <li><strong>Ignorar configurações:</strong> cada flag mal configurada é uma potencial vulnerabilidade.</li>
+        <li><strong>Assumir que "funciona" é suficiente:</strong> testar cenários de erro é essencial.</li>
+        <li><strong>Deixar logs sem alertas:</strong> ninguém vê o que não é notificado.</li>
+        <li><strong>Adiar atualizações:</strong> componentes desatualizados são um risco crescente.</li>
+        <li><strong>Focar só em código:</strong> o comportamento das aplicações depende cada vez mais de configuração.</li>
       </ul>
     </div>
+  </div>
+
+  <h3 class="subsection-title">
+    Cenários práticos
+  </h3>
+
+  <div class="scenario kali">
+    <h5>🏢 Empresa com pipeline CI/CD</h5>
+    <p>
+      Manter SBOM de todas as dependências. Scanning automático de vulnerabilidades em cada commit. Assinar builds e artefactos. Aplicar menor privilégio em repositórios, servidores de build e registos de artefactos. Separar funções entre quem escreve código e quem aprova builds.
+    </p>
+  </div>
+
+  <div class="scenario purple">
+    <h5>☁️ Aplicação cloud-native com microserviços</h5>
+    <p>
+      Configurações seguras por omissão em Kubernetes e serviços cloud. Revisão regular de permissões IAM. Cabeçalhos de segurança em todos os endpoints. Tratamento robusto de falhas de rede e timeouts. Alertas configurados para anomalias de comportamento.
+    </p>
+  </div>
+
+  <div class="scenario meta">
+    <h5>🔐 Sistema com dados sensíveis</h5>
+    <p>
+      Classificação de dados por sensibilidade. TLS 1.3 obrigatório. Chaves geridas em HSM ou serviço dedicado. Rotação regular de credenciais. Auditoria de acessos. Testes de intrusão periódicos. Plano de resposta a incidentes testado.
+    </p>
   </div>
 
   <div class="term term-spaced">
@@ -354,33 +479,52 @@
       <span class="b r"></span>
       <span class="b y"></span>
       <span class="b g"></span>
-      <span class="title">verificação rápida — exemplos de comandos</span>
+      <span class="title">verificação rápida — inventário e segurança</span>
     </div>
     <div class="term-body">
 <span class="prompt">$</span> <span class="cmd"># Verificar dependências vulneráveis em Node.js</span>
 <span class="prompt">$</span> <span class="cmd">npm audit</span>
 <span class="ok">found 0 vulnerabilities</span>
+<span class="dim">^ mas o npm audit só cobre vulnerabilidades conhecidas</span>
 
-<span class="prompt">$</span> <span class="cmd"># Verificar cabeçalhos de segurança</span>
-<span class="prompt">$</span> <span class="cmd">curl -I https://exemplo.pt</span>
-<span class="info">HTTP/2 200</span>
-<span class="warn">strict-transport-security: max-age=31536000</span>
+<span class="prompt">$</span> <span class="cmd"># Gerar SBOM com Syft (formato SPDX)</span>
+<span class="prompt">$</span> <span class="cmd">syft . -o spdx-json &gt; sbom.spdx.json</span>
+<span class="ok"> ✔ Loaded image</span>
+<span class="ok"> ✔ Parsed image</span>
+<span class="ok"> ✔ Cataloged packages [148 packages]</span>
+<span class="ok"> ✔ Written SBOM to sbom.spdx.json</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar configurações de segurança de um servidor web</span>
+<span class="prompt">$</span> <span class="cmd">curl -sI https://exemplo.pt | grep -iE "strict|content-security|x-frame|x-content"</span>
+<span class="ok">strict-transport-security: max-age=31536000; includeSubDomains</span>
 <span class="ok">content-security-policy: default-src 'self'</span>
-<span class="dim">x-content-type-options: nosniff</span>
+<span class="warn">x-frame-options: MISSING</span>
+<span class="dim">^ cabeçalho em falta — risco de clickjacking</span>
 
-<span class="prompt">$</span> <span class="cmd"># Procurar padrões de injeção no código</span>
-<span class="prompt">$</span> <span class="cmd">grep -r "SELECT.*FROM.*WHERE.*\$" ./src</span>
-<span class="err">src/db/query.js:42: const q = `SELECT * FROM users WHERE id = ${userId}`</span>
-<span class="dim">^ possível SQL injection — usar consultas parametrizadas</span>
+<span class="prompt">$</span> <span class="cmd"># Verificar logs de alertas de segurança</span>
+<span class="prompt">$</span> <span class="cmd">sudo journalctl -u minha-app | grep -iE "alert|critical|fail" | tail -5</span>
+<span class="warn">Jan 15 10:23:45 app[1234]: ALERT: 5 failed login attempts for user admin from 203.0.113.42</span>
+<span class="ok">Jan 15 10:24:12 app[1234]: INFO: User admin logged in from 192.168.1.10</span>
+<span class="dim">^ o alerta foi registado — mas foi notificado alguém?</span>
+    </div>
+  </div>
+
+  <div class="danger-box danger-box-spaced">
+    <span class="icon">🚨</span>
+    <div>
+      <h5>Para além do Top 10</h5>
+      <p>
+        O OWASP Top 10 é um ponto de partida, não um fim. Para uma segurança mais abrangente, o <strong>OWASP ASVS</strong> (Application Security Verification Standard) oferece um conjunto de requisitos verificáveis. Existem também listas específicas para <strong>API Security Top 10</strong>, <strong>Mobile Top 10</strong>, <strong>LLM Top 10</strong> e <strong>Kubernetes Top 10</strong>, cada uma focada em domínios específicos.
+      </p>
     </div>
   </div>
 
   <div class="info-box info-box-spaced">
     <span class="icon">📘</span>
     <div>
-      <h5>Recurso recomendado</h5>
+      <h5>Recursos recomendados</h5>
       <p>
-        A documentação oficial do OWASP Top 10 está disponível em <strong>owasp.org/Top10</strong> e inclui folhas de referência (cheat sheets) detalhadas para cada categoria, com exemplos de código e estratégias de mitigação.
+        A documentação oficial do OWASP Top 10:2025 está disponível em <strong>owasp.org/Top10</strong> e o repositório GitHub oficial em <strong>github.com/OWASP/Top10</strong> contém todas as versões históricas, traduções e scripts de build. Para implementação prática, o OWASP ASVS é o próximo passo natural. A comunidade mantém também <strong>cheat sheets</strong> detalhadas para cada categoria, com exemplos de código e estratégias de mitigação.
       </p>
     </div>
   </div>
@@ -388,7 +532,7 @@
 
 <footer>
   <div class="container">
-    <p>OWASP Top 10 — Aula interativa · Conteúdo baseado na edição de 2021</p>
+    <p>OWASP Top 10:2025 — Aula interativa · Segurança de aplicações web</p>
     <p class="footer-note">Documento apenas para fins educativos</p>
   </div>
 </footer>

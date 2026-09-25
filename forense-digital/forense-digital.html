@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forense Digital — Aula Interativa</title>
+<link rel="stylesheet" href="forense-digital.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orbs">
+  <div class="orb kali"></div>
+  <div class="orb meta"></div>
+  <div class="orb purple"></div>
+</div>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="dot"></span>
+      FORENSE<span class="logo-highlight">//</span>DIGITAL
+    </div>
+    <div class="nav-links">
+      <a href="#intro">Introdução</a>
+      <a href="#prova">Prova Digital</a>
+      <a href="#recolha">Recolha</a>
+      <a href="#metodologia">Metodologia</a>
+      <a href="#cibercrime">Cibercrime</a>
+      <a href="#glossario">Glossário</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="badge">
+    <span class="live"></span>
+    Aula prática · análise forense digital
+  </div>
+  <h1>
+    <span class="grad-kali">Forense</span><br>
+    <span class="grad-meta">Digital</span>
+  </h1>
+  <p class="sub">
+    Recolha, preservação e análise de prova digital com validade probatória. Nesta aula, exploramos os princípios da investigação forense aplicados ao mundo digital: desde os fundamentos da prova eletrónica até à metodologia completa de uma perícia, passando pelos desafios do cibercrime moderno.
+  </p>
+</section>
+
+<!-- INTRODUÇÃO -->
+<section id="intro" class="container">
+  <div class="section-label">01 — Enquadramento</div>
+  <h2 class="section-title">Forense Digital</h2>
+  <p class="section-desc">
+    A forense digital é a aplicação de técnicas científicas e boas práticas no manuseamento de equipamentos informáticos, com vista à obtenção de provas digitais com validade probatória em tribunal. É uma área interdisciplinar que combina conhecimentos de informática, direito e metodologia científica.
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="num">4</span>
+      <span class="label">Fases da metodologia forense</span>
+    </div>
+    <div class="stat">
+      <span class="num">3</span>
+      <span class="label">Princípios de manuseamento da prova</span>
+    </div>
+    <div class="stat">
+      <span class="num">8</span>
+      <span class="label">Níveis de volatilidade dos dados</span>
+    </div>
+    <div class="stat">
+      <span class="num">0</span>
+      <span class="label">Alterações permitidas no original</span>
+    </div>
+  </div>
+
+  <div class="compare-grid compare-grid-spaced-lg">
+    <div class="card kali">
+      <div class="card-icon">🔬</div>
+      <h3>Ciência Forense</h3>
+      <div class="role">Disciplina clássica</div>
+      <ul>
+        <li>Conjunto de conhecimentos científicos usados para desvendar crimes.</li>
+        <li>Área interdisciplinar: física, química, biologia, etc.</li>
+        <li>Suporta investigações de justiça civil e criminal.</li>
+        <li>Base metodológica: observação, análise, interpretação.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">💻</div>
+      <h3>Forense Digital</h3>
+      <div class="role">Evolução para o domínio digital</div>
+      <ul>
+        <li>Aplicação das mesmas técnicas ao mundo informático.</li>
+        <li>Objetivo: prova digital com valor probatório em tribunal.</li>
+        <li>Não é uma ciência exata — requer equipa multidisciplinar.</li>
+        <li>Desempenhada por peritos certificados.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">ℹ️</span>
+    <div>
+      <h5>Princípio de Locard</h5>
+      <p>
+        <em>"Qualquer pessoa ou coisa que entra numa cena de crime leva consigo algo da cena e deixa algo de si mesma atrás."</em> Este princípio, formulado por Edmond Locard, é a base da forense moderna. No mundo digital, traduz-se em vestígios deixados em ficheiros, logs, memória RAM, ligações de rede — mesmo as ações mais banais deixam rasto.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PROVA DIGITAL -->
+<section id="prova" class="container">
+  <div class="section-label">02 — Prova</div>
+  <h2 class="section-title">Prova Digital</h2>
+  <p class="section-desc">
+    Qualquer informação com valor probatório, armazenada ou transmitida em formato binário, cujo teor sustenta prova material ou indiciária de um incidente. A prova digital partilha características com a prova tradicional, mas tem fragilidades próprias.
+  </p>
+
+  <div class="triple-grid">
+    <div class="card kali">
+      <div class="card-icon">🧬</div>
+      <h3>Frágil</h3>
+      <div class="role">Fácil de alterar ou destruir</div>
+      <ul>
+        <li>Um clique pode apagar metadados.</li>
+        <li>Ligar um equipamento pode alterar a RAM.</li>
+        <li>Ficheiros temporários desaparecem ao desligar.</li>
+        <li>Registos de log podem ser sobrescritos.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🌍</div>
+      <h3>Transfronteiriça</h3>
+      <div class="role">Cruza fronteiras com facilidade</div>
+      <ul>
+        <li>Transporte físico de dispositivos.</li>
+        <li>Transmissão instantânea pela Internet.</li>
+        <li>Servidores em múltiplas jurisdições.</li>
+        <li>Exige cooperação internacional.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🕐</div>
+      <h3>Temporal</h3>
+      <div class="role">Dependente de hora e local</div>
+      <ul>
+        <li>Timestamps são cruciais para a narrativa.</li>
+        <li>Fusos horários complicam a correlação.</li>
+        <li>Relógios de sistema podem estar errados.</li>
+        <li>Metadados revelam contexto temporal.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">
+    Princípio da prova — as cinco características
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Admissível</h4>
+        <p>
+          A prova deve estar em conformidade com a lei vigente. Se foi obtida de forma ilegal, é inadmissível em tribunal. Esta é a primeira barreira e a mais difícil de ultrapassar a posteriori.
+        </p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Autêntica</h4>
+        <p>
+          A prova deve ter sido gerada na cena do crime e não sofrer alterações desde então. A cadeia de custódia é o mecanismo que garante esta autenticidade.
+        </p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Completa</h4>
+        <p>
+          Deve existir correlação entre todos os registos, sem perda de integridade. Fragmentos isolados raramente sustentam uma narrativa forense sólida.
+        </p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Confiável</h4>
+        <p>
+          Todas as ações de manuseamento devem estar descritas. Quem tocou na prova, quando, como e porquê — qualquer lacuna enfraquece a confiabilidade.
+        </p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-body">
+        <h4>Acreditável</h4>
+        <p>
+          A prova deve ser compreensível e plausível. Um relatório técnico que ninguém entende não serve o propósito de comunicar resultados a um tribunal.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">
+    Volátil vs Não Volátil
+  </h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Dados Voláteis</th>
+          <th>Dados Não Voláteis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="meta">Perdem-se ao desligar o equipamento</td>
+          <td class="kali">Persistem após desligar</td>
+        </tr>
+        <tr>
+          <td>Ficheiros abertos</td>
+          <td>Ficheiros ocultos</td>
+        </tr>
+        <tr>
+          <td>Login ativo, sessões</td>
+          <td>Slack space, index.dat</td>
+        </tr>
+        <tr>
+          <td>Histórico de comandos</td>
+          <td>Partições escondidas ou não usadas</td>
+        </tr>
+        <tr>
+          <td>Tempo do sistema</td>
+          <td>Logs de eventos</td>
+        </tr>
+        <tr>
+          <td>Informação de rede</td>
+          <td>Configurações de registo</td>
+        </tr>
+        <tr>
+          <td>Mapeamento processo-porto</td>
+          <td>Ficheiros de configuração do SO</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warning">
+    <span class="icon">⚠️</span>
+    <div>
+      <h5>A ordem de recolha importa</h5>
+      <p>
+        Os dados voláteis desaparecem ao desligar o equipamento, mas os não voláteis persistem. Por isso, a recolha deve começar sempre pelo que é mais volátil — RAM, ligações de rede, processos em execução — antes de desligar o sistema. Esta regra é o alicerce de qualquer perícia informática bem conduzida.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RECOLHA -->
+<section id="recolha" class="container">
+  <div class="section-label">03 — Recolha</div>
+  <h2 class="section-title">Recolha de Prova Digital</h2>
+  <p class="section-desc">
+    A recolha deve ser feita com a mínima invasão no sistema-alvo, minorando o impacto no sistema examinado. Sempre que se interage com um sistema em funcionamento, produz-se pelo menos uma alteração — este risco deve ser conscientemente aceite, documentado e mitigado.
+  </p>
+
+  <h3 class="subsection-title">
+    Ordem de extração — do mais volátil para o menos volátil
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Conteúdo da memória RAM</h4>
+        <p>
+          O nível mais volátil de todos. Se o computador estiver ligado, a RAM contém processos ativos, chaves de cifra, sessões abertas e fragmentos de dados recentes. Desligar o equipamento significa perder tudo isto.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Exemplo: captura de memória RAM (uso autorizado)</span>
+<span class="prompt">$</span> <span class="cmd">sudo dd if=/dev/mem of=/mnt/externo/ramdump.raw bs=1M</span>
+<span class="dim">^ captura bruta — requer ferramentas especializadas para análise posterior</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Interfaces de rede ativas</h4>
+        <p>
+          Quais as interfaces ligadas, com que endereços IP e MAC, a que redes estão associadas. Revela presença física e lógica no momento da recolha.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Ver interfaces de rede ativas</span>
+<span class="prompt">$</span> <span class="cmd">ip -brief addr</span>
+<span class="info">lo      UNKNOWN  127.0.0.1/8 ::1/128</span>
+<span class="info">eth0    UP       192.168.1.42/24 fe80::1/64</span>
+<span class="info">wlan0   DOWN</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Processos em execução e respetivo estado</h4>
+        <p>
+          Que programas estão a correr, com que utilizador, que ficheiros têm abertos. Pode revelar malware ativo, backdoors, ferramentas de ataque em execução.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Lista detalhada de processos</span>
+<span class="prompt">$</span> <span class="cmd">ps auxf</span>
+<span class="info">USER   PID %CPU %MEM    VSZ   RSS TTY   STAT START   TIME COMMAND</span>
+<span class="info">root     1  0.0  0.1 167436 11232 ?     Ss   10:00   0:02 /sbin/init</span>
+<span class="info">root   842  0.1  0.3 987654 23456 ?     Ssl  10:01   0:15 /usr/sbin/sshd</span>
+<span class="warn">root  1234  5.2  1.2 456789 98765 ?     Sl   10:23   2:34 ./suspeito</span>
+<span class="dim">^ processo suspeito a consumir recursos anómalos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Portos TCP e UDP ativos</h4>
+        <p>
+          Que serviços estão à escuta e que ligações estão estabelecidas. Crucial para identificar backdoors, shells remotas ou canais de comando e controlo.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Ver portos em escuta e ligações ativas</span>
+<span class="prompt">$</span> <span class="cmd">ss -tulpn</span>
+<span class="info">Netid State  Local Address:Port   Peer Address:Port  Process</span>
+<span class="info">tcp   LISTEN 0.0.0.0:22           0.0.0.0:*          users:(("sshd",pid=842))</span>
+<span class="info">tcp   LISTEN 0.0.0.0:80           0.0.0.0:*          users:(("nginx",pid=901))</span>
+<span class="warn">tcp   ESTAB  192.168.1.42:54321   203.0.113.99:4444   users:(("suspeito",pid=1234))</span>
+<span class="dim">^ ligação de saída para a porta 4444 — típica de reverse shell</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-body">
+        <h4>Utilizadores ativos/registados</h4>
+        <p>
+          Quem está autenticado no momento da recolha, sessões abertas, últimos logins. Ajuda a estabelecer quem tinha acesso ao sistema.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Utilizadores atualmente ligados</span>
+<span class="prompt">$</span> <span class="cmd">w</span>
+<span class="info"> 10:35:22 up  1:25,  2 users,  load average: 0.15, 0.22, 0.18</span>
+<span class="info">USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT</span>
+<span class="info">ana      pts/0    192.168.1.10     10:30    0.00s  0.05s  0.00s w</span>
+<span class="warn">root     pts/1    203.0.113.99     10:23    5:42   0.12s  0.08s -bash</span>
+<span class="dim">^ sessão root vinda de IP externo — investigar</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">06</div>
+      <div class="step-body">
+        <h4>Ficheiros de paginação, swap, hibernação/suspensão</h4>
+        <p>
+          Contêm fragmentos de memória que podem não estar presentes na RAM. Em sistemas Windows, o <code>hiberfile.sys</code> e o <code>pagefile.sys</code> são fontes ricas de prova.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Verificar ficheiros de paginação em Linux</span>
+<span class="prompt">$</span> <span class="cmd">swapon --show</span>
+<span class="info">NAME      TYPE  SIZE USED PRIO</span>
+<span class="info">/swapfile file  2G   0B   -2</span>
+
+<span class="comment"># Em Windows (via análise forense)</span>
+<span class="dim">C:\hiberfile.sys  — estado da memória no momento da hibernação</span>
+<span class="dim">C:\pagefile.sys   — memória paginada para disco</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">07</div>
+      <div class="step-body">
+        <h4>Sistema de ficheiros e volumes configurados</h4>
+        <p>
+          Estrutura de diretórios, ficheiros recentemente modificados, volumes montados. A análise posterior é feita sobre a imagem forense, nunca sobre o original.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Ver volumes montados</span>
+<span class="prompt">$</span> <span class="cmd">df -hT</span>
+<span class="info">Filesystem     Type      Size  Used Avail Use% Mounted on</span>
+<span class="info">/dev/sda1      ext4      100G   45G   55G  45% /</span>
+<span class="info">/dev/sdb1      ntfs      500G  320G  180G  64% /mnt/dados</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">08</div>
+      <div class="step-body">
+        <h4>Configuração dos dispositivos de hardware ligados</h4>
+        <p>
+          Impressoras, scanners, câmaras, telemóveis, discos externos. Cada dispositivo é uma potencial fonte de prova e deve ser inventariado.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Listar dispositivos USB ligados</span>
+<span class="prompt">$</span> <span class="cmd">lsusb</span>
+<span class="info">Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub</span>
+<span class="info">Bus 001 Device 003: ID 0781:5581 SanDisk Corp. Ultra</span>
+<span class="info">Bus 002 Device 002: ID 046d:c52b Logitech, Inc. Unifying Receiver</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METODOLOGIA -->
+<section id="metodologia" class="container">
+  <div class="section-label">04 — Metodologia</div>
+  <h2 class="section-title">Metodologia de Análise Digital Forense</h2>
+  <p class="section-desc">
+    Uma perícia forense segue uma metodologia estruturada em quatro fases. Cada fase tem objetivos claros e produz artefactos que alimentam a fase seguinte. A adesão rigorosa a esta metodologia é o que distingue uma perícia de uma simples análise técnica.
+  </p>
+
+  <div class="flow">
+    <div class="flow-node kali">1. Preparação</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node purple">2. Aquisição</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node meta">3. Análise</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node kali">4. Apresentação</div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Preparação</h4>
+        <p>
+          Identificar fisicamente a origem da prova digital e eleger a melhor abordagem para a analisar. Envolve a definição do âmbito, a identificação dos sistemas-alvo, a preparação das ferramentas e a obtenção das autorizações legais necessárias.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Aquisição</h4>
+        <p>
+          Extrair os dados do equipamento alvo de perícia, assegurando a preservação da prova. A aquisição pode ser física (imagem bit-a-bit do dispositivo) ou lógica (cópia de ficheiros e artefactos específicos). A imagem é sempre feita sobre o original, que é preservado intacto.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Exemplo: criar imagem forense de um disco com dd</span>
+<span class="prompt">$</span> <span class="cmd">sudo dd if=/dev/sdb of=/mnt/externo/imagem.dd bs=4M status=progress</span>
+<span class="ok">15000000000 bytes (15 GB, 14 GiB) copied, 320 s, 46.9 MB/s</span>
+
+<span class="comment"># Calcular hash da imagem para verificar integridade</span>
+<span class="prompt">$</span> <span class="cmd">sha256sum /mnt/externo/imagem.dd</span>
+<span class="ok">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  imagem.dd</span>
+
+<span class="comment"># O hash é registado e comparado sempre que a imagem for usada</span>
+<span class="dim"># Qualquer alteração na imagem invalida o hash e compromete a prova</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Análise</h4>
+        <p>
+          Investigação dos dados existentes na duplicação obtida na aquisição. Nunca se analisa o original. A análise pode incluir recuperação de ficheiros apagados, exame de metadados, timeline de eventos, análise de registos, correlação entre fontes.
+        </p>
+        <div class="code meta-code">
+<span class="comment"># Exemplo: timeline forense com ferramentas especializadas</span>
+<span class="prompt">$</span> <span class="cmd">fls -r -m / imagem.dd &gt; bodyfile.txt</span>
+<span class="prompt">$</span> <span class="cmd">mactime -b bodyfile.txt -d &gt; timeline.csv</span>
+
+<span class="comment"># Resultado: todos os eventos do sistema ordenados cronologicamente</span>
+<span class="dim">Date       Size  Type  Mode  UID  GID  Meta  File Name</span>
+<span class="dim">2024-01-15 10:23:41  1234  ...  -rw-r--r--  1000  1000  42  /home/ana/documento.docx</span>
+<span class="dim">2024-01-15 10:24:12  5678  ...  -rw-r--r--  1000  1000  43  /home/ana/notas.txt</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Apresentação</h4>
+        <p>
+          Produção de relatórios técnicos com identificação dos equipamentos, resultados e conclusões. O relatório deve ser compreensível para não-técnicos (juízes, advogados) sem sacrificar o rigor técnico. As conclusões devem ser suportadas pelos artefactos encontrados.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">
+    Princípios de manuseamento da prova
+  </h3>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">🔒</div>
+      <h3>Regras de ouro</h3>
+      <ul>
+        <li>Nenhuma ação do perito deve alterar o estado ou os dados armazenados.</li>
+        <li>Só em circunstâncias excecionais se acede diretamente ao original.</li>
+        <li>Tudo o que for feito sobre o original deve ser detalhado em relatório.</li>
+        <li>Deve existir um registo cronológico de todas as ações — a cadeia de custódia.</li>
+        <li>O perito deve respeitar a legislação aplicável (dados pessoais, segredo profissional, dados clínicos, bancários, comunicações).</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">📋</div>
+      <h3>Regras práticas do investigador</h3>
+      <ul>
+        <li>Limitar o acesso e exame da prova original.</li>
+        <li>Registar todas as alterações feitas aos ficheiros de prova.</li>
+        <li>Criar uma cadeia de custódia documentada.</li>
+        <li>Guardar a prova de forma segura (física e logicamente).</li>
+        <li>Conhecer e aplicar as técnicas e ferramentas mais adequadas a cada contexto.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">🌐</span>
+    <div>
+      <h5>Dimensão internacional</h5>
+      <p>
+        A investigação de cibercrime pode levantar questões internacionais que acionam acordos de assistência entre países. Prova armazenada em servidores de outra jurisdição exige procedimentos formais de cooperação (MLAT, rogatórias, pedidos a fornecedores de cloud). Este é um dos maiores desafios práticos da forense digital moderna.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CIBERCRIME -->
+<section id="cibercrime" class="container">
+  <div class="section-label">05 — Contexto</div>
+  <h2 class="section-title">Cibercrime e Desafios</h2>
+  <p class="section-desc">
+    O cibercrime é a série de atividades criminosas realizadas com recurso à tecnologia. A sua evolução constante coloca desafios crescentes à investigação forense.
+  </p>
+
+  <h3 class="subsection-title">
+    Manifestações do cibercrime
+  </h3>
+
+  <div class="triple-grid">
+    <div class="card kali">
+      <div class="card-icon">💼</div>
+      <h3>Roubo de informação</h3>
+      <div class="role">Propriedade intelectual e dados</div>
+      <ul>
+        <li>Propriedade intelectual.</li>
+        <li>Informação confidencial.</li>
+        <li>Segredos comerciais.</li>
+        <li>Dados pessoais de clientes.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">💥</div>
+      <h3>Danos técnicos</h3>
+      <div class="role">Ataques à infraestrutura</div>
+      <ul>
+        <li>Trojans e backdoors.</li>
+        <li>DDoS contra serviços.</li>
+        <li>Rootkits persistentes.</li>
+        <li>Sniffers de tráfego.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">💳</div>
+      <h3>Fraude financeira</h3>
+      <div class="role">Benefício económico direto</div>
+      <ul>
+        <li>Roubo de identidade.</li>
+        <li>Fraude com cartões de crédito.</li>
+        <li>Manipulação de registos.</li>
+        <li>Extorsão por ransomware.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">
+    Origem dos ataques
+  </h3>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">🏢</div>
+      <h3>Ameaças internas</h3>
+      <ul>
+        <li><strong>Espionagem:</strong> colaboradores a passar informação a terceiros.</li>
+        <li><strong>Roubo de propriedade intelectual:</strong> cópia de ficheiros antes de sair.</li>
+        <li><strong>Manipulação de registos:</strong> alteração de dados para benefício próprio.</li>
+        <li><strong>Cavalos de Troia:</strong> instalação deliberada de software malicioso.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🌍</div>
+      <h3>Ameaças externas</h3>
+      <ul>
+        <li><strong>SQL injection:</strong> exploração de falhas em formulários.</li>
+        <li><strong>Força bruta:</strong> tentativas automatizadas de adivinhar credenciais.</li>
+        <li><strong>Roubo de identidade:</strong> personificação de utilizadores legítimos.</li>
+        <li><strong>Phishing/spoofing:</strong> engano para obtenção de credenciais.</li>
+        <li><strong>Negação de serviço:</strong> sobrecarga de serviços para os tornar indisponíveis.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">
+    Desafios da investigação
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>Anonimato e encriptação</h4>
+        <p>
+          O uso generalizado de VPNs, Tor e encriptação ponta-a-ponta dificulta a atribuição de ações a pessoas. A capacidade de anonimizar comunicações cresceu exponencialmente.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>Ferramentas acessíveis a atacantes</h4>
+        <p>
+          Ferramentas de hacking gratuitas ou de baixo custo estão disponíveis para qualquer pessoa. O atacante amador tem hoje ao seu alcance o que há uma década era privilégio de especialistas.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>Sofisticação crescente</h4>
+        <p>
+          Os ataques são cada vez mais organizados, variados e sofisticados. Grupos criminosos operam como empresas, com divisão de trabalho, hierarquia e ferramentas próprias.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4>Assimetria de conhecimento</h4>
+        <p>
+          Os criminosos estão frequentemente mais avançados tecnicamente do que quem os investiga. A formação contínua dos peritos é essencial para manter o ritmo.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-body">
+        <h4>Dados incompletos ou corrompidos</h4>
+        <p>
+          Nem sempre é possível recuperar toda a prova. Discos danificados, ficheiros truncados, logs incompletos — a análise tem de lidar com o que existe.
+        </p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">06</div>
+      <div class="step-body">
+        <h4>Volume e heterogeneidade</h4>
+        <p>
+          O crescimento da cloud multiplicou o volume e a diversidade de dados a analisar. Correlacionar fontes heterogéneas é um desafio técnico e logístico.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="danger-box">
+    <span class="icon">🚨</span>
+    <div>
+      <h5>Complexidade crescente dos sistemas</h5>
+      <p>
+        A identificação da prova — tanto lógica como física — torna-se mais difícil à medida que os sistemas de informação se tornam mais complexos. Ambientes virtualizados, containers efémeros, serviços cloud distribuídos: cada um destes paradigmas introduz novos desafios forenses.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- GLOSSÁRIO -->
+<section id="glossario" class="container">
+  <div class="section-label">06 — Referência</div>
+  <h2 class="section-title">Glossário de Gíria Informática</h2>
+  <p class="section-desc">
+    Ao longo de uma investigação forense, surgem termos com raízes na cultura hacker e na história da informática. Conhecer este vocabulário é essencial para interpretar corretamente os artefactos encontrados.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Termo</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono kali">BBS's</td>
+          <td>Sistemas de mensagens e partilha por modem, anteriores à Internet</td>
+        </tr>
+        <tr>
+          <td class="mono kali">BlackBoxing</td>
+          <td>Manipulação de sinais telefónicos</td>
+        </tr>
+        <tr>
+          <td class="mono kali">Blueboxing</td>
+          <td>Uso de tons para realizar chamadas gratuitas (phreaking)</td>
+        </tr>
+        <tr>
+          <td class="mono purple">Carding</td>
+          <td>Fraude com dados de cartões de crédito</td>
+        </tr>
+        <tr>
+          <td class="mono purple">Cracking</td>
+          <td>Quebra de proteções de software ou de segurança</td>
+        </tr>
+        <tr>
+          <td class="mono purple">Sniffing</td>
+          <td>Captura e análise de tráfego de rede</td>
+        </tr>
+        <tr>
+          <td class="mono meta">Spam</td>
+          <td>Mensagens não solicitadas enviadas em massa</td>
+        </tr>
+        <tr>
+          <td class="mono meta">Phishing</td>
+          <td>Engano para obter credenciais de acesso</td>
+        </tr>
+        <tr>
+          <td class="mono meta">Pharming</td>
+          <td>Redirecionamento malicioso de tráfego via DNS</td>
+        </tr>
+        <tr>
+          <td class="mono kali">Datajacking</td>
+          <td>Roubo ou sequestro de dados</td>
+        </tr>
+        <tr>
+          <td class="mono kali">IP spoofing</td>
+          <td>Falsificação de endereço IP</td>
+        </tr>
+        <tr>
+          <td class="mono kali">DoS</td>
+          <td>Ataque de negação de serviço</td>
+        </tr>
+        <tr>
+          <td class="mono purple">Warez</td>
+          <td>Software pirateado</td>
+        </tr>
+        <tr>
+          <td class="mono purple">Hacking</td>
+          <td>Exploração de vulnerabilidades</td>
+        </tr>
+        <tr>
+          <td class="mono">Lamer</td>
+          <td>Iniciante que se gaba de ser hacker</td>
+        </tr>
+        <tr>
+          <td class="mono">Wannabe</td>
+          <td>Aspirante a hacker</td>
+        </tr>
+        <tr>
+          <td class="mono">Larva</td>
+          <td>Fase intermédia entre wannabe e hacker</td>
+        </tr>
+        <tr>
+          <td class="mono meta">Hacker</td>
+          <td>Especialista avançado (ético ou malicioso)</td>
+        </tr>
+        <tr>
+          <td class="mono meta">Cracker</td>
+          <td>Hacker com intenções maliciosas</td>
+        </tr>
+        <tr>
+          <td class="mono meta">Phreaker</td>
+          <td>Praticante de phreaking (manipulação de telefonia)</td>
+        </tr>
+        <tr>
+          <td class="mono">Guru</td>
+          <td>Especialista de topo reconhecido na comunidade</td>
+        </tr>
+        <tr>
+          <td class="mono purple">Esteganografia</td>
+          <td>Ocultar informação dentro de outro ficheiro (imagem, áudio, vídeo)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">🔍</span>
+    <div>
+      <h5>Porque isto importa numa perícia</h5>
+      <p>
+        Termos como <em>phishing</em>, <em>sniffing</em> ou <em>esteganografia</em> aparecem frequentemente em relatórios forenses. Reconhecer o vocabulário permite interpretar artefactos: um processo com nome "warez" pode indicar software pirateado; um ficheiro de imagem com tamanho anómalo pode esconder dados esteganografados. O vocabulário é uma pista.
+      </p>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">
+    Vertentes da investigação forense digital
+  </h3>
+
+  <div class="triple-grid">
+    <div class="card kali">
+      <div class="card-icon">💾</div>
+      <h3>Computer Forensics</h3>
+      <div class="role">Dispositivos de armazenamento</div>
+      <ul>
+        <li>Flash, HDD, SSD, USB.</li>
+        <li>Recuperação de ficheiros apagados.</li>
+        <li>Análise de metadados e slack space.</li>
+        <li>Timeline de eventos do sistema.</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🌐</div>
+      <h3>Network Forensics</h3>
+      <div class="role">Tráfego de rede</div>
+      <ul>
+        <li>Captura e análise de pacotes.</li>
+        <li>Logs de firewall e IDS/IPS.</li>
+        <li>Reconstrução de sessões.</li>
+        <li>Deteção de exfiltração de dados.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">📱</div>
+      <h3>Mobile Forensics</h3>
+      <div class="role">Dispositivos móveis</div>
+      <ul>
+        <li>Smartphones e tablets.</li>
+        <li>Mensagens, chamadas, localizações.</li>
+        <li>Aplicações e respetivos dados.</li>
+        <li>Desafios de cifra e bloqueio.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card kali card-spaced">
+    <div class="card-icon">☁️</div>
+    <h3>Cloud Forensics</h3>
+    <div class="role">Infraestruturas cloud</div>
+    <ul>
+      <li>Dados distribuídos por múltiplos provedores.</li>
+      <li>Jurisdições internacionais e cooperação.</li>
+      <li>Logs de serviços cloud (S3, Lambda, etc.).</li>
+      <li>Recursos efémeros que desaparecem rapidamente.</li>
+    </ul>
+  </div>
+
+  <h3 class="subsection-title">
+    Disciplinas conexas
+  </h3>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">🛡️</div>
+      <h3>Segurança dos Computadores</h3>
+      <ul>
+        <li>Foco na <strong>prevenção</strong> de acessos não autorizados.</li>
+        <li>Manutenção da confidencialidade, integridade e disponibilidade (tríade CIA).</li>
+        <li>Ações típicas: firewalls, IDS/IPS, políticas de acesso.</li>
+        <li>Trabalha <em>antes</em> e <em>durante</em> o incidente.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🔄</div>
+      <h3>Recuperação de Dados</h3>
+      <ul>
+        <li>Foco em <strong>recuperar</strong> dados inacessíveis por danos.</li>
+        <li>Sem relação direta com investigação em curso.</li>
+        <li>Ações típicas: recuperação de setores danificados, RAID reconstruction.</li>
+        <li>Trabalha <em>depois</em> do incidente, mas sem objetivo probatório.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="term term-spaced">
+    <div class="term-bar">
+      <span class="b r"></span>
+      <span class="b y"></span>
+      <span class="b g"></span>
+      <span class="title">verificação rápida — ferramentas forenses no terminal</span>
+    </div>
+    <div class="term-body">
+<span class="prompt">$</span> <span class="cmd"># Verificar integridade de uma imagem forense</span>
+<span class="prompt">$</span> <span class="cmd">sha256sum /mnt/externo/imagem.dd</span>
+<span class="ok">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  imagem.dd</span>
+
+<span class="prompt">$</span> <span class="cmd"># Comparar com o hash registado na cadeia de custódia</span>
+<span class="prompt">$</span> <span class="cmd">grep imagem.dd cadeia_custodia.txt</span>
+<span class="info">2024-01-15 10:23  e3b0c442...b855  imagem.dd</span>
+<span class="ok"># hashes coincidem — integridade preservada</span>
+
+<span class="prompt">$</span> <span class="cmd"># Ver metadados de um ficheiro suspeito</span>
+<span class="prompt">$</span> <span class="cmd">stat /home/ana/documento.docx</span>
+<span class="info">  File: /home/ana/documento.docx</span>
+<span class="info">  Size: 45678     	Blocks: 96         IO Block: 4096   regular file</span>
+<span class="info">Device: 801h/2049d	Inode: 1234567     Links: 1</span>
+<span class="info">Access: (0644/-rw-r--r--)  Uid: ( 1000/ana)   Gid: ( 1000/ana)</span>
+<span class="info">Access: 2024-01-15 10:23:41.123456789 +0000</span>
+<span class="info">Modify: 2024-01-15 10:24:12.987654321 +0000</span>
+<span class="info">Change: 2024-01-15 10:24:12.987654321 +0000</span>
+<span class="warn"> Birth: 2024-01-15 09:15:33.456789012 +0000</span>
+
+<span class="prompt">$</span> <span class="cmd"># Verificar cadeia de custódia documentada</span>
+<span class="prompt">$</span> <span class="cmd">cat cadeia_custodia.txt</span>
+<span class="info">2024-01-15 10:00  Recolha   Equipa forense A  Dispositivo apreendido</span>
+<span class="info">2024-01-15 10:15  Transporte Equipa forense A  Dispositivo selado</span>
+<span class="info">2024-01-15 10:23  Aquisição Equipa forense B  Imagem forense criada</span>
+<span class="info">2024-01-15 10:30  Análise   Equipa forense B  Imagem em sala segura</span>
+    </div>
+  </div>
+
+  <div class="info-box info-box-spaced">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Para saber mais</h5>
+      <p>
+        O <strong>NIST SP 800-86</strong> (Guide to Integrating Forensic Techniques into Incident Response) é a referência metodológica internacional. A <strong>ISO/IEC 27037</strong> define diretrizes para identificação, recolha, aquisição e preservação de prova digital. Ferramentas como <strong>Autopsy</strong>, <strong>Sleuth Kit</strong> e <strong>Volatility</strong> (análise de memória) são padrão na área. A <strong>RFC 3227</strong> descreve as diretrizes para recolha e arquivo de evidências.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Forense Digital — Aula interativa · Recolha e análise de prova digital</p>
+    <p class="footer-note">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+<script src="forense-digital.js"></script>
+
+</body>
+</html>

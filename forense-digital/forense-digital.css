@@ -255,14 +255,10 @@
   .scenario.meta { border-left:3px solid var(--meta); }
   .scenario.meta h5 { color:var(--meta); }
 
-  /* Classes extraídas de atributos style="" inline (Fase 3 — CSP style-src) */
-  .logo-slash { color:var(--kali); }
-  .card-spaced { margin-bottom:24px; }
-  .compare-grid-spaced { margin-top:40px; }
-  .triple-grid-spaced { margin-top:40px; }
-  .steps-spaced { margin-top:48px; }
+  .logo-highlight { color:var(--kali); }
   .subsection-title { font-size:20px; font-weight:700; margin:48px 0 24px; letter-spacing:-0.5px; }
+  .compare-grid-spaced-lg { margin-top:48px; }
+  .card-spaced { margin-top:24px; }
   .term-spaced { margin-top:48px; }
   .info-box-spaced { margin-top:32px; }
-  .danger-box-spaced { margin-top:32px; }
   .footer-note { margin-top:8px; font-size:12px; }
