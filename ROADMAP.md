@@ -20,6 +20,13 @@ Ficheiro local de tracking — não é feito deploy (`*.md` está no `.gitignore
 
 Validado no browser (Playwright): `window.jspdf`/`window.QRCode` ficam `undefined` no load inicial e carregam sob demanda sem erros novos.
 
+## 🔵 Fase 4 — Push para 90+ no Lighthouse ✅ CONCLUÍDA (commit `cd9908d`)
+
+Performance real após Fase 1+2: **58 → 68 → 84**. Para tentar passar os 90:
+- [x] Minificar `dashboard-inline.js` (377 KB → 244 KB, -35%), `admin-inline.js` (32 KB → 21 KB, -34%) e `cybermap-inline.js` (41 KB → 27 KB, -34%) com `terser -c -m` — reduz tempo de parse/compile de JS no cliente (o que mais pesa no score sob CPU throttling do Lighthouse)
+- [ ] Re-medir o Lighthouse para confirmar se chegou aos 90 — pendente (depende do próximo scan do utilizador)
+- Se não chegar aos 90: próximos candidatos seriam otimizar imagens (nenhuma grande atualmente) e auditar CSS não usado por página com coverage do DevTools, mas sem dados reais de um novo scan não vale a pena adivinhar
+
 ## 🟢 Fase 3 — Infraestrutura / opcional ✅ FECHADA (sem ação)
 
 - [x] **WAF externo — decisão: não avançar.** Investigado: nenhum site do projeto (`iefp-hackers`, `flepo`, `gestor-eventos`, `ligafaro-8000`, `sebenta-ai`) tem domínio próprio — todos em `*.web.app`, DNS gerido pela Google, sem zona delegável. Um WAF (Cloudflare) exigiria comprar um domínio próprio + reconfigurar DNS + custom domain no Firebase Hosting. Decisão: site de formação sem dados sensíveis de produção, a proteção de borda Google/Fastly já é suficiente. Retomar se o site ganhar domínio próprio no futuro.
