@@ -12,11 +12,13 @@ Ficheiro local de tracking — não é feito deploy (`*.md` está no `.gitignore
 
 ## 🔴 Fase 1 — Quick wins de performance ✅ CONCLUÍDA
 
-## 🟡 Fase 2 — Redução de JS não utilizado (esforço médio)
+## 🟡 Fase 2 — Redução de JS não utilizado ✅ CONCLUÍDA (commit `0b79440`)
 
-- [ ] Lazy-load `jspdf` + `jspdf-autotable` só quando o utilizador exporta PDF
-- [ ] Lazy-load `qrcodejs` só quando necessário (ex: painel admin/perfil)
-- [ ] Avaliar se `marked` + `KaTeX` podem ser adiados até ao primeiro conteúdo markdown renderizado
+- [x] Lazy-load `jspdf` + `jspdf-autotable` só quando o utilizador exporta PDF (`ensurePdfLibs()`, 3 call sites: UC/lista/semanal)
+- [x] Lazy-load `qrcodejs` só quando necessário (`ensureQrLib()`, `toggleQR`)
+- [x] Avaliado `marked`/`KaTeX`: mantidos como `defer` normal (não lazy on-demand) — são usados no fluxo principal de conteúdo (cheatsheets), já não bloqueiam o render (Fase 1), e adicionar lazy-load aqui só complicaria o caminho mais comum sem ganho relevante.
+
+Validado no browser (Playwright): `window.jspdf`/`window.QRCode` ficam `undefined` no load inicial e carregam sob demanda sem erros novos.
 
 ## 🟢 Fase 3 — Infraestrutura / opcional (não bloqueante)
 
