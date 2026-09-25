@@ -46,6 +46,7 @@
                 el.innerHTML = msgs.length === 0
                     ? '<div class="chat-empty">Sem mensagens ainda. Sê o primeiro!</div>'
                     : msgs.map(m => chatBubbleHtml(m, uid, 'chat')).join('');
+                applyDeferredStyles(el);
                 el.scrollTop = el.scrollHeight;
                 if (currentView !== 'chat') chatUpdateBadge(newCount);
                 else chatMarkRead();
@@ -61,7 +62,7 @@
             return `<div class="chat-msg ${mine ? 'mine' : 'other'}">
                 ${!mine ? `<div class="chat-author">${escapeHtml(m.displayName || 'Anónimo')}</div>` : ''}
                 <div class="chat-bubble">${chatFormatText(m.text)}</div>
-                <div style="display:flex;gap:0.25rem;align-items:center;">
+                <div class="jshook-chat-time-row">
                     <span class="chat-msg-time">${time}</span>
                     ${mine || window._isModerador ? delBtn : ''}
                 </div>
@@ -141,6 +142,7 @@
                 } else {
                     el.innerHTML = msgs.map(m => chatBubbleHtml(m, uid, ucCode)).join('');
                 }
+                applyDeferredStyles(el);
                 el.scrollTop = el.scrollHeight;
             }, err => {
                 console.warn('UC chat error:', err);
@@ -186,6 +188,7 @@
                 el.innerHTML = msgs.length === 0
                     ? '<div class="chat-empty">Sem mensagens ainda. Escreve algo!</div>'
                     : msgs.map(m => chatWABubbleHtml(m, uid)).join('');
+                applyDeferredStyles(el);
                 el.scrollTop = el.scrollHeight;
             }, err => console.warn('WA chat error:', err));
         }
@@ -193,7 +196,7 @@
         function chatWABubbleHtml(m, uid) {
             const mine   = m.uid === uid;
             const badge  = m.source === 'whatsapp'
-                ? '<span style="font-size:0.7em;opacity:0.6;margin-left:0.25rem;">📱</span>'
+                ? '<span class="jshook-wa-badge">📱</span>'
                 : '';
             const time   = m.timestamp?.toMillis
                 ? new Date(m.timestamp.toMillis()).toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'})

@@ -60,13 +60,13 @@
                 const isRemote    = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
                 const remoteClass  = isRemote ? 'remote' : '';
                 const remoteBadge  = isRemote
-                    ? `<div class="aula-uc badge remote" style="margin-top:0;">🌐 Remoto</div>` : '';
+                    ? `<div class="aula-uc badge remote jshook-aula-badge">🌐 Remoto</div>` : '';
                 const isTeste      = aula.tipo === 'teste';
                 const testeClass   = isTeste ? 'teste' : '';
                 const testeBadge   = isTeste
-                    ? `<div class="aula-uc badge teste" style="margin-top:0;">📝 Teste</div>` : '';
+                    ? `<div class="aula-uc badge teste jshook-aula-badge">📝 Teste</div>` : '';
                 const formadorBadge = aula.formador
-                    ? `<div class="aula-uc badge" style="margin-top:0;background:rgba(255,255,255,0.1);color:#fff;">👤 ${shortName(aula.formador)}</div>` : '';
+                    ? `<div class="aula-uc badge jshook-aula-badge jshook-aula-badge-formador">👤 ${shortName(aula.formador)}</div>` : '';
                 const clickAttr = UC_MAP[aula.uc]
                     ? `data-uc-sched="${aula.uc}"` : '';
                 return `
@@ -74,8 +74,8 @@
                     <div class="aula-time">${aula.hora}</div>
                     <div class="aula-info">
                         <div class="aula-desc">${aula.descricao}</div>
-                        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:5px;align-items:center;">
-                            <div class="aula-uc badge" style="margin-top:0;">${aula.uc}</div>
+                        <div class="jshook-aula-badges-row">
+                            <div class="aula-uc badge jshook-aula-badge">${aula.uc}</div>
                             ${remoteBadge}${testeBadge}${formadorBadge}
                         </div>
                     </div>
@@ -85,6 +85,7 @@
             el.querySelectorAll('[data-uc-sched]').forEach(card =>
                 card.addEventListener('click', () => openUCFromSchedule(card.dataset.ucSched))
             );
+            applyDeferredStyles(el);
         }
 
         function buildTodayPanel() {
@@ -147,10 +148,11 @@
                     <span>${done.toFixed(0)}h / ${target}h (${pct}%)</span>
                 </div>
                 <div class="progress-wrap">
-                    <div class="progress-fill" style="width:${pct}%"></div>
+                    <div class="progress-fill" data-pct="${pct}"></div>
                 </div>
                 <div class="progress-sub">Base + Tecnológica · FCT (${CRONOGRAMA.carga_horaria.fct || 0}h) separado</div>
             `;
+            applyDeferredStyles(wrap);
         }
 
         // ── THEME TOGGLE ────────────────────────────────────────────────

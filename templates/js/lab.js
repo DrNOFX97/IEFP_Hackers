@@ -603,9 +603,9 @@
   </div>
   <div class="lab-xp-bar-wrap">
     <div class="lab-xp-label">XP Total</div>
-    <div class="lab-xp-value">${totalXP} <span style="font-size:0.9rem;opacity:0.6">/ ${maxXP}</span></div>
+    <div class="lab-xp-value">${totalXP} <span class="jshook-xp-max-suffix">/ ${maxXP}</span></div>
     <div class="lab-xp-progress-track">
-      <div class="lab-xp-progress-fill" style="width:${xpPct}%"></div>
+      <div class="lab-xp-progress-fill" data-pct="${xpPct}"></div>
     </div>
   </div>
 </div>
@@ -640,11 +640,12 @@
   ${LAB_MODULES.filter(m => m.alwaysAvailable).map((mod, idx) => labRenderModuleCard(mod, idx)).join('')}
 </div>
 
-<div class="lab-section-label" style="margin-top:1.5rem;">// Pentesting</div>
+<div class="lab-section-label jshook-mt-1_5rem">// Pentesting</div>
 <div class="lab-modules-grid">
   ${LAB_MODULES.filter(m => !m.alwaysAvailable).map((mod, idx) => labRenderModuleCard(mod, LAB_MODULES.indexOf(mod))).join('')}
 </div>
             `;
+            applyDeferredStyles(el);
 
             if (_labActiveModule) {
                 labShowDetail(_labActiveModule);
@@ -682,7 +683,7 @@
     <span class="lab-module-progress-pct">${pct}%</span>
   </div>
   <div class="lab-module-progress-track">
-    <div class="lab-module-progress-fill" style="width:${pct}%"></div>
+    <div class="lab-module-progress-fill" data-pct="${pct}"></div>
   </div>
   <div class="lab-module-meta">
     ${!mod.isArena ? `<span class="lab-module-meta-item">Labs: <span>${stepsDone}/${mod.steps.length}</span></span>` : ''}
@@ -752,6 +753,7 @@
   </div>` : ''}
 </div>
             `;
+            applyDeferredStyles(dc);
         }
 
         function labCloseDetail() {
@@ -781,7 +783,7 @@
     <div class="lab-tools-grid">
       ${mod.tools.map(t => `<span class="lab-tool-pill">🔧 ${t}</span>`).join('')}
     </div>
-    <div class="lab-theory-card-title" style="margin-top:1rem;">Recursos</div>
+    <div class="lab-theory-card-title jshook-mt-1rem">Recursos</div>
     <ul class="lab-theory-list">
       ${mod.theory.resources.map(r => `<li>${r}</li>`).join('')}
     </ul>
@@ -820,8 +822,8 @@
   <div class="lab-ctf-solved-banner">
     <span class="lab-ctf-solved-icon">🏆</span>
     <div>
-      <div style="font-weight:700;">Challenge concluído!</div>
-      <div style="font-size:0.78rem;opacity:0.8;margin-top:0.2rem;">${mod.ctfTitle} — +100 XP</div>
+      <div class="jshook-fw700">Challenge concluído!</div>
+      <div class="jshook-ctf-solved-sub">${mod.ctfTitle} — +100 XP</div>
     </div>
   </div>
 </div>
@@ -847,7 +849,7 @@
         function labRenderArena(mod) {
             const p = labGetModuleProgress(mod.id);
             return `
-<div style="margin-bottom:1rem;font-size:0.8rem;color:var(--text-secondary);">
+<div class="jshook-arena-intro">
   Desafios independentes. Cada flag resolvida conta para o teu XP e posição no leaderboard da turma.
 </div>
 <div class="ctf-arena-grid">
@@ -857,17 +859,16 @@
 <div class="ctf-arena-card difficulty-${c.diff}${solved ? ' solved' : ''}">
   <div class="ctf-arena-card-title">${solved ? '✓ ' : ''}${c.title}</div>
   <div class="ctf-arena-card-type">${c.type}</div>
-  <div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.75rem;">${c.desc}</div>
+  <div class="jshook-arena-card-desc">${c.desc}</div>
   ${!solved ? `
-  <input class="lab-ctf-input" id="arena-input-${c.id}" type="text" placeholder="flag{...}"
-         data-lab-arena-mod="${mod.id}" data-lab-arena-chall="${c.id}" data-lab-arena-flag="${c.flag}" data-lab-arena-xp="${c.xp}"
-         style="margin-bottom:0.5rem;font-size:0.75rem;">
+  <input class="lab-ctf-input jshook-arena-input" id="arena-input-${c.id}" type="text" placeholder="flag{...}"
+         data-lab-arena-mod="${mod.id}" data-lab-arena-chall="${c.id}" data-lab-arena-flag="${c.flag}" data-lab-arena-xp="${c.xp}">
   <div class="ctf-arena-card-meta">
     <span class="ctf-arena-diff ${c.diff}">${c.diff.toUpperCase()}</span>
     <span class="ctf-arena-xp">+${c.xp} XP</span>
   </div>
   <div class="lab-ctf-result" id="arena-result-${c.id}"></div>
-  ` : `<div class="ctf-arena-card-meta"><span class="ctf-arena-diff ${c.diff}">${c.diff.toUpperCase()}</span><span class="ctf-arena-xp" style="color:var(--success-color);">✓ +${c.xp} XP</span></div>`}
+  ` : `<div class="ctf-arena-card-meta"><span class="ctf-arena-diff ${c.diff}">${c.diff.toUpperCase()}</span><span class="ctf-arena-xp jshook-success-text">✓ +${c.xp} XP</span></div>`}
 </div>
     `;
   }).join('')}
@@ -908,7 +909,7 @@
                 labSaveProgress();
                 labToast(`🏆 Flag correcta! +100 XP`, 'xp');
                 const ctfPanel = document.getElementById('lab-panel-ctf');
-                if (ctfPanel) ctfPanel.innerHTML = labRenderCTF(mod);
+                if (ctfPanel) { ctfPanel.innerHTML = labRenderCTF(mod); applyDeferredStyles(ctfPanel); }
                 labRefreshModuleCard(moduleId);
                 labRefreshStats();
             } else {
@@ -933,7 +934,7 @@
                 labToast(`🏴 Flag correcta! +${xp} XP`, 'xp');
                 const mod = LAB_MODULES.find(m => m.id === moduleId);
                 const arenaPanel = document.getElementById('lab-panel-arena');
-                if (arenaPanel && mod) arenaPanel.innerHTML = labRenderArena(mod);
+                if (arenaPanel && mod) { arenaPanel.innerHTML = labRenderArena(mod); applyDeferredStyles(arenaPanel); }
                 labRefreshModuleCard(moduleId);
                 labRefreshStats();
             } else {
@@ -956,6 +957,7 @@
             const grids = document.querySelectorAll('.lab-modules-grid');
             grids.forEach(grid => {
                 grid.innerHTML = LAB_MODULES.map((mod, idx) => labRenderModuleCard(mod, idx)).join('');
+                applyDeferredStyles(grid);
             });
         }
 
@@ -969,7 +971,10 @@
                 return acc + (p.ctfSolved ? 1 : 0);
             }, 0);
             const xpVal = document.querySelector('.lab-xp-value');
-            if (xpVal) xpVal.innerHTML = `${totalXP} <span style="font-size:0.9rem;opacity:0.6">/ ${maxXP}</span>`;
+            if (xpVal) {
+                xpVal.innerHTML = `${totalXP} <span class="jshook-xp-max-suffix">/ ${maxXP}</span>`;
+                applyDeferredStyles(xpVal);
+            }
             const xpFill = document.querySelector('.lab-xp-progress-fill');
             if (xpFill) xpFill.style.width = xpPct + '%';
             const statVals = document.querySelectorAll('.lab-stat-value');

@@ -34,7 +34,8 @@
             try {
                 const snap = await db.collection('users').orderBy('lastSeen', 'desc').limit(40).get();
                 if (snap.empty) {
-                    grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Nenhum colega ainda.</span>';
+                    grid.innerHTML = '<span class="jshook-muted-sm">Nenhum colega ainda.</span>';
+                    applyDeferredStyles(grid);
                     return;
                 }
                 const uid = auth.currentUser?.uid;
@@ -49,7 +50,8 @@
                     return ls && (now - ls.getTime()) < ONLINE_MS;
                 });
                 if (!onlineDocs.length) {
-                    grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Nenhum colega online.</span>';
+                    grid.innerHTML = '<span class="jshook-muted-sm">Nenhum colega online.</span>';
+                    applyDeferredStyles(grid);
                     return;
                 }
                 grid.innerHTML = onlineDocs.map(doc => {
@@ -59,7 +61,7 @@
                     const avatarHtml = m.photoURL
                         ? `<div class="turma-chip-avatar"><img src="${escapeHtml(m.photoURL)}" loading="lazy"></div>`
                         : `<div class="turma-chip-avatar">${escapeHtml(initials)}</div>`;
-                    return `<div class="turma-chip online" data-view="turma" style="cursor:pointer;">
+                    return `<div class="turma-chip online jshook-cursor-pointer" data-view="turma">
                         ${avatarHtml}
                         <span>${escapeHtml(m.displayName?.split(' ')[0] || 'Anónimo')}</span>
                     </div>`;
@@ -67,8 +69,10 @@
                 grid.querySelectorAll('[data-view="turma"]').forEach(el =>
                     el.addEventListener('click', () => switchView('turma'))
                 );
+                applyDeferredStyles(grid);
             } catch(e) {
-                grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Não foi possível carregar.</span>';
+                grid.innerHTML = '<span class="jshook-muted-sm">Não foi possível carregar.</span>';
+                applyDeferredStyles(grid);
                 console.warn('renderTurma:', e);
             }
         }
@@ -76,17 +80,20 @@
         async function renderTurmaView() {
             const list = document.getElementById('turma-list');
             if (!list) return;
-            list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">A carregar…</span>';
+            list.innerHTML = '<span class="jshook-muted-sm">A carregar…</span>';
+            applyDeferredStyles(list);
             try {
                 const snap = await db.collection('users').orderBy('lastSeen', 'desc').limit(60).get();
                 if (snap.empty) {
-                    list.innerHTML = '<p style="color:var(--text-secondary);">Nenhum participante registado ainda.</p>';
+                    list.innerHTML = '<p class="jshook-muted">Nenhum participante registado ainda.</p>';
+                    applyDeferredStyles(list);
                     return;
                 }
                 const myUid = auth.currentUser?.uid;
                 const activeDocs = snap.docs.filter(doc => (doc.data().role || 'aluno') !== 'blocked');
                 if (!activeDocs.length) {
-                    list.innerHTML = '<p style="color:var(--text-secondary);">Nenhum participante registado ainda.</p>';
+                    list.innerHTML = '<p class="jshook-muted">Nenhum participante registado ainda.</p>';
+                    applyDeferredStyles(list);
                     return;
                 }
                 list.innerHTML = activeDocs.map(doc => {
@@ -97,20 +104,22 @@
                         ? m.lastSeen.toDate().toLocaleDateString('pt-PT', {day:'2-digit',month:'short',year:'numeric'})
                         : '–';
                     const avatarHtml = m.photoURL
-                        ? `<img src="${escapeHtml(m.photoURL)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;" loading="lazy">`
-                        : `<div style="width:38px;height:38px;border-radius:50%;background:var(--gradient-accent);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#000;flex-shrink:0;">${escapeHtml(ini)}</div>`;
-                    return `<div style="display:flex;align-items:center;gap:0.85rem;padding:0.7rem 1rem;background:var(--surface-color);border:1px solid ${isMe ? 'var(--accent-color)' : 'var(--border-color)'};border-radius:10px;">
+                        ? `<img src="${escapeHtml(m.photoURL)}" class="jshook-avatar-img" loading="lazy">`
+                        : `<div class="jshook-avatar-fallback">${escapeHtml(ini)}</div>`;
+                    return `<div class="jshook-turma-row" data-accent-border="${isMe ? '1' : '0'}">
                         ${avatarHtml}
-                        <div style="flex:1;min-width:0;">
-                            <div style="font-weight:600;color:${isMe ? 'var(--accent-color)' : '#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                ${escapeHtml(m.displayName || 'Anónimo')}${isMe ? ' <span style="font-size:0.7rem;opacity:0.7;">(tu)</span>' : ''}
+                        <div class="jshook-flex1-minw0">
+                            <div class="jshook-turma-name" data-accent-text="${isMe ? '1' : '0'}">
+                                ${escapeHtml(m.displayName || 'Anónimo')}${isMe ? ' <span class="jshook-tu-tag">(tu)</span>' : ''}
                             </div>
-                            <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:0.1rem;">último acesso: ${lastSeen}</div>
+                            <div class="jshook-last-seen">último acesso: ${lastSeen}</div>
                         </div>
                     </div>`;
                 }).join('');
+                applyDeferredStyles(list);
             } catch(e) {
-                list.innerHTML = '<p style="color:var(--text-secondary);">Não foi possível carregar a lista.</p>';
+                list.innerHTML = '<p class="jshook-muted">Não foi possível carregar a lista.</p>';
+                applyDeferredStyles(list);
                 console.warn('renderTurmaView:', e);
             }
         }

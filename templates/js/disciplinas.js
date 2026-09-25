@@ -32,8 +32,8 @@
                     progressHtml = `
                     <div class="uc-progress-wrap">
                         <div class="uc-progress-bar">
-                            <div class="uc-progress-sched" style="width:${schedPct}%"></div>
-                            <div class="uc-progress-done"  style="width:${donePct}%"></div>
+                            <div class="uc-progress-sched" data-pct="${schedPct}"></div>
+                            <div class="uc-progress-done"  data-pct="${donePct}"></div>
                         </div>
                         <div class="uc-progress-label">${label}</div>
                     </div>`;
@@ -45,8 +45,8 @@
                     progressHtml = `
                     <div class="uc-progress-wrap">
                         <div class="uc-progress-bar">
-                            <div class="uc-progress-sched" style="width:100%"></div>
-                            <div class="uc-progress-done"  style="width:${donePct}%"></div>
+                            <div class="uc-progress-sched" data-pct="100"></div>
+                            <div class="uc-progress-done"  data-pct="${donePct}"></div>
                         </div>
                         <div class="uc-progress-label">${label}</div>
                     </div>`;
@@ -199,10 +199,11 @@
                 sectionHtml('Concluídas', '✅', concluidas),
             ].join('');
 
-            grid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma UC encontrada.</div>`;
+            grid.innerHTML = html || `<div class="empty-state jshook-grid-span-all">Nenhuma UC encontrada.</div>`;
             grid.querySelectorAll('[data-uc-open]').forEach(el =>
                 el.addEventListener('click', () => { navStack.push(currentView); openUCDetail(el.dataset.ucOpen); })
             );
+            applyDeferredStyles(grid);
         }
 
         function filterUCs(value) {

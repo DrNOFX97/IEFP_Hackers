@@ -34,8 +34,8 @@
                         ? `<iframe src="https://www.youtube.com/embed/${escapeHtml(ytId)}"
                                    frameborder="0" allowfullscreen
                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
-                                   style="width:100%;aspect-ratio:16/9;display:block;"></iframe>`
-                        : `<video controls preload="none" style="width:100%;max-height:360px;display:block;">
+                                   class="jshook-yt-embed"></iframe>`
+                        : `<video controls preload="none" class="jshook-local-video">
                                <source src="${escapeHtml(m.url)}" type="${m.url.endsWith('.webm') ? 'video/webm' : 'video/mp4'}">
                            </video>`;
                     return `
@@ -105,6 +105,7 @@
             el.querySelectorAll('[data-action="open-mat"]').forEach(node =>
                 node.addEventListener('keydown', e => { if (e.key === 'Enter') openMaterial(parseInt(node.dataset.mat)); })
             );
+            applyDeferredStyles(el);
         }
 
         function toggleVideo(header) {
@@ -131,7 +132,15 @@
             dlBtn.href = url;
             // Loading placeholder
             frame.removeAttribute('src');
-            frame.srcdoc = `<body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#525659;font-family:sans-serif;color:#ccc;font-size:0.9rem">A carregar PDF…</body>`;
+            frame.srcdoc = `<body id="pdf-loading-msg">A carregar PDF…</body>`;
+            styleSrcdocOnLoad(frame, doc => {
+                const b = doc && doc.getElementById('pdf-loading-msg');
+                if (!b) return;
+                Object.assign(b.style, {
+                    margin: '0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    height: '100vh', background: '#525659', fontFamily: 'sans-serif', color: '#ccc', fontSize: '0.9rem'
+                });
+            });
             modal.classList.add('open');
             document.body.style.overflow = 'hidden';
             try {
@@ -142,7 +151,18 @@
                 frame.removeAttribute('srcdoc');
                 frame.src    = _pdfBlobUrl;
             } catch (e) {
-                frame.srcdoc = `<body style="margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#1a1a2e;font-family:sans-serif;color:#ccc;gap:1rem"><p>Não foi possível carregar o PDF.</p><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="color:#58a6ff;text-decoration:none;border:1px solid #58a6ff;padding:.5rem 1rem;border-radius:6px">↗ Abrir em separador</a></body>`;
+                frame.srcdoc = `<body id="pdf-error-msg"><p>Não foi possível carregar o PDF.</p><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" id="pdf-error-link">↗ Abrir em separador</a></body>`;
+                styleSrcdocOnLoad(frame, doc => {
+                    const b = doc && doc.getElementById('pdf-error-msg');
+                    if (b) Object.assign(b.style, {
+                        margin: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        height: '100vh', background: '#1a1a2e', fontFamily: 'sans-serif', color: '#ccc', gap: '1rem'
+                    });
+                    const a = doc && doc.getElementById('pdf-error-link');
+                    if (a) Object.assign(a.style, {
+                        color: '#58a6ff', textDecoration: 'none', border: '1px solid #58a6ff', padding: '.5rem 1rem', borderRadius: '6px'
+                    });
+                });
             }
         }
 

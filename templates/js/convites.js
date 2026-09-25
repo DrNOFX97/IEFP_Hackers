@@ -62,13 +62,15 @@
                 window._invitesUnsub = null;
             }
 
-            list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">A carregar…</span>';
+            list.innerHTML = '<span class="jshook-muted-xs">A carregar…</span>';
+            applyDeferredStyles(list);
 
             window._invitesUnsub = db.collection('invites')
                 .where('createdBy', '==', uid)
                 .onSnapshot(snap => {
                     if (snap.empty) {
-                        list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Nenhum convite criado ainda.</span>';
+                        list.innerHTML = '<span class="jshook-muted-xs">Nenhum convite criado ainda.</span>';
+                        applyDeferredStyles(list);
                         return;
                     }
                     list.innerHTML = '';
@@ -83,7 +85,8 @@
                         list.appendChild(card);
                     });
                 }, () => {
-                    list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Erro ao carregar convites.</span>';
+                    list.innerHTML = '<span class="jshook-muted-xs">Erro ao carregar convites.</span>';
+                    applyDeferredStyles(list);
                 });
         }
 
@@ -109,11 +112,11 @@
             const safeExpiry = escapeHtml(expiry);
             div.innerHTML = `
                 <div class="invite-card-header">
-                    <div style="display:flex;gap:0.4rem;align-items:center;">
+                    <div class="jshook-flex-gap4-center">
                         <span class="invite-type-badge ${safeType}">${safeType === 'individual' ? '👤 Individual' : '👥 Turma'}</span>
                         <span class="invite-status-badge ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>
                     </div>
-                    <span style="font-size:0.68rem;color:var(--text-secondary);">${inv.uses || 0} uso${inv.uses !== 1 ? 's' : ''}</span>
+                    <span class="jshook-uses-count">${inv.uses || 0} uso${inv.uses !== 1 ? 's' : ''}</span>
                 </div>
                 <div class="invite-meta">
                     Expira: ${safeExpiry}
@@ -125,7 +128,7 @@
                     ${inv.active ? `<button class="invite-action-btn danger" data-revoke-invite>🚫 Revogar</button>` : ''}
                     <button class="invite-action-btn danger" data-del-invite>🗑️ Apagar</button>
                 </div>
-                <div class="invite-qr-wrap" id="qr-${token}" style="display:none;margin-top:0.8rem;"></div>`;
+                <div class="invite-qr-wrap jshook-qr-wrap" id="qr-${token}"></div>`;
             div.querySelector('[data-copy-link]')?.addEventListener('click', () =>
                 navigator.clipboard.writeText(link).then(() => toast('Link copiado!'))
             );
@@ -134,6 +137,7 @@
             });
             div.querySelector('[data-revoke-invite]')?.addEventListener('click', () => revokeInvite(token));
             div.querySelector('[data-del-invite]')?.addEventListener('click', () => deleteInvite(token));
+            applyDeferredStyles(div);
             return div;
         }
 

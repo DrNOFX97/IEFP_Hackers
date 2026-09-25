@@ -1,3 +1,103 @@
+        // ── STYLE HOOKS (CSP: sem 'unsafe-inline' em style-src) ───────────
+        // O HTML gerado dinamicamente por template strings NUNCA usa o
+        // atributo style="" — em vez disso marca os elementos com classes
+        // "jshook-*" (puramente seletores, não são regras CSS) e/ou
+        // atributos data-*, e o estilo real é aplicado aqui via
+        // elemento.style.propriedade, que é uma chamada à API DOM e não
+        // uma injeção de atributo HTML. Chamar applyDeferredStyles(root)
+        // depois de qualquer atribuição a innerHTML que possa conter
+        // elementos marcados. Partilhado por vários módulos do dashboard
+        // (horário, disciplinas, materiais, turma, chat, convites, lab) —
+        // vive aqui porque horario.js é o primeiro destes ficheiros na
+        // ordem de concatenação do gerador (js_files), mas fica disponível
+        // globalmente após a concatenação de todos os templates/js/*.js.
+        function applyStyleHooks(root) {
+            if (!root) return;
+            const set = (sel, styles) => root.querySelectorAll(sel).forEach(el => Object.assign(el.style, styles));
+
+            // Horário / aulas
+            set('.jshook-aula-badges-row',    { display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '5px', alignItems: 'center' });
+            set('.jshook-aula-badge',         { marginTop: '0' });
+            set('.jshook-aula-badge-formador',{ background: 'rgba(255,255,255,0.1)', color: '#fff' });
+            set('.jshook-week-badge',         { fontSize: '0.62rem', padding: '0.1rem 0.4rem', marginTop: '3px', display: 'inline-block' });
+            set('.jshook-grid-span-all',      { gridColumn: '1/-1' });
+
+            // Materiais (vídeo/youtube)
+            set('.jshook-yt-embed',    { width: '100%', aspectRatio: '16/9', display: 'block' });
+            set('.jshook-local-video', { width: '100%', maxHeight: '360px', display: 'block' });
+
+            // Turma
+            set('.jshook-muted-sm',        { color: 'var(--text-secondary)', fontSize: '0.82rem' });
+            set('.jshook-muted-xs',        { color: 'var(--text-secondary)', fontSize: '0.8rem' });
+            set('.jshook-muted',           { color: 'var(--text-secondary)' });
+            set('.jshook-cursor-pointer',  { cursor: 'pointer' });
+            set('.jshook-avatar-img',      { width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' });
+            set('.jshook-avatar-fallback', { width: '38px', height: '38px', borderRadius: '50%', background: 'var(--gradient-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: '700', color: '#000', flexShrink: '0' });
+            set('.jshook-turma-row',       { display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.7rem 1rem', background: 'var(--surface-color)', borderRadius: '10px' });
+            set('.jshook-flex1-minw0',     { flex: '1', minWidth: '0' });
+            set('.jshook-turma-name',      { fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' });
+            set('.jshook-tu-tag',          { fontSize: '0.7rem', opacity: '0.7' });
+            set('.jshook-last-seen',       { fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.1rem' });
+
+            // Chat
+            set('.jshook-chat-time-row', { display: 'flex', gap: '0.25rem', alignItems: 'center' });
+            set('.jshook-wa-badge',      { fontSize: '0.7em', opacity: '0.6', marginLeft: '0.25rem' });
+
+            // Convites
+            set('.jshook-flex-gap4-center', { display: 'flex', gap: '0.4rem', alignItems: 'center' });
+            set('.jshook-uses-count',       { fontSize: '0.68rem', color: 'var(--text-secondary)' });
+            set('.jshook-qr-wrap',          { display: 'none', marginTop: '0.8rem' });
+
+            // Lab / PentestLab
+            set('.jshook-xp-max-suffix',   { fontSize: '0.9rem', opacity: '0.6' });
+            set('.jshook-mt-1_5rem',       { marginTop: '1.5rem' });
+            set('.jshook-mt-1rem',         { marginTop: '1rem' });
+            set('.jshook-fw700',           { fontWeight: '700' });
+            set('.jshook-ctf-solved-sub',  { fontSize: '0.78rem', opacity: '0.8', marginTop: '0.2rem' });
+            set('.jshook-arena-intro',     { marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' });
+            set('.jshook-arena-card-desc', { fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' });
+            set('.jshook-arena-input',     { marginBottom: '0.5rem', fontSize: '0.75rem' });
+            set('.jshook-success-text',    { color: 'var(--success-color)' });
+        }
+
+        // Estilos cuja propriedade depende de um valor calculado em runtime
+        // (percentagens, cores condicionais). O valor já calculado vai num
+        // atributo data-* no HTML (nunca em style=""), e aqui é lido e
+        // aplicado via elemento.style.propriedade.
+        function applyDynamicStyles(root) {
+            if (!root) return;
+            root.querySelectorAll('[data-pct]').forEach(el => {
+                el.style.width = el.dataset.pct + '%';
+            });
+            root.querySelectorAll('[data-accent-border]').forEach(el => {
+                el.style.border = '1px solid ' + (el.dataset.accentBorder === '1' ? 'var(--accent-color)' : 'var(--border-color)');
+            });
+            root.querySelectorAll('[data-accent-text]').forEach(el => {
+                el.style.color = el.dataset.accentText === '1' ? 'var(--accent-color)' : '#fff';
+            });
+            root.querySelectorAll('[data-hide-if-filtered]').forEach(el => {
+                if (el.dataset.hideIfFiltered === '1') el.style.display = 'none';
+            });
+        }
+
+        function applyDeferredStyles(root) {
+            applyStyleHooks(root);
+            applyDynamicStyles(root);
+        }
+
+        // frame.srcdoc cria um mini-documento (about:srcdoc) que herda a CSP
+        // do documento principal — por isso também não pode ter style="" no
+        // seu HTML. Em vez disso o corpo é marcado com um id e, assim que o
+        // iframe termina de carregar, o estilo é aplicado via
+        // contentDocument.<elemento>.style.propriedade (API DOM).
+        function styleSrcdocOnLoad(frame, styleFn) {
+            const handler = () => {
+                frame.removeEventListener('load', handler);
+                try { styleFn(frame.contentDocument); } catch (e) { /* cross-doc not ready */ }
+            };
+            frame.addEventListener('load', handler);
+        }
+
         // Datas em que TODAS as aulas são remotas (exceções pontuais)
         const REMOTE_DATE_EXCEPTIONS = new Set(['2026-06-12', '2026-06-17']);
 
@@ -101,13 +201,13 @@
             const isRemote      = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto') || REMOTE_DATE_EXCEPTIONS.has(diaData);
             const remoteClass   = isRemote ? 'remote' : '';
             const remoteBadge   = isRemote
-                ? `<div class="aula-uc badge remote" style="margin-top:0;">🌐 Remoto</div>` : '';
+                ? `<div class="aula-uc badge remote jshook-aula-badge">🌐 Remoto</div>` : '';
             const isTeste       = aula.tipo === 'teste';
             const testeClass    = isTeste ? 'teste' : '';
             const testeBadge    = isTeste
-                ? `<div class="aula-uc badge teste" style="margin-top:0;">📝 Teste</div>` : '';
+                ? `<div class="aula-uc badge teste jshook-aula-badge">📝 Teste</div>` : '';
             const formadorBadge = aula.formador
-                ? `<div class="aula-uc badge" style="margin-top:0;background:rgba(255,255,255,0.1);color:#fff;">👤 ${shortName(aula.formador)}</div>` : '';
+                ? `<div class="aula-uc badge jshook-aula-badge jshook-aula-badge-formador">👤 ${shortName(aula.formador)}</div>` : '';
             const clickAttr = UC_MAP[aula.uc]
                 ? `data-uc-sched="${aula.uc}"` : '';
             return `
@@ -115,8 +215,8 @@
                 <div class="aula-time">${aula.hora}</div>
                 <div class="aula-info">
                     <div class="aula-desc">${aula.descricao}</div>
-                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:5px;align-items:center;">
-                        <div class="aula-uc badge" style="margin-top:0;">${aula.uc}</div>
+                    <div class="jshook-aula-badges-row">
+                        <div class="aula-uc badge jshook-aula-badge">${aula.uc}</div>
                         ${remoteBadge}${testeBadge}${formadorBadge}
                     </div>
                 </div>
@@ -193,7 +293,7 @@
 
                 if (!filter || dayMatches) monthHasContent = true;
                 monthHtml += `
-                <div class="day-card${dia.isWeekend ? ' weekend-day' : ''}" data-date="${dia.data}" style="${(filter && !dayMatches) ? 'display:none;' : ''}">
+                <div class="day-card${dia.isWeekend ? ' weekend-day' : ''}" data-date="${dia.data}" data-hide-if-filtered="${(filter && !dayMatches) ? '1' : '0'}">
                     <div class="day-header">
                         <span class="day-date">${dia.data}</span>
                         <span class="day-week badge">${dia.dia_semana}</span>
@@ -203,10 +303,11 @@
             });
             flushMonth();
 
-            scheduleGrid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma aula encontrada para esse filtro.</div>`;
+            scheduleGrid.innerHTML = html || `<div class="empty-state jshook-grid-span-all">Nenhuma aula encontrada para esse filtro.</div>`;
             scheduleGrid.querySelectorAll('[data-uc-sched]').forEach(el =>
                 el.addEventListener('click', () => openUCFromSchedule(el.dataset.ucSched))
             );
+            applyDeferredStyles(scheduleGrid);
             setTimeout(scrollToToday, 60);
         }
 
@@ -283,10 +384,10 @@
                             const clickAttr  = UC_MAP[aula.uc] ? `data-uc-sched="${aula.uc}"` : '';
                             const isRemote   = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto') || REMOTE_DATE_EXCEPTIONS.has(dia.data);
                             const remoteCls  = isRemote ? 'remote' : '';
-                            const remoteBadge = isRemote ? `<span class="badge remote" style="font-size:0.62rem;padding:0.1rem 0.4rem;margin-top:3px;display:inline-block;">🌐 Remoto</span>` : '';
+                            const remoteBadge = isRemote ? `<span class="badge remote jshook-week-badge">🌐 Remoto</span>` : '';
                             const isTeste    = aula.tipo === 'teste';
                             const testeCls   = isTeste ? 'teste' : '';
-                            const testeBadge = isTeste ? `<span class="badge teste" style="font-size:0.62rem;padding:0.1rem 0.4rem;margin-top:3px;display:inline-block;">📝 Teste</span>` : '';
+                            const testeBadge = isTeste ? `<span class="badge teste jshook-week-badge">📝 Teste</span>` : '';
                             bodyHtml += `
                             <div class="week-aula-card ${state} ${clickCls} ${remoteCls} ${testeCls} ${dimCls}" ${clickAttr}>
                                 <div class="week-aula-time">${aula.hora}</div>
@@ -319,6 +420,7 @@
             scheduleGrid.querySelectorAll('[data-uc-sched]').forEach(el =>
                 el.addEventListener('click', () => openUCFromSchedule(el.dataset.ucSched))
             );
+            applyDeferredStyles(scheduleGrid);
             setTimeout(scrollToToday, 60);
         }
 
