@@ -25,9 +25,11 @@ Ficheiro local de tracking — não é feito deploy (`*.md` está no `.gitignore
 - [ ] DNSSEC — fora de controlo (domínio `*.web.app` gerido pela Google)
 - [ ] OCSP stapling — fora de controlo (terminação TLS gerida pela Google/Fastly)
 
-## 🐛 Bugs pré-existentes encontrados (fora do escopo deste roadmap)
+## 🐛 Bugs pré-existentes — ✅ CORRIGIDOS (commit `11f5101`)
 
-- `CyberMap.html` / `cybermap-inline.js`: erro no console em loop (`Cannot read properties of undefined (reading 'x')` em `updateArcs`/`animate`, three.js) + 404 em `logo_02.png`. Detetado ao testar `dashboard.html` no browser (o CyberMap corre em background/iframe). Não relacionado com as mudanças da Fase 1 — não foi tocado.
+- `cybermap-inline.js`: `animate(0)` fabricava um timestamp `t=0` na 1ª frame, muito menor que os `born` reais dos arcos já criados no init → `life`/`headT` negativos → `CatmullRomCurve3.getPoint()` indexava o array de pontos com índice negativo → `undefined` → crash em loop (`distanceToSquared`, dezenas de erros/seg). Fix: clamp de `headT` a `[0,1]` + `requestAnimationFrame(animate)` em vez de `animate(0)`.
+- `CyberMap.html`: `logo_02.png` nunca existiu no repo (404 desde sempre) → aponta agora para `logo-cet.png`.
+- Validado no browser: 0 erros de consola após 5s de animação (antes: dezenas/seg).
 
 ## Notas
 
