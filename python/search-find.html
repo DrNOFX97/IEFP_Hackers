@@ -296,4 +296,103 @@
       </table>
     </div>
 
-    <h3 class="h3-mt40">
+    <h3 class="h3-mt40">Qual escolher, em cada situação</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Situação</th><th>Usa</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Procurar substring literal numa string</td><td class="mono kali">str.find() ou "in"</td></tr>
+          <tr><td>Validar se uma string corresponde a um padrão (email, código postal, etc.)</td><td class="mono acc">re.search() ou re.match()</td></tr>
+          <tr><td>Extrair <strong>todas</strong> as ocorrências de um padrão</td><td class="mono meta">re.findall()</td></tr>
+          <tr><td>Procurar um item numa lista ou tupla</td><td class="mono">list.index() com verificação "in"</td></tr>
+          <tr><td>Não queres lidar com exceções</td><td class="mono ok">find() (strings) em vez de index()</td></tr>
+          <tr><td>Precisas de extrair partes do que foi encontrado (grupos)</td><td class="mono acc">re.search() — o Match tem .group()</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <div class="icon">🧭</div>
+      <div>
+        <h5>Regra prática</h5>
+        <p>
+          Se a pergunta é <em>"este texto contém literalmente X?"</em>, é <code>find</code> ou <code>in</code>.
+          Se a pergunta é <em>"este texto corresponde a um padrão?"</em>, é <code>search</code>.
+          Regex resolve problemas que substrings literais não conseguem — mas custa mais a escrever e a ler.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="armadilhas">
+  <div class="container">
+    <div class="section-label">// 06 — Armadilhas</div>
+    <h2 class="section-title">Erros comuns</h2>
+    <p class="section-desc">
+      Os mesmos enganos aparecem ano após ano. Aqui ficam os mais frequentes — e como os evitar.
+    </p>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>Confundir find() com search()</h5>
+        <p>
+          <code>"abc".find("b")</code> funciona, mas <code>re.search("b", "abc")</code> também funciona — e isso
+          leva a pensar que são intermutáveis. Não são: assim que o padrão tiver algo mais complexo que texto
+          literal (<code>\d+</code>, <code>.*</code>, classes de caracteres), só <code>search</code> funciona
+          como esperado.
+        </p>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>Esquecer o "r" antes do padrão regex</h5>
+        <p>
+          <code>re.search("\d+", texto)</code> sem o prefixo <code>r</code> pode funcionar por acaso em padrões
+          simples, mas sequências como <code>\b</code> ou <code>\s</code> podem ser interpretadas como caracteres
+          de escape do Python antes de chegarem ao motor de regex. Usa sempre <code>r"..."</code> (raw string)
+          em padrões regex.
+        </p>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>Usar index() quando a ausência é normal</h5>
+        <p>
+          Se não encontrar o item é uma situação <strong>esperada</strong> (não um erro do programa),
+          <code>index()</code> obriga a um <code>try/except</code> só para o fluxo normal do código.
+          Prefere <code>find()</code> (strings) ou testa com <code>in</code> primeiro (listas).
+        </p>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <h5>Achar que match() procura em qualquer posição</h5>
+        <p>
+          Já visto na secção anterior, mas é o erro mais comum de todos: <code>re.match()</code> só ancora no
+          <strong>início</strong> da string. Para procurar em qualquer posição, é sempre <code>re.search()</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>search e find — Aula interativa · Strings &amp; regex em Python</p>
+    <p class="footer-note">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+</body>
+</html>

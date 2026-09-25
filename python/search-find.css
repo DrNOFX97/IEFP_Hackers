@@ -193,5 +193,6 @@
   /* --- Externalizadas de atributos style="" inline (CSP style-src) --- */
   .h3-spaced { margin-top:40px; margin-bottom:16px; font-size:20px; }
   .h3-tight { margin-bottom:16px; font-size:20px; }
-  .h3-mt40 { margin-top:40px; }
+  .h3-mt40 { margin-top:40px; font-size:20px; }
   .code-mt24 { margin-top:24px; }
+  .footer-note { margin-top:8px; font-size:12px; }

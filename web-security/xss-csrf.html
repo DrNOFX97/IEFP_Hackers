@@ -261,4 +261,207 @@ document.getElementById(<span class="str">'saudacao'</span>).innerHTML = <span c
     <div class="flow-node meta">Vítima autenticada no site A</div>
     <div class="flow-arrow">→</div>
     <div class="flow-node">Visita site B malicioso</div>
-    <div class="flow-arrow">→</div
+    <div class="flow-arrow">→</div>
+    <div class="flow-node kali">Site B envia pedido forjado para A</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">Navegador anexa cookies automaticamente</div>
+  </div>
+
+  <h3 class="subsection-title">
+    Anatomia de um ataque <span class="tag kali">essencial</span>
+  </h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4>O endpoint vulnerável</h4>
+        <p>
+          A aplicação confia apenas na sessão do utilizador (o cookie) para autorizar uma ação que muda estado — não verifica de onde veio o pedido nem exige nenhum token adicional.
+        </p>
+        <div class="code">
+<span class="comment">// Endpoint que transfere dinheiro, protegido só por cookie de sessão</span>
+<span class="comment">POST</span> /conta/transferir
+<span class="comment">Cookie:</span> session=abc123def456...
+
+{ <span class="str">"destino"</span>: <span class="str">"PT50-0000-CONTA-DESTINO"</span>, <span class="str">"valor"</span>: 5000 }
+
+<span class="comment">// Qualquer pedido com este cookie é aceite,</span>
+<span class="comment">// venha de onde vier — o servidor não distingue</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4>A página armadilha</h4>
+        <p>
+          O atacante aloja uma página em <code>atacante.pt</code> com um formulário oculto que se auto-submete assim que a vítima a visita — sem clique, sem interação.
+        </p>
+        <div class="code">
+<span class="comment">&lt;!-- Alojado em atacante.pt --&gt;</span>
+<span class="bad">&lt;form action="https://banco.pt/conta/transferir" method="POST" id="f"&gt;</span>
+<span class="bad">  &lt;input type="hidden" name="destino" value="PT50-CONTA-DO-ATACANTE"&gt;</span>
+<span class="bad">  &lt;input type="hidden" name="valor" value="5000"&gt;</span>
+<span class="bad">&lt;/form&gt;</span>
+<span class="bad">&lt;script&gt;document.getElementById('f').submit();&lt;/script&gt;</span>
+
+<span class="comment">// A vítima só precisa de abrir a página — nada mais</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4>O pedido forjado é aceite</h4>
+        <p>
+          O navegador da vítima, ao submeter o formulário para <code>banco.pt</code>, anexa automaticamente os cookies de sessão desse domínio — é o comportamento normal e esperado dos navegadores, não uma falha do browser. O servidor recebe um pedido com uma sessão válida e executa a transferência.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="danger-box">
+    <span class="icon">🚨</span>
+    <div>
+      <h5>Porque é que o CSRF funciona</h5>
+      <p>
+        Por omissão, os navegadores enviam os cookies de um domínio em <strong>qualquer</strong> pedido para esse domínio, independentemente da página que originou o pedido. A aplicação vê um pedido com uma sessão válida e não tem forma de saber que não foi a vítima, deliberadamente, quem o iniciou. O atacante nunca vê a resposta (a política de mesma origem impede isso) — mas não precisa: o objetivo é executar a ação, não ler o resultado.
+      </p>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">
+    Como prevenir CSRF <span class="tag meta">contramedidas</span>
+  </h3>
+
+  <div class="compare-grid">
+    <div class="card kali">
+      <div class="card-icon">🔐</div>
+      <h3>Defesas obrigatórias</h3>
+      <ul>
+        <li><strong>Token CSRF (synchronizer token):</strong> valor único por sessão, embutido em cada formulário e verificado no servidor a cada pedido.</li>
+        <li><strong>Cookies SameSite=Strict ou Lax:</strong> impede o navegador de enviar o cookie em pedidos originados noutro site.</li>
+        <li><strong>Verificar cabeçalhos Origin/Referer:</strong> rejeitar pedidos que não venham do próprio domínio.</li>
+        <li><strong>Métodos seguros só para leitura:</strong> ações que mudam estado nunca em GET.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">🧱</div>
+      <h3>Defesas complementares</h3>
+      <ul>
+        <li><strong>Custom request headers:</strong> pedidos forjados via formulário HTML simples não conseguem definir cabeçalhos como <code>X-Requested-With</code>.</li>
+        <li><strong>Re-autenticação para ações sensíveis:</strong> pedir a password outra vez antes de transferências ou alterações de conta.</li>
+        <li><strong>Double-submit cookie:</strong> alternativa ao token de sessão quando o servidor é sem estado (stateless).</li>
+        <li><strong>Expirar sessões inativas:</strong> reduz a janela de oportunidade do ataque.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code code-spaced">
+<span class="comment">// ❌ Vulnerável — sem SameSite, sem token</span>
+<span class="bad">Set-Cookie: session=abc123</span>
+
+<span class="comment">// ✅ Seguro — SameSite impede o envio em pedidos cross-site</span>
+<span class="good">Set-Cookie: session=abc123; SameSite=Strict; Secure; HttpOnly</span>
+
+<span class="comment">// ✅ Seguro — token CSRF gerado por sessão, verificado no servidor</span>
+<span class="good">&lt;input type="hidden" name="csrf_token" value="{{ token_da_sessao }}"&gt;</span>
+
+<span class="comment">// No servidor:</span>
+<span class="good">if request.form['csrf_token'] != session['csrf_token']:</span>
+<span class="good">    abort(403)</span>
+  </div>
+</section>
+
+<!-- COMPARAÇÃO -->
+<section id="comparacao" class="container">
+  <div class="section-label">04 — Comparação</div>
+  <h2 class="section-title">XSS vs CSRF, lado a lado</h2>
+  <p class="section-desc">
+    São frequentemente mencionadas em conjunto porque ambas exploram a confiança em torno da sessão do utilizador — mas os mecanismos, o alvo e as defesas são distintos.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th></th><th>XSS</th><th>CSRF</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">Vetor de ataque</td><td>Injeção de código no HTML/JS</td><td>Pedido forjado que usa cookies existentes</td></tr>
+        <tr><td class="mono">Alvo direto</td><td class="kali">O navegador da vítima</td><td class="meta">A aplicação no servidor</td></tr>
+        <tr><td class="mono">Requer JavaScript</td><td class="err">Sim, sempre</td><td class="ok">Não — basta um formulário HTML</td></tr>
+        <tr><td class="mono">Requer sessão ativa da vítima</td><td>Não necessariamente</td><td class="err">Sim, obrigatoriamente</td></tr>
+        <tr><td class="mono">Onde corre o código malicioso</td><td>No navegador da vítima</td><td>Não há código a correr — só um pedido HTTP</td></tr>
+        <tr><td class="mono">O atacante lê a resposta?</td><td class="err">Sim, se o script executar</td><td class="ok">Não — a política de mesma origem bloqueia</td></tr>
+        <tr><td class="mono">Defesa principal</td><td>Escapar output / CSP</td><td>Token CSRF / SameSite</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">🔗</span>
+    <div>
+      <h5>Podem coexistir e agravar-se mutuamente</h5>
+      <p>
+        Um XSS pode ser usado para <strong>roubar o próprio token CSRF</strong> (lendo-o do DOM ou de um cookie não HttpOnly), anulando essa proteção. Por isso as defesas contra XSS e CSRF não são alternativas — são complementares, e nenhuma substitui a outra.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- DEFESAS -->
+<section id="defesas" class="container">
+  <div class="section-label">05 — Síntese</div>
+  <h2 class="section-title">Defesa em profundidade</h2>
+  <p class="section-desc">
+    Nenhuma medida isolada é suficiente. A proteção eficaz combina várias camadas, para que a falha de uma não comprometa a aplicação inteira.
+  </p>
+
+  <div class="compare-grid compare-grid-spaced-lg">
+    <div class="card kali">
+      <div class="card-icon">✅</div>
+      <h3>Checklist XSS</h3>
+      <ul>
+        <li>Escapar output conforme o contexto (HTML, atributo, JS, URL).</li>
+        <li>Usar frameworks com auto-escape (React, Vue, Angular).</li>
+        <li>Evitar innerHTML com dados não confiáveis.</li>
+        <li>Content-Security-Policy sem <code>unsafe-inline</code>.</li>
+        <li>Cookies HttpOnly para dados de sessão.</li>
+      </ul>
+    </div>
+    <div class="card meta">
+      <div class="card-icon">✅</div>
+      <h3>Checklist CSRF</h3>
+      <ul>
+        <li>Token CSRF em todos os formulários que mudam estado.</li>
+        <li>Cookies com <code>SameSite=Strict</code> ou <code>Lax</code>.</li>
+        <li>Verificar cabeçalhos Origin/Referer no servidor.</li>
+        <li>Ações sensíveis nunca disponíveis via GET.</li>
+        <li>Re-autenticação para operações críticas.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="icon">📘</span>
+    <div>
+      <h5>Para levar desta aula</h5>
+      <p>
+        XSS quebra a confiança <em>do utilizador no site</em>; CSRF quebra a confiança <em>do site no utilizador</em>. Defender-se de um não defende automaticamente do outro — mas as boas práticas de ambos reforçam-se mutuamente numa aplicação bem construída.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>XSS &amp; CSRF — Aula interativa · Segurança de aplicações web</p>
+    <p class="footer-note">Documento apenas para fins educativos</p>
+  </div>
+</footer>
+
+</body>
+</html>
