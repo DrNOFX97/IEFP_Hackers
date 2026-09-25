@@ -632,18 +632,25 @@ function selectCountry(code) {
   const malwareList = [...new Set(fromHere.map(t => t.malware))].slice(0, 3).join(', ') || '—';
   const topVector = fromHere.length ? fromHere[0].malware : 'N/A';
 
-  document.getElementById('country-detail').innerHTML = `
-    <div class="p-label" style="margin:15px 15px 10px">Country Details</div>
-    <div style="padding:0 15px">
+  const container = document.getElementById('country-detail');
+  container.innerHTML = `
+    <div class="p-label" data-role="cd-label">Country Details</div>
+    <div data-role="cd-body">
       <div class="c-flag">${d.flag}</div>
       <div class="c-name">${d.name}</div>
       <div class="d-row"><span class="d-key">Threat Level</span><span class="d-val r">${d.thr}</span></div>
       <div class="d-row"><span class="d-key">Active C2 servers</span><span class="d-val r">${fromHere.length}</span></div>
       <div class="d-row"><span class="d-key">Attacks recv/hr</span><span class="d-val r">${d.recv.toLocaleString()}</span></div>
       <div class="d-row"><span class="d-key">Bandwidth</span><span class="d-val g">${d.bw.toFixed(1)} Tbps</span></div>
-      <div class="d-row"><span class="d-key">Top Malware</span><span class="d-val" style="font-size:9px">${topVector}</span></div>
-      <div class="d-row" style="border:none"><span class="d-key">Active families</span><span class="d-val" style="font-size:9px;text-align:right;max-width:130px">${malwareList}</span></div>
+      <div class="d-row"><span class="d-key">Top Malware</span><span class="d-val" data-role="cd-topmal">${topVector}</span></div>
+      <div class="d-row" data-role="cd-fam-row"><span class="d-key">Active families</span><span class="d-val" data-role="cd-fam-val">${malwareList}</span></div>
     </div>`;
+  // Estilos dinâmicos aplicados via CSSOM (sem atributo style inline, CSP style-src hardening)
+  container.querySelector('[data-role="cd-label"]').style.margin = '15px 15px 10px';
+  container.querySelector('[data-role="cd-body"]').style.padding = '0 15px';
+  container.querySelector('[data-role="cd-topmal"]').style.fontSize = '9px';
+  container.querySelector('[data-role="cd-fam-row"]').style.border = 'none';
+  container.querySelector('[data-role="cd-fam-val"]').style.cssText = 'font-size:9px;text-align:right;max-width:130px';
 }
 
 // ── ALERTS / FEED ────────────────────────────────────────────────────────────
@@ -662,12 +669,21 @@ function addAlert(type, txt) {
 function addFeed(arc) {
   const d = document.createElement('div');
   d.className = 'feed-item ' + arc.type;
+  // Estilos dinâmicos aplicados via CSSOM (sem atributo style inline, CSP style-src hardening)
   if (arc.type === 'attack') {
     const mal = arc.malware ? `<b>${arc.malware}</b>` : `<b>${'DDoS'}</b>`;
-    const ipBit = arc.ip ? `<span style="color:var(--orange);font-size:9px">${arc.ip}</span>` : `<span style="color:var(--orange);font-size:9px">${arc.bytes}</span>`;
-    d.innerHTML = `<span style="color:var(--cyan);font-size:9px">${utc()}</span> <span style="color:var(--red)">${arc.src.code}</span>→<span style="color:var(--green)">${arc.dst.code}</span> ${mal}<br>${ipBit}`;
+    const ipText = arc.ip ? arc.ip : arc.bytes;
+    d.innerHTML = `<span data-role="time">${utc()}</span> <span data-role="src">${arc.src.code}</span>→<span data-role="dst">${arc.dst.code}</span> ${mal}<br><span data-role="ip">${ipText}</span>`;
+    d.querySelector('[data-role="time"]').style.cssText = 'color:var(--cyan);font-size:9px';
+    d.querySelector('[data-role="src"]').style.color = 'var(--red)';
+    d.querySelector('[data-role="dst"]').style.color = 'var(--green)';
+    d.querySelector('[data-role="ip"]').style.cssText = 'color:var(--orange);font-size:9px';
   } else {
-    d.innerHTML = `<span style="color:var(--cyan);font-size:9px">${utc()}</span> <span style="color:var(--green)">${arc.src.code}</span>→<span style="color:var(--cyan)">${arc.dst.code}</span><br><span style="color:var(--orange);font-size:9px">${arc.bytes}</span>`;
+    d.innerHTML = `<span data-role="time">${utc()}</span> <span data-role="src">${arc.src.code}</span>→<span data-role="dst">${arc.dst.code}</span><br><span data-role="bytes">${arc.bytes}</span>`;
+    d.querySelector('[data-role="time"]').style.cssText = 'color:var(--cyan);font-size:9px';
+    d.querySelector('[data-role="src"]').style.color = 'var(--green)';
+    d.querySelector('[data-role="dst"]').style.color = 'var(--cyan)';
+    d.querySelector('[data-role="bytes"]').style.cssText = 'color:var(--orange);font-size:9px';
   }
   feedEl.insertBefore(d, feedEl.firstChild);
   while (feedEl.children.length > 30) feedEl.removeChild(feedEl.lastChild);

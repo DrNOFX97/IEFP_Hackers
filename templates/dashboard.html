@@ -29,18 +29,18 @@
             <img class="auth-logo-img" src="data:image/png;base64,__INJECT_LOGO_B64__" alt="CET Cibersegurança" />
             <div class="auth-title">CET Cibersegurança — IEFP Faro</div>
             <div class="auth-sub" id="auth-sub-text">Acesso reservado a participantes do curso.<br>Inicia sessão com a tua conta.</div>
-            <div id="auth-invite-badge" style="display:none;margin:0.75rem 0 0.25rem;padding:0.45rem 0.85rem;background:rgba(0,255,65,0.1);border:1px solid rgba(0,255,65,0.3);border-radius:8px;font-size:0.78rem;color:#00ff41;text-align:center;">
+            <div id="auth-invite-badge" class="auth-invite-badge">
                 ✅ Convite válido detectado — inicia sessão para entrar
             </div>
             <button class="auth-btn" id="auth-google-btn">
-                <svg width="18" height="18" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:8px"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                <svg width="18" height="18" viewBox="0 0 48 48" class="auth-svg-icon"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
                 Entrar com Google
             </button>
-            <button class="auth-btn" id="auth-ms-btn" style="margin-bottom:0;">
-                <svg width="18" height="18" viewBox="0 0 21 21" style="vertical-align:middle;margin-right:8px"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+            <button class="auth-btn mb-0" id="auth-ms-btn">
+                <svg width="18" height="18" viewBox="0 0 21 21" class="auth-svg-icon"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
                 Entrar com Microsoft
             </button>
-            <p id="auth-err" style="display:none;color:#f85149;font-size:0.78rem;margin-top:0.75rem;word-break:break-word;"></p>
+            <p id="auth-err" class="auth-err-text"></p>
         </div>
     </div>
 
@@ -82,10 +82,10 @@
                 </button>
 
                 <button class="nav-item" data-view="playground">
-                    <span class="nav-item-icon">💻</span><span class="nav-item-label"> Playground <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
+                    <span class="nav-item-icon">💻</span><span class="nav-item-label"> Playground <span class="beta-tag">(beta)</span></span>
                 </button>
                 <button class="nav-item" data-view="lab">
-                    <span class="nav-item-icon">🔬</span><span class="nav-item-label"> Lab <span style="font-size:0.65em;opacity:0.7;font-weight:400;">(beta)</span></span>
+                    <span class="nav-item-icon">🔬</span><span class="nav-item-label"> Lab <span class="beta-tag">(beta)</span></span>
                 </button>
                 <button class="nav-item" data-view="cheatsheets">
                     <span class="nav-item-icon">📋</span><span class="nav-item-label"> Cheatsheets</span>
@@ -95,7 +95,7 @@
                 </button>
 
                 <div class="nav-divider"></div>
-                <a class="nav-item" id="nav-admin-link" href="/admin.html" style="display:none;text-decoration:none;color:inherit;" title="Painel de Administração">
+                <a class="nav-item nav-admin-link-hidden" id="nav-admin-link" href="/admin.html" title="Painel de Administração">
                     <span class="nav-item-icon">🔐</span><span class="nav-item-label"> Admin</span>
                 </a>
                 <button class="nav-item" data-view="definicoes">
@@ -103,7 +103,7 @@
                 </button>
             </div>
             <div class="nav-footer">
-                <div class="nav-user-info" id="nav-user-info" style="display:none;">
+                <div class="nav-user-info d-none" id="nav-user-info">
                     <div class="nav-user-avatar" id="nav-user-avatar">?</div>
                     <span class="nav-user-name" id="nav-user-name">–</span>
                 </div>
@@ -133,22 +133,22 @@
                         <div id="amanha-content"><p class="hoje-empty">A carregar...</p></div>
                     </div>
                 </div>
-                <div class="dash-section-label" style="margin-top:2rem;">Links Úteis</div>
+                <div class="dash-section-label mt-2rem">Links Úteis</div>
                 <div id="dash-links"></div>
-                <div class="dash-section-label" style="margin-top:2rem;">Aulas Remotas</div>
+                <div class="dash-section-label mt-2rem">Aulas Remotas</div>
                 <div id="dash-remote-links"></div>
-                <div class="dash-section-label" style="margin-top:2rem;">Colegas Online</div>
+                <div class="dash-section-label mt-2rem">Colegas Online</div>
                 <div class="turma-grid" id="turma-grid">
-                    <span style="color:var(--text-secondary);font-size:0.82rem;">A carregar…</span>
+                    <span class="text-muted-sm">A carregar…</span>
                 </div>
             </div>
 
             <!-- VIEW: HORÁRIO -->
             <div id="view-horario">
                 <div class="schedule-toolbar">
-                    <h2 id="schedule-title" style="margin-bottom:0;">Horário</h2>
+                    <h2 id="schedule-title" class="mb-0">Horário</h2>
                     <div class="schedule-controls">
-                        <div id="month-selector-container" style="display:none;"></div>
+                        <div id="month-selector-container" class="d-none"></div>
                         <input type="text" class="schedule-filter" id="schedule-filter"
                             placeholder="🔍 Filtrar UC ou formador…">
                         <div class="view-toggle">
@@ -169,11 +169,11 @@
                 </div>
                 <div class="schedule-grid" id="schedule-grid"></div>
 
-                <div class="panel" style="margin-top:1.5rem;">
-                    <h2 style="font-size:1.1rem;">📋 Cronograma do Curso</h2>
+                <div class="panel mt-1_5rem">
+                    <h2 class="fs-1_1rem">📋 Cronograma do Curso</h2>
                     <ul class="info-list" id="crono-geral"></ul>
                     <div class="resumo-table">
-                        <div class="resumo-row" style="color:var(--text-secondary);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;">
+                        <div class="resumo-row resumo-row-header">
                             <div>Mês</div><div>Dias</div><div>Horas</div>
                         </div>
                         <div id="crono-resumo"></div>
@@ -184,7 +184,7 @@
             <!-- VIEW: DISCIPLINAS (list) -->
             <div id="view-disciplinas">
                 <div class="disciplines-header">
-                    <h2 style="margin-bottom:0;">Disciplinas</h2>
+                    <h2 class="mb-0">Disciplinas</h2>
                     <div class="disciplines-controls">
                         <input type="text" class="uc-search" id="uc-search" placeholder="🔍  Pesquisar UC...">
                         <div class="view-toggle">
@@ -194,7 +194,7 @@
                     </div>
                 </div>
                 <div id="disciplines-grid"></div>
-                <div id="disciplines-list" style="display:none;"></div>
+                <div id="disciplines-list" class="d-none"></div>
             </div>
 
             <!-- VIEW: PLAYGROUND -->
@@ -241,8 +241,8 @@
                 <!-- Sessions nav -->
                 <div class="uc-schedule-section">
                     <div class="uc-schedule-header">
-                        <h2 style="margin-bottom:0;font-size:1.1rem;">📅 Sessões</h2>
-                        <div style="display:flex;gap:0.6rem;align-items:center;">
+                        <h2 class="mb-0 fs-1_1rem">📅 Sessões</h2>
+                        <div class="flex-gap-center-sm">
                             <span class="uc-total-hours" id="uc-total-hours"></span>
                             <button class="btn-pdf btn-pdf-uc" id="btn-pdf-uc">⬇ PDF</button>
                         </div>
@@ -283,8 +283,8 @@
                     <!-- Notes column -->
                     <div class="panel notes-panel">
                         <div class="notes-toolbar">
-                            <div style="display:flex;align-items:center;gap:0.75rem;">
-                                <h2 style="margin:0;font-size:1.1rem;">📝 Apontamentos</h2>
+                            <div class="flex-align-gap-75">
+                                <h2 class="h2-notes-title">📝 Apontamentos</h2>
                                 <div class="notes-tabs">
                                     <button class="notes-tab active" id="notes-tab-edit">✏️ Editar</button>
                                     <button class="notes-tab" id="notes-tab-preview">👁 Ver</button>
@@ -301,7 +301,7 @@
 
                     <!-- Materials column -->
                     <div class="panel materials-panel">
-                        <h2 style="margin-bottom:0.75rem; font-size:1.1rem;">📎 Materiais</h2>
+                        <h2 class="h2-materials-title">📎 Materiais</h2>
                         <div class="add-material-form">
                             <div class="form-row">
                                 <select class="form-select" id="session-mat-type">
@@ -330,16 +330,16 @@
 
             <!-- VIEW: TURMA -->
             <div id="view-turma">
-                <h2 style="margin-bottom:0.5rem;">👥 Turma</h2>
-                <p style="color:var(--text-secondary);font-size:0.82rem;margin-bottom:1.75rem;">Participantes que já acederam ao dashboard</p>
-                <div id="turma-list" style="display:flex;flex-direction:column;gap:0.6rem;max-width:600px;">
-                    <span style="color:var(--text-secondary);font-size:0.82rem;">A carregar…</span>
+                <h2 class="mb-0_5rem">👥 Turma</h2>
+                <p class="turma-subtitle">Participantes que já acederam ao dashboard</p>
+                <div id="turma-list" class="turma-list-container">
+                    <span class="text-muted-sm">A carregar…</span>
                 </div>
             </div>
 
             <!-- VIEW: CHAT (full page) -->
             <div id="view-chat">
-                <h2 style="margin-bottom:1.25rem;">💬 Chat da turma</h2>
+                <h2 class="mb-1_25rem">💬 Chat da turma</h2>
                 <div class="chat-view-body">
                     <div class="chat-view-msgs" id="chat-view-msgs">
                         <div class="chat-empty">A carregar…</div>
@@ -355,22 +355,22 @@
             <div id="view-lab"></div>
 
             <!-- VIEW: CHEATSHEETS -->
-            <div id="view-cheatsheets" style="display:none;flex-direction:column;gap:1.5rem;padding:1.5rem 0;">
-                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-                    <h2 style="margin:0;">📋 Cheatsheets</h2>
-                    <div id="cs-tab-bar" style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+            <div id="view-cheatsheets" class="cheatsheets-view-hidden">
+                <div class="cheatsheets-header-flex">
+                    <h2 class="m-0">📋 Cheatsheets</h2>
+                    <div id="cs-tab-bar" class="cs-tab-bar-flex">
                         <button class="cs-tab cs-chip cs-chip-active" data-cs="python">🐍 Python</button>
                         <button class="cs-tab cs-chip" data-cs="sql">🗄️ SQL</button>
                         <button class="cs-tab cs-chip" data-cs="cybersec">🛡️ CyberSec</button>
                     </div>
-                    <a id="cs-open-link" href="cheatsheet_python.html" target="_blank" style="margin-left:auto;padding:0.28rem 0.75rem;border-radius:999px;border:1px solid var(--border-color);color:var(--text-secondary);font-size:0.78rem;text-decoration:none;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;">↗ abrir em separador</a>
+                    <a id="cs-open-link" href="cheatsheet_python.html" target="_blank" class="open-tab-link">↗ abrir em separador</a>
                 </div>
-                <div id="cs-host" style="border-radius:8px;overflow:hidden;min-height:80vh;"></div>
+                <div id="cs-host" class="cs-host-frame"></div>
             </div>
 
             <!-- VIEW: MATERIAIS -->
             <div id="view-materiais">
-                <h2 style="margin-bottom:1.25rem;">🎯 Materiais</h2>
+                <h2 class="mb-1_25rem">🎯 Materiais</h2>
                 <div class="skill-cats-grid" id="skill-cats-grid"></div>
             </div>
 
@@ -378,20 +378,20 @@
             <div id="view-materiais-item">
                 <div class="materiais-item-toolbar">
                     <button class="materiais-back-link" id="materiais-back-btn" type="button">← Materiais</button>
-                    <h2 id="materiais-item-title" style="margin:0;">📡 Materiais</h2>
-                    <a id="materiais-item-open-link" href="#" target="_blank" style="margin-left:auto;padding:0.28rem 0.75rem;border-radius:999px;border:1px solid var(--border-color);color:var(--text-secondary);font-size:0.78rem;text-decoration:none;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;">↗ abrir em separador</a>
+                    <h2 id="materiais-item-title" class="m-0">📡 Materiais</h2>
+                    <a id="materiais-item-open-link" href="#" target="_blank" class="open-tab-link">↗ abrir em separador</a>
                 </div>
-                <iframe id="materiais-item-frame" style="flex:1;width:100%;border:none;border-radius:8px;min-height:80vh;background:#fff;" title="Material"></iframe>
+                <iframe id="materiais-item-frame" class="materiais-item-iframe" title="Material"></iframe>
             </div>
 
             <!-- VIEW: CYBERMAP -->
-            <div id="view-cybermap" style="display:none;width:100%;height:100%;padding:0;margin:0;">
-                <iframe src="CyberMap.html" style="width:100%;height:100%;border:none;margin:0;padding:0;" title="CyberMap Live Threat Intelligence"></iframe>
+            <div id="view-cybermap" class="cybermap-view-hidden">
+                <iframe src="CyberMap.html" class="cybermap-iframe" title="CyberMap Live Threat Intelligence"></iframe>
             </div>
 
             <!-- VIEW: DEFINIÇÕES -->
             <div id="view-definicoes">
-                <h2 style="margin-bottom:1.5rem;">⚙️ Definições</h2>
+                <h2 class="mb-1_5rem">⚙️ Definições</h2>
                 <div class="settings-section">
                     <div class="settings-section-title">Aparência</div>
                     <div class="settings-row">
@@ -419,7 +419,7 @@
                             <div class="settings-row-label" id="settings-user-name">–</div>
                             <div class="settings-row-sub" id="settings-user-email">–</div>
                         </div>
-                        <button class="nav-item signout" id="settings-signout-btn" style="width:auto;padding:0.4rem 0.8rem;">Sair</button>
+                        <button class="nav-item signout signout-btn-compact" id="settings-signout-btn">Sair</button>
                     </div>
                 </div>
                 <div class="settings-section" id="invite-section">
@@ -428,7 +428,7 @@
                         <button class="invite-btn" id="invite-btn-individual">＋ Convite individual</button>
                         <button class="invite-btn" id="invite-btn-turma">＋ Link de turma</button>
                     </div>
-                    <div id="invite-list"><span style="color:var(--text-secondary);font-size:0.8rem;">A carregar…</span></div>
+                    <div id="invite-list"><span class="text-muted-sm-alt">A carregar…</span></div>
                 </div>
             </div>
 
@@ -468,7 +468,7 @@
         <button class="mob-more-item" data-view="definicoes">
             <span class="mob-more-item-icon">⚙️</span> Definições
         </button>
-        <button class="mob-more-item signout" id="mob-signout-btn" style="color:#f85149;">
+        <button class="mob-more-item signout text-danger" id="mob-signout-btn">
             <span class="mob-more-item-icon">⏻</span> Sair
         </button>
     </div>

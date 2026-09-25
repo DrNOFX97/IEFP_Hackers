@@ -120,7 +120,7 @@ classes.forEach(c => {
   card.style.setProperty('--class-color', c.cor);
 
   const bitsHTML = c.bits.map(b =>
-    `<div class="bd-seg ${b.tipo}" style="width:${b.pct}%">
+    `<div class="bd-seg ${b.tipo}">
        <span class="bd-label">${b.label}</span>
        <span class="bd-bits">${b.bits}</span>
      </div>`
@@ -135,7 +135,7 @@ classes.forEach(c => {
 
   const privHTML = c.privados.length
     ? c.privados.map(p=>`<span class="priv-chip">${p}</span>`).join('')
-    : '<span style="font-size:.75rem;color:var(--mut)">Nenhum</span>';
+    : '<span class="priv-none">Nenhum</span>';
 
   const usosHTML = c.usos.map(u=>`<li>${u}</li>`).join('');
 
@@ -148,9 +148,9 @@ classes.forEach(c => {
           <span>Intervalo:</span>
           <span class="range-val">${c.intervalo}</span>
         </div>
-        <div class="class-range" style="margin-top:.2rem">
+        <div class="class-range range-bits">
           <span>Bits iniciais:</span>
-          <span class="range-val" style="color:var(--class-color)">${c.primeiroBit}</span>
+          <span class="range-val range-val-primary">${c.primeiroBit}</span>
         </div>
       </div>
       <div class="class-stats">
@@ -162,22 +162,39 @@ classes.forEach(c => {
     <div class="class-detail">
       <div class="detail-body">
         <div class="bit-diagram">${bitsHTML}</div>
-        <p style="font-size:.8rem;color:#9090a8;line-height:1.65;margin-bottom:1rem;">${c.descricao}</p>
+        <p class="class-desc">${c.descricao}</p>
         <div class="detail-grid">
           <div class="ds">
             <h4>Endereços Especiais</h4>
-            <div class="special-box" style="background:var(--s2)">${espHTML || '<p>Nenhum especificado.</p>'}</div>
+            <div class="special-box">${espHTML || '<p>Nenhum especificado.</p>'}</div>
           </div>
           <div class="ds">
             <h4>Gama Privada (RFC 1918)</h4>
             <div class="privados-list">${privHTML}</div>
-            <h4 style="margin-top:1rem">Usos Típicos</h4>
+            <h4 class="usos-title">Usos Típicos</h4>
             <ul>${usosHTML}</ul>
           </div>
         </div>
       </div>
     </div>
   `;
+
+  // Dynamic inline styles applied via the DOM (kept out of the HTML string for CSP compliance)
+  card.querySelectorAll('.bd-seg').forEach((el, idx) => {
+    el.style.width = `${c.bits[idx].pct}%`;
+  });
+  const rangeBitsEl = card.querySelector('.range-bits');
+  if (rangeBitsEl) rangeBitsEl.style.marginTop = '.2rem';
+  const rangeValPrimaryEl = card.querySelector('.range-val-primary');
+  if (rangeValPrimaryEl) rangeValPrimaryEl.style.color = 'var(--class-color)';
+  const descEl = card.querySelector('.class-desc');
+  if (descEl) descEl.style.cssText = 'font-size:.8rem;color:#9090a8;line-height:1.65;margin-bottom:1rem;';
+  const specialBoxEl = card.querySelector('.special-box');
+  if (specialBoxEl) specialBoxEl.style.background = 'var(--s2)';
+  const privNoneEl = card.querySelector('.priv-none');
+  if (privNoneEl) privNoneEl.style.cssText = 'font-size:.75rem;color:var(--mut)';
+  const usosTitleEl = card.querySelector('.usos-title');
+  if (usosTitleEl) usosTitleEl.style.marginTop = '1rem';
 
   card.addEventListener('click', e => {
     if(e.target.closest('.special-box')) return;
@@ -239,12 +256,16 @@ function calcClass(){
     { label:'Binário', val:bin },
   ];
 
-  document.getElementById('cr-grid').innerHTML = items.map(i=>
+  const crGrid = document.getElementById('cr-grid');
+  crGrid.innerHTML = items.map(i=>
     `<div class="cr-item">
        <div class="cr-label">${i.label}</div>
-       <div class="cr-val${i.hi?' highlight':''}"${i.color?` style="color:${i.color}"`:''}>${i.val}</div>
+       <div class="cr-val${i.hi?' highlight':''}">${i.val}</div>
      </div>`
   ).join('');
+  crGrid.querySelectorAll('.cr-val').forEach((el, idx) => {
+    if (items[idx].color) el.style.color = items[idx].color;
+  });
 
   res.classList.add('show');
 }

@@ -471,6 +471,7 @@ def main():
         'css/nav-sidebar.css',
         'css/views.css',
         'css/lab.css',
+        'css/inline-migrated.css',
     ]
     js_files = [
         'js/data.js',

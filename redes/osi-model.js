@@ -131,7 +131,7 @@ camadas.forEach(c => {
       <div class="layer-name-en">${c.nomeEn}</div>
     </div>
     <div class="layer-badge">${tipoBadge}${ataquesBadge}</div>
-    <div class="detail" style="grid-column:1/-1">
+    <div class="detail">
       <div class="detail-inner">
         <div class="detail-tabs">
           <button class="tab-btn active" data-tab="info">📋 Descrição</button>
@@ -147,7 +147,7 @@ camadas.forEach(c => {
             <div class="detail-section">
               <h4>Unidade de Dados (PDU)</h4>
               <div><span class="pdu-chip">${c.pdu}</span></div>
-              <h4 style="margin-top:.8rem;">Protocolos / Normas</h4>
+              <h4 class="protocolos-title">Protocolos / Normas</h4>
               <div class="proto-list">${protosHTML}</div>
             </div>
           </div>
@@ -158,6 +158,12 @@ camadas.forEach(c => {
       </div>
     </div>
   `;
+
+  // Dynamic inline styles applied via the DOM (kept out of the HTML string for CSP compliance)
+  const detailEl = el.querySelector('.detail');
+  if (detailEl) detailEl.style.gridColumn = '1/-1';
+  const protocolosTitleEl = el.querySelector('.protocolos-title');
+  if (protocolosTitleEl) protocolosTitleEl.style.marginTop = '.8rem';
 
   // toggle layer open/close
   el.addEventListener('click', e => {

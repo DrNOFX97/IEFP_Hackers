@@ -455,7 +455,7 @@ topos.forEach(t=>{
   const r=t.tableRow;
   const tr=document.createElement('tr');
   tr.innerHTML=`
-    <td><span style="color:${t.cor};font-family:Unbounded,sans-serif;font-size:.7rem;font-weight:700">${t.nome.split('(')[0].trim()}</span></td>
+    <td><span class="topo-name">${t.nome.split('(')[0].trim()}</span></td>
     <td><span class="tag-cell ${costTag(r[0])}">${r[0]}</span></td>
     <td><span class="tag-cell ${costTag(r[1])}">${r[1]}</span></td>
     <td><span class="tag-cell ${fiabTag(r[2])}">${r[2]}</span></td>
@@ -463,7 +463,12 @@ topos.forEach(t=>{
     <td><span class="tag-cell ${expTag2(r[4])}">${r[4]}</span></td>
     <td><span class="tag-cell ${perfTag(r[5])}">${r[5]}</span></td>
     <td><span class="tag-cell tag-med">${r[6]||'Média'}</span></td>
-    <td style="font-size:.68rem;color:#5050a0;text-align:left">${r[7]}</td>
+    <td class="topo-notes">${r[7]}</td>
   `;
+  // Dynamic inline styles applied via the DOM (kept out of the HTML string for CSP compliance)
+  const topoNameEl = tr.querySelector('.topo-name');
+  if (topoNameEl) topoNameEl.style.cssText = `color:${t.cor};font-family:Unbounded,sans-serif;font-size:.7rem;font-weight:700`;
+  const topoNotesEl = tr.querySelector('.topo-notes');
+  if (topoNotesEl) topoNotesEl.style.cssText = 'font-size:.68rem;color:#5050a0;text-align:left';
   tbody.appendChild(tr);
 });

@@ -9,298 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" integrity="sha384-sEVIly94UBRLKWdkYoPpSG7GD/e79YHMrxVyZaOk712Ga7+EAw6w1EFi+xBzBdd+" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" integrity="sha384-EkqK+ezBWJuvO3hfrSx2iVqr3YQbhmnzn8kPhOpBZ+0GMVU5oGSgptwIu8D84HjE" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" integrity="sha384-M481iNZJtbpypKgvlvZ+78Giq0BsewFLk5r2k+MOcGXlwKCc27DQRZ+WCV/zpmpC" crossorigin="anonymous"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:          #0d1117;
-      --surface:     #161b22;
-      --surface2:    #1c2128;
-      --border:      #30363d;
-      --accent:      #00ff41;
-      --accent-dim:  rgba(0,255,65,.12);
-      --red:         #f85149;
-      --red-dim:     rgba(248,81,73,.12);
-      --yellow:      #e3b341;
-      --yellow-dim:  rgba(227,179,65,.12);
-      --blue:        #58a6ff;
-      --blue-dim:    rgba(88,166,255,.12);
-      --text:        #e6edf3;
-      --text2:       #8b949e;
-      --text3:       #6e7681;
-      --radius:      8px;
-    }
-
-    html, body { height: 100%; width: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
-
-    /* ── AUTH GATE ──────────────────────────────────────────────── */
-    #auth-gate {
-      position: fixed; inset: 0; background: var(--bg);
-      display: flex; align-items: center; justify-content: center; z-index: 100;
-    }
-    .auth-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 2.5rem; width: 320px; text-align: center;
-    }
-    .auth-logo { font-size: 2.5rem; margin-bottom: 1rem; }
-    .auth-logo-img { width: 160px; height: auto; display: block; margin: 0 auto 1.5rem; }
-    .auth-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .auth-sub { font-size: 0.82rem; color: var(--text2); margin-bottom: 1.5rem; line-height: 1.5; }
-    .auth-btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      width: 100%; padding: 0.65rem 1rem; border-radius: 6px;
-      border: 1px solid var(--border); background: #fff; color: #24292f;
-      font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 0.6rem;
-    }
-    .auth-btn:hover { background: #f5f5f5; }
-    #auth-err { display:none; color: var(--red); font-size: 0.78rem; margin-top: 0.75rem; }
-
-    /* ── ACCESS DENIED ──────────────────────────────────────────── */
-    #access-denied {
-      position: fixed; inset: 0; background: var(--bg);
-      display: none; align-items: center; justify-content: center; z-index: 99;
-      flex-direction: column; gap: 1rem; text-align: center; padding: 2rem;
-    }
-    #access-denied .denied-icon { font-size: 4rem; }
-    #access-denied h2 { color: var(--red); }
-    #access-denied p { color: var(--text2); max-width: 360px; }
-    #access-denied button {
-      padding: 0.6rem 1.4rem; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 6px; color: var(--text); cursor: pointer; font-size: 0.9rem;
-    }
-
-    /* ── LAYOUT ─────────────────────────────────────────────────── */
-    #admin-app { display: none; width: 100%; height: 100vh; overflow: hidden; }
-    .layout { display: flex; width: 100%; height: 100%; }
-
-    /* ── SIDEBAR ────────────────────────────────────────────────── */
-    .sidebar {
-      width: 220px; min-width: 220px; background: var(--surface);
-      border-right: 1px solid var(--border); display: flex; flex-direction: column;
-      overflow: hidden;
-    }
-    .sidebar-header {
-      padding: 1.2rem 1rem 1rem; border-bottom: 1px solid var(--border);
-    }
-    .sidebar-logo { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 0.2rem; }
-    .sidebar-logo-img { width: 100%; max-width: 140px; height: auto; display: block; }
-    .sidebar-logo-text { font-weight: 700; font-size: 0.95rem; }
-    .sidebar-sub { font-size: 0.72rem; color: var(--text2); }
-
-    .sidebar-nav { flex: 1; padding: 0.75rem 0.5rem; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
-    .nav-btn {
-      display: flex; align-items: center; gap: 10px; padding: 0.55rem 0.75rem;
-      border-radius: 6px; border: none; background: transparent; color: var(--text2);
-      font-size: 0.88rem; cursor: pointer; width: 100%; text-align: left; transition: all .15s;
-    }
-    .nav-btn:hover { background: rgba(255,255,255,.06); color: var(--text); }
-    .nav-btn.active { background: var(--accent-dim); color: var(--accent); font-weight: 600; }
-    .nav-btn-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
-
-    .sidebar-footer {
-      padding: 0.75rem 0.5rem; border-top: 1px solid var(--border);
-    }
-    .user-chip {
-      display: flex; align-items: center; gap: 8px; padding: 0.4rem 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .user-avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--accent-dim); color: var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.72rem; font-weight: 700; flex-shrink: 0;
-    }
-    .user-info { overflow: hidden; }
-    .user-name { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-role { font-size: 0.68rem; color: var(--accent); }
-    .signout-btn {
-      display: flex; align-items: center; gap: 8px; padding: 0.45rem 0.75rem;
-      border-radius: 6px; border: 1px solid rgba(248,81,73,.3); background: transparent;
-      color: var(--red); font-size: 0.83rem; cursor: pointer; width: 100%;
-    }
-    .signout-btn:hover { background: var(--red-dim); }
-
-    /* ── MAIN ───────────────────────────────────────────────────── */
-    .main { flex: 1; min-width: 0; overflow-y: auto; display: flex; flex-direction: column; }
-    .tab-panel.active { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-    .page-header {
-      padding: 1.25rem 1.5rem 1rem; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-    }
-    .page-title { font-size: 1.15rem; font-weight: 700; }
-    .page-sub { font-size: 0.78rem; color: var(--text2); margin-top: 0.15rem; }
-    .page-actions { display: flex; gap: 8px; }
-
-    .content { padding: 1.5rem; flex: 1; width: 100%; box-sizing: border-box; }
-
-    .tab-panel { display: none; }
-
-    /* ── STAT CARDS ─────────────────────────────────────────────── */
-    .stats-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;
-      margin-bottom: 1.5rem;
-    }
-    .stat-card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 1rem 1.1rem; cursor: default;
-    }
-    .stat-label { font-size: 0.72rem; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 0.4rem; }
-    .stat-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
-    .stat-card.green .stat-value { color: var(--accent); }
-    .stat-card.blue  .stat-value { color: var(--blue); }
-    .stat-card.yellow .stat-value { color: var(--yellow); }
-    .stat-card.red   .stat-value { color: var(--red); }
-    .stat-sub { font-size: 0.72rem; color: var(--text3); margin-top: 0.3rem; }
-
-    /* ── SECTION ────────────────────────────────────────────────── */
-    .section { margin-bottom: 2rem; }
-    .section-title {
-      font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: .06em; color: var(--text2); margin-bottom: 0.75rem;
-    }
-
-    /* ── TOOLBAR ────────────────────────────────────────────────── */
-    .toolbar {
-      display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;
-    }
-    .toolbar-search {
-      flex: 1; min-width: 180px; padding: 0.45rem 0.75rem; background: var(--surface2);
-      border: 1px solid var(--border); border-radius: 6px; color: var(--text);
-      font-size: 0.88rem;
-    }
-    .toolbar-search:focus { outline: none; border-color: var(--accent); }
-    .toolbar-select {
-      padding: 0.45rem 0.75rem; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 6px; color: var(--text); font-size: 0.88rem; cursor: pointer;
-    }
-    .toolbar-select:focus { outline: none; border-color: var(--accent); }
-    .btn {
-      padding: 0.45rem 0.9rem; border-radius: 6px; border: 1px solid var(--border);
-      background: var(--surface2); color: var(--text); font-size: 0.85rem;
-      cursor: pointer; white-space: nowrap;
-    }
-    .btn:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-primary {
-      border-color: var(--accent); background: var(--accent-dim); color: var(--accent);
-    }
-
-    /* ── TABLE ──────────────────────────────────────────────────── */
-    .table-wrap {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); overflow: hidden;
-    }
-    table { width: 100%; border-collapse: collapse; }
-    thead th {
-      padding: 0.65rem 1rem; text-align: left; font-size: 0.72rem;
-      text-transform: uppercase; letter-spacing: .05em; color: var(--text2);
-      border-bottom: 1px solid var(--border); background: var(--surface2);
-      white-space: nowrap;
-    }
-    tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: rgba(255,255,255,.03); }
-    tbody td { padding: 0.65rem 1rem; font-size: 0.875rem; vertical-align: middle; }
-    .td-user { display: flex; align-items: center; gap: 10px; }
-    .td-avatar {
-      width: 30px; height: 30px; border-radius: 50%;
-      background: var(--surface2); display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; font-weight: 700; flex-shrink: 0; overflow: hidden;
-    }
-    .td-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-    .td-name { font-weight: 500; }
-    .td-email { font-size: 0.78rem; color: var(--text2); }
-
-    /* ── ROLE BADGE + SELECT ────────────────────────────────────── */
-    .role-badge {
-      display: inline-block; padding: 0.18rem 0.55rem; border-radius: 20px;
-      font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
-    }
-    .role-admin    { background: var(--red-dim);    color: var(--red); }
-    .role-moderador { background: var(--yellow-dim); color: var(--yellow); }
-    .role-aluno    { background: var(--accent-dim); color: var(--accent); }
-    .role-blocked  { background: rgba(100,100,100,.2); color: #666; text-decoration: line-through; }
-
-    .role-select {
-      padding: 0.25rem 0.5rem; border-radius: 5px; font-size: 0.8rem; cursor: pointer;
-      border: 1px solid var(--border); background: var(--surface2); color: var(--text);
-    }
-    .role-select:focus { outline: none; border-color: var(--accent); }
-
-    tr.row-blocked td { opacity: 0.5; }
-    tr.row-blocked .td-name::after { content: " 🚫"; font-size: 0.75rem; }
-
-    /* ── LOG TABLE ──────────────────────────────────────────────── */
-    .log-action {
-      display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
-      font-size: 0.72rem; font-weight: 600; font-family: monospace;
-    }
-    .log-login        { background: var(--blue-dim);   color: var(--blue); }
-    .log-role_change  { background: var(--red-dim);    color: var(--red); }
-    .log-note_write   { background: var(--accent-dim); color: var(--accent); }
-    .log-material_add { background: var(--yellow-dim); color: var(--yellow); }
-    .log-material_del { background: var(--red-dim);    color: var(--red); }
-    .log-chat         { background: rgba(139,92,246,.15); color: #a78bfa; }
-    .log-default      { background: rgba(255,255,255,.08); color: var(--text2); }
-
-    /* ── EMPTY STATE ────────────────────────────────────────────── */
-    .empty {
-      padding: 3rem; text-align: center; color: var(--text2); font-size: 0.88rem;
-    }
-    .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
-
-    /* ── LOADING ────────────────────────────────────────────────── */
-    .loader { display: flex; align-items: center; justify-content: center; padding: 3rem; gap: 10px; color: var(--text2); }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
-
-    /* ── TOAST ──────────────────────────────────────────────────── */
-    #toast {
-      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
-      background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
-      padding: 0.75rem 1.1rem; font-size: 0.88rem; display: none;
-      box-shadow: 0 8px 24px rgba(0,0,0,.4); max-width: 320px;
-    }
-    #toast.ok    { border-color: var(--accent); color: var(--accent); }
-    #toast.error { border-color: var(--red);    color: var(--red); }
-
-    /* ── RECENT ACTIVITY ────────────────────────────────────────── */
-    .activity-list { display: flex; flex-direction: column; gap: 0; }
-    .activity-item {
-      display: flex; align-items: flex-start; gap: 10px; padding: 0.6rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .activity-item:last-child { border-bottom: none; }
-    .activity-icon { font-size: 1rem; width: 24px; text-align: center; flex-shrink: 0; margin-top: 1px; }
-    .activity-text { flex: 1; font-size: 0.85rem; }
-    .activity-meta { font-size: 0.72rem; color: var(--text3); margin-top: 0.15rem; }
-    .activity-time { font-size: 0.72rem; color: var(--text3); white-space: nowrap; }
-
-    /* ── CONFIG ─────────────────────────────────────────────────── */
-    .config-section {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 1.25rem; margin-bottom: 1rem;
-    }
-    .config-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .config-desc { font-size: 0.78rem; color: var(--text2); margin-bottom: 1rem; }
-    .config-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
-    .config-row:last-child { border-bottom: none; padding-bottom: 0; }
-    .config-row label { font-size: 0.85rem; }
-    .config-row-sub { font-size: 0.72rem; color: var(--text2); }
-
-    /* ── RESPONSIVE ─────────────────────────────────────────────── */
-    @media (max-width: 640px) {
-      .sidebar { width: 52px; min-width: 52px; }
-      .sidebar-header .sidebar-sub,
-      .sidebar-header .sidebar-logo-text,
-      .nav-btn span:last-child,
-      .user-info,
-      .signout-btn span:last-child { display: none; }
-      .nav-btn { justify-content: center; padding: 0.6rem; }
-      .user-chip { justify-content: center; }
-      .signout-btn { justify-content: center; }
-      .sidebar-sub { display: none; }
-    }
-  </style>
+  <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
@@ -356,8 +65,8 @@
         <button class="nav-btn" data-tab="config">
           <span class="nav-btn-icon">⚙️</span><span>Configuração</span>
         </button>
-        <div style="flex:1"></div>
-        <a href="/dashboard.html" class="nav-btn" style="text-decoration:none;">
+        <div class="sidebar-spacer"></div>
+        <a href="/dashboard.html" class="nav-btn nav-btn-link">
           <span class="nav-btn-icon">🏠</span><span>Dashboard</span>
         </a>
       </div>
@@ -404,7 +113,7 @@
           <div class="section">
             <div class="section-title">Atividade Recente</div>
             <div class="table-wrap">
-              <div id="recent-list" class="activity-list" style="padding: 0.25rem 1rem;">
+              <div id="recent-list" class="activity-list activity-list-padded">
                 <div class="loader"><div class="spinner"></div> A carregar…</div>
               </div>
             </div>
@@ -449,7 +158,7 @@
               </tbody>
             </table>
           </div>
-          <div style="margin-top:0.6rem; font-size:0.75rem; color:var(--text3);" id="users-count"></div>
+          <div class="table-count" id="users-count"></div>
         </div>
       </div>
 
@@ -499,7 +208,7 @@
               </tbody>
             </table>
           </div>
-          <div style="margin-top:0.6rem; font-size:0.75rem; color:var(--text3);" id="logs-count"></div>
+          <div class="table-count" id="logs-count"></div>
         </div>
       </div>
 
@@ -514,39 +223,39 @@
             <button class="btn" id="security-refresh-btn">↻ Atualizar</button>
           </div>
         </div>
-        <div class="content" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="content content-stack">
           
           <!-- Brute Force & CSP Rows -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="security-grid-2col">
             
             <!-- Brute Force Detector -->
             <div class="table-wrap">
-              <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
-                <div style="font-weight: 600; font-size: 0.9rem;">Detetor de Brute-Force (Falhas Recentes)</div>
-                <span class="role-badge" style="background:var(--red-dim);color:var(--red);">Alerta Ativo</span>
+              <div class="panel-header">
+                <div class="panel-title">Detetor de Brute-Force (Falhas Recentes)</div>
+                <span class="role-badge badge-red">Alerta Ativo</span>
               </div>
-              <table style="font-size: 0.8rem;">
+              <table class="table-sm">
                 <thead>
                   <tr><th>IP / Origem</th><th>Utilizador Alvo</th><th>Tentativas</th><th>Ação</th></tr>
                 </thead>
                 <tbody id="bruteforce-tbody">
-                  <tr><td colspan="4" style="text-align:center;padding:1rem;">Nenhuma anomalia detetada.</td></tr>
+                  <tr><td colspan="4" class="td-empty-msg">Nenhuma anomalia detetada.</td></tr>
                 </tbody>
               </table>
             </div>
 
             <!-- CSP Violations -->
             <div class="table-wrap">
-              <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
-                <div style="font-weight: 600; font-size: 0.9rem;">Violações de CSP</div>
-                <span class="role-badge" style="background:var(--yellow-dim);color:var(--yellow);">Monitorização</span>
+              <div class="panel-header">
+                <div class="panel-title">Violações de CSP</div>
+                <span class="role-badge badge-yellow">Monitorização</span>
               </div>
-              <table style="font-size: 0.8rem;">
+              <table class="table-sm">
                 <thead>
                   <tr><th>Data/Hora</th><th>URI Bloqueado</th><th>Diretiva Violação</th></tr>
                 </thead>
                 <tbody id="csp-tbody">
-                  <tr><td colspan="3" style="text-align:center;padding:1rem;">Nenhuma violação recente.</td></tr>
+                  <tr><td colspan="3" class="td-empty-msg">Nenhuma violação recente.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -554,29 +263,29 @@
           </div>
 
           <!-- Active Sessions & Login Map -->
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+          <div class="security-grid-main">
             
             <!-- Login Map -->
             <div class="table-wrap">
-              <div style="padding: 1rem; border-bottom: 1px solid var(--border);">
-                <div style="font-weight: 600; font-size: 0.9rem;">Mapa de Logins (Tempo Real)</div>
+              <div class="panel-header-simple">
+                <div class="panel-title">Mapa de Logins (Tempo Real)</div>
               </div>
-              <div id="login-map" style="height: 250px; background: #0a0a0a; padding: 1rem; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
+              <div id="login-map" class="login-map">
                 <!-- Simulated log entries -->
               </div>
             </div>
 
             <!-- Active Sessions -->
             <div class="table-wrap">
-              <div style="padding: 1rem; border-bottom: 1px solid var(--border);">
-                <div style="font-weight: 600; font-size: 0.9rem;">Sessões Ativas</div>
+              <div class="panel-header-simple">
+                <div class="panel-title">Sessões Ativas</div>
               </div>
-              <table style="font-size: 0.8rem;">
+              <table class="table-sm">
                 <thead>
                   <tr><th>Utilizador</th><th>Ação</th></tr>
                 </thead>
                 <tbody id="sessions-tbody">
-                  <tr><td colspan="2" style="text-align:center;padding:1rem;">A carregar...</td></tr>
+                  <tr><td colspan="2" class="td-empty-msg">A carregar...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -616,7 +325,7 @@
           <div class="config-section">
             <div class="config-title">Permissões por Role</div>
             <div class="config-desc">Resumo das permissões de acesso definidas nas Firestore Rules.</div>
-            <div style="overflow-x:auto;">
+            <div class="table-scroll">
               <table>
                 <thead>
                   <tr>

@@ -4,181 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aula 06 — sorted()</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg-0:#05060a; --bg-1:#0a0d16; --bg-2:#10141f;
-    --surface:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.08);
-    --text:#e8ecf4; --text-dim:#8b93a7; --text-faint:#5a6178;
-    --kali:#00d4ff; --kali-glow:rgba(0,212,255,0.35);
-    --meta:#ff3b6b; --meta-glow:rgba(255,59,107,0.35);
-    --accent:#7c5cff; --ok:#22e584; --warn:#ffb020; --err:#ff4d4d;
-    --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
-    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  }
-  html { scroll-behavior: smooth; }
-  body { font-family:var(--font-sans); background:var(--bg-0); color:var(--text);
-    line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
-  .bg-grid { position:fixed; inset:0; z-index:0;
-    background-image:
-      linear-gradient(rgba(124,92,255,0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,92,255,0.05) 1px, transparent 1px);
-    background-size:48px 48px;
-    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
-    pointer-events:none; }
-  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.35;
-    animation:float 18s ease-in-out infinite; }
-  .orb.kali { width:480px; height:480px; background:var(--kali); top:-120px; left:-100px; }
-  .orb.meta { width:420px; height:420px; background:var(--meta); bottom:-100px; right:-80px;
-    animation-delay:-6s; }
-  .orb.purple { width:380px; height:380px; background:var(--accent); top:40%; left:45%;
-    animation-delay:-12s; opacity:0.18; }
-  @keyframes float {
-    0%,100% { transform:translate(0,0) scale(1); }
-    33% { transform:translate(40px,-30px) scale(1.08); }
-    66% { transform:translate(-30px,25px) scale(0.95); }
-  }
-  .container { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px; }
-  nav { position:sticky; top:0; z-index:100; backdrop-filter:blur(20px);
-    background:rgba(5,6,10,0.7); border-bottom:1px solid var(--border); }
-  nav .container { display:flex; align-items:center; justify-content:space-between;
-    padding-top:16px; padding-bottom:16px; }
-  .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-mono);
-    font-weight:700; font-size:15px; }
-  .logo .dot { width:10px; height:10px; border-radius:50%; background:var(--ok);
-    box-shadow:0 0 12px var(--ok); animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-  .nav-links { display:flex; gap:28px; }
-  .nav-links a { color:var(--text-dim); text-decoration:none; font-size:14px;
-    font-weight:500; transition:color 0.2s; }
-  .nav-links a:hover { color:var(--text); }
-  @media (max-width:700px) { .nav-links { display:none; } }
-  .hero { text-align:center; padding:80px 0 60px; }
-  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px;
-    border-radius:100px; background:var(--surface); border:1px solid var(--border);
-    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
-    letter-spacing:0.5px; margin-bottom:28px; }
-  .badge .live { width:7px; height:7px; border-radius:50%; background:var(--ok);
-    box-shadow:0 0 10px var(--ok); animation:pulse 1.5s infinite; }
-  h1 { font-size:clamp(34px,5.5vw,68px); font-weight:800; line-height:1.05;
-    letter-spacing:-3px; margin-bottom:24px; }
-  h1 .grad-kali { background:linear-gradient(135deg,var(--kali),#00ffa3);
-    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
-  h1 .grad-meta { background:linear-gradient(135deg,var(--meta),var(--accent));
-    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
-  .hero p.sub { font-size:clamp(16px,2vw,19px); color:var(--text-dim);
-    max-width:680px; margin:0 auto 40px; }
-  section { padding:80px 0; position:relative; }
-  .section-label { font-family:var(--font-mono); font-size:12px; color:var(--kali);
-    letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
-  h2.section-title { font-size:clamp(28px,4vw,42px); font-weight:700;
-    letter-spacing:-1.5px; margin-bottom:16px; }
-  .section-desc { color:var(--text-dim); font-size:16px; max-width:680px; margin-bottom:48px; }
-  .card { position:relative; background:var(--bg-1); border:1px solid var(--border);
-    border-radius:20px; padding:32px; overflow:hidden;
-    transition:transform 0.3s, border-color 0.3s; }
-  .card.kali { border-top:2px solid var(--kali); }
-  .card.kali:hover { border-color:var(--kali);
-    box-shadow:0 20px 60px -20px var(--kali-glow); transform:translateY(-4px); }
-  .card.meta { border-top:2px solid var(--meta); }
-  .card.meta:hover { border-color:var(--meta);
-    box-shadow:0 20px 60px -20px var(--meta-glow); transform:translateY(-4px); }
-  .card.acc { border-top:2px solid var(--accent); }
-  .card.acc:hover { border-color:var(--accent);
-    box-shadow:0 20px 60px -20px rgba(124,92,255,0.35); transform:translateY(-4px); }
-  .card-icon { width:52px; height:52px; border-radius:14px; display:flex;
-    align-items:center; justify-content:center; font-size:24px; margin-bottom:20px; }
-  .card.kali .card-icon { background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25); }
-  .card.meta .card-icon { background:rgba(255,59,107,0.1); border:1px solid rgba(255,59,107,0.25); }
-  .card.acc .card-icon { background:rgba(124,92,255,0.1); border:1px solid rgba(124,92,255,0.25); }
-  .card h3 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.5px; }
-  .card.kali h3 { color:var(--kali); }
-  .card.meta h3 { color:var(--meta); }
-  .card.acc h3 { color:var(--accent); }
-  .card .role { font-family:var(--font-mono); font-size:12px; color:var(--text-faint);
-    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; }
-  .card ul { list-style:none; }
-  .card ul li { padding:9px 0 9px 26px; position:relative; color:var(--text-dim);
-    font-size:14.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
-  .card ul li:last-child { border-bottom:none; }
-  .card ul li::before { content:'▸'; position:absolute; left:0; font-weight:bold; }
-  .card.kali ul li::before { color:var(--kali); }
-  .card.meta ul li::before { color:var(--meta); }
-  .card.acc ul li::before { color:var(--accent); }
-  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
-  .compare-grid.three { grid-template-columns:repeat(3,1fr); }
-  @media (max-width:900px) { .compare-grid.three { grid-template-columns:1fr; } }
-  @media (max-width:820px) { .compare-grid { grid-template-columns:1fr; } }
-  .steps { display:flex; flex-direction:column; gap:0; }
-  .step { display:grid; grid-template-columns:60px 1fr; gap:24px;
-    padding:28px 0; border-bottom:1px solid var(--border); }
-  .step:last-child { border-bottom:none; }
-  .step-num { width:48px; height:48px; border-radius:14px; display:flex;
-    align-items:center; justify-content:center; font-family:var(--font-mono);
-    font-weight:700; font-size:18px; background:var(--bg-1);
-    border:1px solid var(--border); color:var(--kali); }
-  .step-body h4 { font-size:18px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
-  .step-body p { color:var(--text-dim); font-size:14.5px; margin-bottom:14px; }
-  .code { background:var(--bg-0); border:1px solid var(--border); border-radius:12px;
-    padding:16px 20px; font-family:var(--font-mono); font-size:13px;
-    color:#a8ffcb; overflow-x:auto; position:relative; line-height:1.7;
-    margin-top: 14px; }
-  .code::before { content:''; position:absolute; left:0; top:16px; bottom:16px;
-    width:3px; background:var(--kali); border-radius:0 3px 3px 0; }
-  .code .comment { color:var(--text-faint); font-style:italic; }
-  .code .kw { color:#7c5cff; font-weight:600; }
-  .code .str { color:#ffb020; }
-  .code .num { color:#00d4ff; }
-  .code .ok { color:var(--ok); }
-  .code .err { color:var(--err); }
-  .table-wrap { background:var(--bg-1); border:1px solid var(--border);
-    border-radius:16px; overflow:hidden; margin-top:24px; }
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  thead { background:var(--bg-2); }
-  th { text-align:left; padding:14px 20px; font-family:var(--font-mono); font-size:11px;
-    text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint);
-    font-weight:600; border-bottom:1px solid var(--border); }
-  td { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04);
-    color:var(--text-dim); }
-  tr:last-child td { border-bottom:none; }
-  tr:hover td { background:rgba(124,92,255,0.04); color:var(--text); }
-  td.mono { font-family:var(--font-mono); font-size:13px; }
-  td.ok { color:var(--ok); } td.warn { color:var(--warn); }
-  td.err { color:var(--err); } td.kali { color:var(--kali); } td.meta { color:var(--meta); }
-  td.acc { color:var(--accent); }
-  .info-box { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,92,255,0.04));
-    border:1px solid rgba(0,212,255,0.2); border-left:3px solid var(--kali);
-    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
-    align-items:flex-start; margin-top:24px; }
-  .info-box .icon { font-size:22px; flex-shrink:0; }
-  .info-box h5 { color:var(--kali); font-size:15px; margin-bottom:4px; }
-  .info-box p { color:var(--text-dim); font-size:14px; }
-  .warning { background:linear-gradient(135deg,rgba(255,176,32,0.08),rgba(255,59,107,0.05));
-    border:1px solid rgba(255,176,32,0.25); border-left:3px solid var(--warn);
-    border-radius:14px; padding:20px 24px; display:flex; gap:16px;
-    align-items:flex-start; margin-top:32px; }
-  .warning .icon { font-size:22px; flex-shrink:0; }
-  .warning h5 { color:var(--warn); font-size:15px; margin-bottom:4px; }
-  .warning p { color:var(--text-dim); font-size:14px; }
-  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:16px; margin-top:40px; }
-  .stat { background:var(--bg-1); border:1px solid var(--border); border-radius:16px;
-    padding:24px; text-align:center; transition:all 0.3s; }
-  .stat:hover { border-color:rgba(124,92,255,0.4); transform:translateY(-3px); }
-  .stat .num { font-family:var(--font-mono); font-size:32px; font-weight:700;
-    background:linear-gradient(135deg,var(--kali),var(--accent));
-    -webkit-background-clip:text; background-clip:text;
-    -webkit-text-fill-color:transparent; display:block; margin-bottom:4px; }
-  .stat .label { font-size:12px; color:var(--text-faint); text-transform:uppercase;
-    letter-spacing:1.5px; font-family:var(--font-mono); }
-  footer { padding:60px 0 40px; border-top:1px solid var(--border); text-align:center;
-    color:var(--text-faint); font-size:13px; position:relative; z-index:1; }
-  ::-webkit-scrollbar { width:10px; height:10px; }
-  ::-webkit-scrollbar-track { background:var(--bg-0); }
-  ::-webkit-scrollbar-thumb { background:var(--bg-2); border-radius:5px; border:2px solid var(--bg-0); }
-  ::selection { background:var(--kali); color:var(--bg-0); }
-</style>
+<link rel="stylesheet" href="sorted.css">
 </head>
 <body>
 
@@ -230,7 +56,7 @@
       sorted(iteravel, *, key=<span class="kw">None</span>, reverse=<span class="kw">False</span>)
     </div>
 
-    <div class="card kali" style="margin-top:32px;">
+    <div class="card kali card-mt32">
       <div class="card-icon">🔢</div>
       <h3>Exemplo básico</h3>
       <div class="role">Nova lista, original intacto</div>
@@ -242,7 +68,7 @@
       </div>
     </div>
 
-    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Funciona com qualquer iterável</h3>
+    <h3 class="h3-spaced">Funciona com qualquer iterável</h3>
 
     <div class="code">
       <span class="kw">sorted</span>((<span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span>))          <span class="comment"># [1,2,3]       ← tupla → lista</span><br>
@@ -346,7 +172,7 @@
       </div>
     </div>
 
-    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Exemplos com funções built-in</h3>
+    <h3 class="h3-spaced">Exemplos com funções built-in</h3>
 
     <div class="code">
       <span class="comment"># por comprimento</span><br>
@@ -365,7 +191,7 @@
       <span class="comment"># ['ana', 'Bruno', 'carla', 'David']</span>
     </div>
 
-    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">key com lambda</h3>
+    <h3 class="h3-spaced">key com lambda</h3>
 
     <div class="code">
       <span class="comment"># tuplos por um campo</span><br>
@@ -417,7 +243,7 @@
       </div>
     </div>
 
-    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Misturar ascendente e descendente</h3>
+    <h3 class="h3-spaced">Misturar ascendente e descendente</h3>
 
     <div class="code">
       <span class="comment"># nome ascendente, idade descendente</span><br>
@@ -461,7 +287,7 @@
       </div>
     </div>
 
-    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">operator.itemgetter</h3>
+    <h3 class="h3-spaced">operator.itemgetter</h3>
 
     <div class="code">
       <span class="kw">from</span> operator <span class="kw">import</span> itemgetter<br><br>
@@ -470,7 +296,7 @@
       <span class="kw">sorted</span>(pessoas, key=itemgetter(<span class="num">0</span>, <span class="num">1</span>))    <span class="comment"># nome, depois idade</span>
     </div>
 
-    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">attrgetter para objetos</h3>
+    <h3 class="h3-spaced">attrgetter para objetos</h3>
 
     <div class="code">
       <span class="kw">from</span> operator <span class="kw">import</span> attrgetter<br><br>
@@ -482,7 +308,7 @@
       <span class="kw">sorted</span>(pessoas, key=attrgetter(<span class="str">"idade"</span>))
     </div>
 
-    <h3 style="margin-top:40px; margin-bottom:16px; font-size:20px;">Ordenar dict por valor</h3>
+    <h3 class="h3-spaced">Ordenar dict por valor</h3>
 
     <div class="code">
       d = {<span class="str">"b"</span>: <span class="num">2</span>, <span class="str">"a"</span>: <span class="num">1</span>, <span class="str">"c"</span>: <span class="num">3</span>}<br><br>
@@ -642,7 +468,7 @@
       </div>
     </div>
 
-    <h3 style="margin-top:48px; margin-bottom:16px; font-size:20px;">Tabela resumo</h3>
+    <h3 class="h3-spaced-lg">Tabela resumo</h3>
 
     <div class="table-wrap">
       <table>
@@ -676,8 +502,8 @@
 
 <footer>
   <div class="container">
-    <p>Aula 06 • <strong style="color:var(--kali)">sorted()</strong> · Ordenação em Python</p>
-    <p style="margin-top:10px; opacity:0.6">Material educativo • Funções built-in</p>
+    <p>Aula 06 • <strong class="text-kali">sorted()</strong> · Ordenação em Python</p>
+    <p class="footer-sub">Material educativo • Funções built-in</p>
   </div>
 </footer>
 

@@ -155,7 +155,7 @@ camadas.forEach(c => {
             </div>
             <div class="detail-section">
               <h4>PDU</h4>
-              <p style="font-size:.82rem; color:#4a4540; margin-bottom:.6rem;">${c.pdu}</p>
+              <p class="pdu-text">${c.pdu}</p>
               <h4>Protocolos / Normas</h4>
               <div class="proto-list">${protosHTML}</div>
             </div>
@@ -167,6 +167,10 @@ camadas.forEach(c => {
       </div>
     </div>
   `;
+
+  // Dynamic inline style applied via the DOM (kept out of the HTML string for CSP compliance)
+  const pduTextEl = el.querySelector('.pdu-text');
+  if (pduTextEl) pduTextEl.style.cssText = 'font-size:.82rem; color:#4a4540; margin-bottom:.6rem;';
 
   el.addEventListener('click', e => {
     if (e.target.closest('.tab-btn')) return;

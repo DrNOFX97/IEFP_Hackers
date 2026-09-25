@@ -317,9 +317,10 @@ animate(0);
 // ── COUNTRY DETAIL ────────────────────────────────────────────────────────────
 function selectCountry(code) {
   const d=cdata[code]; if(!d) return;
-  document.getElementById('country-detail').innerHTML=`
-    <div class="p-label" style="margin:15px 15px 10px">Country Details</div>
-    <div style="padding:0 15px">
+  const container = document.getElementById('country-detail');
+  container.innerHTML=`
+    <div class="p-label" data-role="cd-label">Country Details</div>
+    <div data-role="cd-body">
       <div class="c-flag">${d.flag}</div>
       <div class="c-name">${d.name}</div>
       <div class="d-row"><span class="d-key">Threat Level</span><span class="d-val r">${d.thr}</span></div>
@@ -328,6 +329,9 @@ function selectCountry(code) {
       <div class="d-row"><span class="d-key">Bandwidth</span><span class="d-val g">${d.bw} Tbps</span></div>
       <div class="d-row"><span class="d-key">Top Vector</span><span class="d-val">${ATTACK_TYPES[Math.floor(Math.random()*ATTACK_TYPES.length)]}</span></div>
     </div>`;
+  // Estilos dinâmicos aplicados via CSSOM (sem atributo style inline, CSP style-src hardening)
+  container.querySelector('[data-role="cd-label"]').style.margin = '15px 15px 10px';
+  container.querySelector('[data-role="cd-body"]').style.padding = '0 15px';
 }
 
 // ── ALERTS + FEED ─────────────────────────────────────────────────────────────
@@ -344,9 +348,20 @@ function addAlert(type,txt){
 function addFeed(arc){
   const d=document.createElement('div');
   d.className='feed-item '+arc.type;
-  d.innerHTML=arc.type==='attack'
-    ?`<span style="color:var(--cyan);font-size:9px">${utc()}</span> <span style="color:var(--red)">${arc.src.code}</span>→<span style="color:var(--green)">${arc.dst.code}</span> <b>${arc.atkType}</b><br><span style="color:var(--orange);font-size:9px">${arc.bytes}</span>`
-    :`<span style="color:var(--cyan);font-size:9px">${utc()}</span> <span style="color:var(--green)">${arc.src.code}</span>→<span style="color:var(--cyan)">${arc.dst.code}</span><br><span style="color:var(--orange);font-size:9px">${arc.bytes}</span>`;
+  // Estilos dinâmicos aplicados via CSSOM (sem atributo style inline, CSP style-src hardening)
+  if (arc.type === 'attack') {
+    d.innerHTML = `<span data-role="time">${utc()}</span> <span data-role="src">${arc.src.code}</span>→<span data-role="dst">${arc.dst.code}</span> <b>${arc.atkType}</b><br><span data-role="bytes">${arc.bytes}</span>`;
+    d.querySelector('[data-role="time"]').style.cssText = 'color:var(--cyan);font-size:9px';
+    d.querySelector('[data-role="src"]').style.color = 'var(--red)';
+    d.querySelector('[data-role="dst"]').style.color = 'var(--green)';
+    d.querySelector('[data-role="bytes"]').style.cssText = 'color:var(--orange);font-size:9px';
+  } else {
+    d.innerHTML = `<span data-role="time">${utc()}</span> <span data-role="src">${arc.src.code}</span>→<span data-role="dst">${arc.dst.code}</span><br><span data-role="bytes">${arc.bytes}</span>`;
+    d.querySelector('[data-role="time"]').style.cssText = 'color:var(--cyan);font-size:9px';
+    d.querySelector('[data-role="src"]').style.color = 'var(--green)';
+    d.querySelector('[data-role="dst"]').style.color = 'var(--cyan)';
+    d.querySelector('[data-role="bytes"]').style.cssText = 'color:var(--orange);font-size:9px';
+  }
   feedEl.insertBefore(d,feedEl.firstChild);
   if(feedEl.children.length>30) feedEl.removeChild(feedEl.lastChild);
 }

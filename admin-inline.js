@@ -208,12 +208,16 @@ async function loadOverview() {
           <div class="activity-text">
             <strong>${escHtml(data.displayName || data.email || 'Desconhecido')}</strong>
             — ${escHtml(data.action)}
-            ${data.details ? `<span style="color:var(--text2)"> · ${escHtml(data.details)}</span>` : ''}
+            ${data.details ? `<span> · ${escHtml(data.details)}</span>` : ''}
             <div class="activity-meta">${escHtml(data.email || '')}</div>
           </div>
           <div class="activity-time">${fmtDateShort(data.timestamp)}</div>
         </div>`;
       }).join('');
+      // Estilo aplicado via DOM API (sem atributo style inline, CSP-safe)
+      list.querySelectorAll('.activity-text > span').forEach(span => {
+        span.style.cssText = 'color:var(--text2)';
+      });
     }
 
     document.getElementById('overview-updated').textContent = 'Atualizado: ' + new Date().toLocaleTimeString('pt-PT');
@@ -237,7 +241,8 @@ async function loadUsers() {
     });
     renderUsers(allUsers);
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--red);padding:1rem;">${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5">${e.message}</td></tr>`;
+    tbody.querySelector('td').style.cssText = 'color:var(--red);padding:1rem;';
   }
 }
 
@@ -270,29 +275,65 @@ function renderUsers(users) {
         <div class="td-user">
           <div class="td-avatar">${photo}</div>
           <div>
-            <div class="td-name">${name}${isSelf ? ' <span style="color:var(--text3);font-size:0.72rem;">(tu)</span>' : ''}</div>
+            <div class="td-name">${name}${isSelf ? ' <span>(tu)</span>' : ''}</div>
           </div>
         </div>
       </td>
-      <td style="color:var(--text2);font-size:0.82rem;">${email}</td>
+      <td>${email}</td>
       <td>${roleBadge(role)}</td>
-      <td style="color:var(--text2)">${fmtDate(u.lastSeen)}</td>
+      <td>${fmtDate(u.lastSeen)}</td>
       <td>
         ${isSelf
-          ? `<span style="color:var(--text3);font-size:0.8rem;">–</span>`
-          : `<div style="display:flex;gap:6px;align-items:center;">
+          ? `<span>–</span>`
+          : `<div>
                <select class="role-select" data-action="change-role" data-uid="${u.id}" data-name="${escHtml(name)}">${roleOpts}</select>
-               <button class="btn" style="padding:0.2rem 0.6rem;font-size:0.78rem;${isBlocked ? 'border-color:var(--accent);color:var(--accent)' : 'border-color:var(--red);color:var(--red)'}"
+               <button class="btn"
                  data-action="toggle-block" data-uid="${u.id}" data-name="${escHtml(name)}" data-role="${role}">
                  ${isBlocked ? '✓ Desbloquear' : '🚫 Bloquear'}
                </button>
-               ${isBlocked && currentAdminRole === 'admin' ? `<button class="btn" style="padding:0.2rem 0.6rem;font-size:0.78rem;border-color:#8b0000;color:#c0392b;background:rgba(139,0,0,0.12);"
+               ${isBlocked && currentAdminRole === 'admin' ? `<button class="btn"
                  data-action="delete-user" data-uid="${u.id}" data-name="${escHtml(name)}">🗑️ Eliminar</button>` : ''}
              </div>`
         }
       </td>
     </tr>`;
   }).join('');
+
+  // Estilos dinâmicos aplicados via DOM API (sem atributo style inline, CSP-safe).
+  // A lógica condicional (isSelf / isBlocked / role de admin) é exatamente a mesma usada acima.
+  Array.from(tbody.children).forEach((row, i) => {
+    const u = users[i];
+    const role = u.role || 'aluno';
+    const isBlocked = role === 'blocked';
+    const isSelf = u.id === currentAdminUid;
+    const cells = row.children; // [0]=utilizador [1]=email [2]=role [3]=último acesso [4]=ações
+
+    const selfSpan = cells[0].querySelector('.td-name > span');
+    if (selfSpan) selfSpan.style.cssText = 'color:var(--text3);font-size:0.72rem;';
+
+    cells[1].style.cssText = 'color:var(--text2);font-size:0.82rem;';
+    cells[3].style.cssText = 'color:var(--text2)';
+
+    const actionCell = cells[4];
+    if (isSelf) {
+      const dash = actionCell.querySelector('span');
+      if (dash) dash.style.cssText = 'color:var(--text3);font-size:0.8rem;';
+    } else {
+      const wrap = actionCell.querySelector('div');
+      if (wrap) wrap.style.cssText = 'display:flex;gap:6px;align-items:center;';
+
+      const toggleBtn = actionCell.querySelector('[data-action="toggle-block"]');
+      if (toggleBtn) {
+        toggleBtn.style.cssText = 'padding:0.2rem 0.6rem;font-size:0.78rem;' +
+          (isBlocked ? 'border-color:var(--accent);color:var(--accent)' : 'border-color:var(--red);color:var(--red)');
+      }
+
+      const delBtn = actionCell.querySelector('[data-action="delete-user"]');
+      if (delBtn) {
+        delBtn.style.cssText = 'padding:0.2rem 0.6rem;font-size:0.78rem;border-color:#8b0000;color:#c0392b;background:rgba(139,0,0,0.12);';
+      }
+    }
+  });
 }
 
 async function deleteUser(uid, name) {
@@ -383,7 +424,8 @@ async function loadLogs() {
     allLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderLogs(allLogs);
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--red);padding:1rem;">${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4">${e.message}</td></tr>`;
+    tbody.querySelector('td').style.cssText = 'color:var(--red);padding:1rem;';
   }
 }
 
@@ -398,14 +440,21 @@ function renderLogs(logs) {
   }
 
   tbody.innerHTML = logs.map(l => `<tr>
-    <td style="color:var(--text2);white-space:nowrap">${fmtDate(l.timestamp)}</td>
+    <td>${fmtDate(l.timestamp)}</td>
     <td>
       <div class="td-name">${escHtml(l.displayName || '–')}</div>
       <div class="td-email">${escHtml(l.email || '–')}</div>
     </td>
     <td>${logActionBadge(l.action)}</td>
-    <td style="color:var(--text2);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(l.details)}">${escHtml(l.details) || '–'}</td>
+    <td title="${escHtml(l.details)}">${escHtml(l.details) || '–'}</td>
   </tr>`).join('');
+
+  // Estilos aplicados via DOM API (sem atributo style inline, CSP-safe)
+  Array.from(tbody.children).forEach(row => {
+    const cells = row.children;
+    cells[0].style.cssText = 'color:var(--text2);white-space:nowrap';
+    cells[3].style.cssText = 'color:var(--text2);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+  });
 }
 
 function filterLogs() {
@@ -461,53 +510,79 @@ async function loadSecurityData() {
   const mapDiv = document.getElementById('login-map');
   
   // Real CSP Violations
-  cspTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem;"><div class="spinner"></div></td></tr>';
+  cspTbody.innerHTML = '<tr><td colspan="3"><div class="spinner"></div></td></tr>';
+  cspTbody.querySelector('td').style.cssText = 'text-align:center;padding:1rem;';
   try {
     const cspSnap = await db.collection('csp_violations').orderBy('timestamp', 'desc').limit(15).get();
     if (cspSnap.empty) {
-      cspTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem;">Nenhuma violação recente associada.</td></tr>';
+      cspTbody.innerHTML = '<tr><td colspan="3">Nenhuma violação recente associada.</td></tr>';
+      cspTbody.querySelector('td').style.cssText = 'text-align:center;padding:1rem;';
     } else {
       cspTbody.innerHTML = cspSnap.docs.map(d => {
         const data = d.data();
-        return `<tr><td style="color:var(--text2);font-size:0.75rem;">${fmtDateShort(data.timestamp)}</td><td>${escHtml(data.blockedUri || 'inline')}</td><td><span style="font-family:monospace;background:var(--surface2);padding:0.1rem 0.3rem;border-radius:4px;">${escHtml(data.violatedDirective)}</span></td></tr>`;
+        return `<tr><td>${fmtDateShort(data.timestamp)}</td><td>${escHtml(data.blockedUri || 'inline')}</td><td><span>${escHtml(data.violatedDirective)}</span></td></tr>`;
       }).join('');
+      // Estilos via DOM API (sem atributo style inline, CSP-safe)
+      Array.from(cspTbody.children).forEach(row => {
+        const cells = row.children;
+        cells[0].style.cssText = 'color:var(--text2);font-size:0.75rem;';
+        cells[2].querySelector('span').style.cssText = 'font-family:monospace;background:var(--surface2);padding:0.1rem 0.3rem;border-radius:4px;';
+      });
     }
   } catch(e) {
-    cspTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem;color:var(--text2);">Sem dados de CSP ou limite de leitura atingido.</td></tr>';
+    cspTbody.innerHTML = '<tr><td colspan="3">Sem dados de CSP ou limite de leitura atingido.</td></tr>';
+    cspTbody.querySelector('td').style.cssText = 'text-align:center;padding:1rem;color:var(--text2);';
   }
 
   // Sessões Ativas Reais (lastSeen > 5 mins)
-  sTbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:1rem;"><div class="spinner"></div></td></tr>';
+  sTbody.innerHTML = '<tr><td colspan="2"><div class="spinner"></div></td></tr>';
+  sTbody.querySelector('td').style.cssText = 'text-align:center;padding:1rem;';
   try {
     const now = new Date();
     const fiveMinsAgo = new Date(now.getTime() - 5 * 60000);
     const uSnap = await db.collection('users').where('lastSeen', '>=', fiveMinsAgo).get();
     if (uSnap.empty) {
-      sTbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:1rem;">Sem sessões aparentes.</td></tr>';
+      sTbody.innerHTML = '<tr><td colspan="2">Sem sessões aparentes.</td></tr>';
+      sTbody.querySelector('td').style.cssText = 'text-align:center;padding:1rem;';
     } else {
-      sTbody.innerHTML = uSnap.docs.map(d => {
+      const sessionDocs = uSnap.docs;
+      sTbody.innerHTML = sessionDocs.map(d => {
         const data = d.data();
         const uid = d.id;
         const name = escHtml(data.displayName || data.email || 'Desconhecido');
         if (uid === currentAdminUid) {
-          return `<tr><td>${name} <span style="color:var(--text3);font-size:0.72rem;">(neste dispositivo)</span></td><td><span class="role-badge role-admin">Tu</span></td></tr>`;
+          return `<tr><td>${name} <span>(neste dispositivo)</span></td><td><span class="role-badge role-admin">Tu</span></td></tr>`;
         }
-        return `<tr><td>${name}</td><td><button class="btn" style="padding:0.2rem 0.5rem;font-size:0.7rem;color:var(--red);border-color:var(--red);" data-action="force-logout" data-uid="${uid}" data-name="${name}">Logout Remoto</button></td></tr>`;
+        return `<tr><td>${name}</td><td><button class="btn" data-action="force-logout" data-uid="${uid}" data-name="${name}">Logout Remoto</button></td></tr>`;
       }).join('');
+      // Estilos via DOM API — mesma lógica condicional (uid === currentAdminUid) do bloco acima
+      Array.from(sTbody.children).forEach((row, i) => {
+        const uid = sessionDocs[i].id;
+        if (uid === currentAdminUid) {
+          const span = row.querySelector('td > span');
+          if (span) span.style.cssText = 'color:var(--text3);font-size:0.72rem;';
+        } else {
+          const btn = row.querySelector('[data-action="force-logout"]');
+          if (btn) btn.style.cssText = 'padding:0.2rem 0.5rem;font-size:0.7rem;color:var(--red);border-color:var(--red);';
+        }
+      });
     }
   } catch(e) {
-    sTbody.innerHTML = `<tr><td colspan="2" style="text-align:center;padding:1rem;color:var(--red);">Erro de leitura: ${e.message}</td></tr>`;
+    sTbody.innerHTML = `<tr><td colspan="2">Erro de leitura: ${e.message}</td></tr>`;
+    sTbody.querySelector('td').style.cssText = 'text-align:center;padding:1rem;color:var(--red);';
   }
 
   // Mapa de Logins Real & Brute Force (Filtering from generic audit_logs to avoid compound index needs)
-  mapDiv.innerHTML = '<div style="color:var(--text3);text-align:center;">A procurar logs globais...</div>';
-  bfTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;"><div class="spinner"></div></td></tr>';
-  
+  mapDiv.innerHTML = '<div>A procurar logs globais...</div>';
+  mapDiv.querySelector('div').style.cssText = 'color:var(--text3);text-align:center;';
+  bfTbody.innerHTML = '<tr><td colspan="4"><div class="spinner"></div></td></tr>';
+  bfTbody.querySelector('td').style.cssText = 'text-align:center;padding:1rem;';
+
   try {
     const lSnap = await db.collection('audit_log').orderBy('timestamp', 'desc').limit(200).get();
     const logins = [];
     const fails = {};
-    
+
     lSnap.docs.forEach(d => {
       const data = d.data();
       if (data.action === 'login') {
@@ -520,27 +595,44 @@ async function loadSecurityData() {
     });
 
     if (logins.length === 0) {
-      mapDiv.innerHTML = '<div style="color:var(--text3);">Sem eventos recentes conectáveis.</div>';
+      mapDiv.innerHTML = '<div>Sem eventos recentes conectáveis.</div>';
+      mapDiv.querySelector('div').style.cssText = 'color:var(--text3);';
     } else {
       mapDiv.innerHTML = '';
       logins.slice(0, 15).reverse().forEach(data => {
         const dateStr = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString('pt-PT') : '--:--:--';
-        mapDiv.innerHTML = `<div style="margin-bottom:6px;color:var(--accent)">[${dateStr}] ${escHtml(data.email || data.displayName)} — ${escHtml(data.details)}</div>` + mapDiv.innerHTML;
+        mapDiv.innerHTML = `<div>[${dateStr}] ${escHtml(data.email || data.displayName)} — ${escHtml(data.details)}</div>` + mapDiv.innerHTML;
+      });
+      // Estilo (constante, igual para todas as entradas) via DOM API
+      Array.from(mapDiv.children).forEach(div => {
+        div.style.cssText = 'margin-bottom:6px;color:var(--accent)';
       });
     }
 
     const failEntries = Object.entries(fails);
     if (failEntries.length === 0) {
-      bfTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;">Nenhuma falha detetada recentemente.</td></tr>';
+      bfTbody.innerHTML = '<tr><td colspan="4">Nenhuma falha detetada recentemente.</td></tr>';
+      bfTbody.querySelector('td').style.cssText = 'text-align:center;padding:1rem;';
     } else {
       bfTbody.innerHTML = failEntries.map(([key, info]) => `
-        <tr><td style="font-family:monospace;">${escHtml(info.details || 'IP Desconhecido')}</td><td>${escHtml(info.target)}</td><td style="color:${info.count >= 5 ? 'var(--red)' : 'var(--yellow)'};font-weight:bold;">${info.count}</td><td><button class="btn" style="padding:0.2rem 0.5rem;font-size:0.7rem;" data-action="toast-firewall">Ignorar/Block</button></td></tr>
+        <tr><td>${escHtml(info.details || 'IP Desconhecido')}</td><td>${escHtml(info.target)}</td><td>${info.count}</td><td><button class="btn" data-action="toast-firewall">Ignorar/Block</button></td></tr>
       `).join('');
+      // Estilos via DOM API — mesma lógica condicional (info.count >= 5) do template original
+      Array.from(bfTbody.children).forEach((row, i) => {
+        const [, info] = failEntries[i];
+        const cells = row.children;
+        cells[0].style.cssText = 'font-family:monospace;';
+        cells[2].style.cssText = `color:${info.count >= 5 ? 'var(--red)' : 'var(--yellow)'};font-weight:bold;`;
+        const btn = cells[3].querySelector('[data-action="toast-firewall"]');
+        if (btn) btn.style.cssText = 'padding:0.2rem 0.5rem;font-size:0.7rem;';
+      });
     }
 
   } catch(e) {
-    mapDiv.innerHTML = `<div style="color:var(--red);">Erro: ${e.message}</div>`;
-    bfTbody.innerHTML = `<tr><td colspan="4" style="color:var(--red);text-align:center;">Erro: ${e.message}</td></tr>`;
+    mapDiv.innerHTML = `<div>Erro: ${e.message}</div>`;
+    mapDiv.querySelector('div').style.cssText = 'color:var(--red);';
+    bfTbody.innerHTML = `<tr><td colspan="4">Erro: ${e.message}</td></tr>`;
+    bfTbody.querySelector('td').style.cssText = 'color:var(--red);text-align:center;';
   }
 }
 

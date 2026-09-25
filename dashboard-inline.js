@@ -48,6 +48,89 @@
             return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
+        // ── STYLE HOOKS (CSP: sem 'unsafe-inline' em style-src) ───────────
+        // O HTML gerado dinamicamente por template strings NUNCA usa o
+        // atributo style="" — em vez disso marca os elementos com classes
+        // "jshook-*" (puramente seletores, não são regras CSS) e/ou
+        // atributos data-*, e o estilo real é aplicado aqui via
+        // elemento.style.propriedade, que é uma chamada à API DOM e não
+        // uma injeção de atributo HTML. Chamar applyDeferredStyles(root)
+        // depois de qualquer atribuição a innerHTML que possa conter
+        // elementos marcados.
+        function applyStyleHooks(root) {
+            if (!root) return;
+            const set = (sel, styles) => root.querySelectorAll(sel).forEach(el => Object.assign(el.style, styles));
+
+            // Horário / aulas
+            set('.jshook-aula-badges-row',    { display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '5px', alignItems: 'center' });
+            set('.jshook-aula-badge',         { marginTop: '0' });
+            set('.jshook-aula-badge-formador',{ background: 'rgba(255,255,255,0.1)', color: '#fff' });
+            set('.jshook-week-badge',         { fontSize: '0.62rem', padding: '0.1rem 0.4rem', marginTop: '3px', display: 'inline-block' });
+            set('.jshook-grid-span-all',      { gridColumn: '1/-1' });
+
+            // Materiais (vídeo/youtube)
+            set('.jshook-yt-embed',    { width: '100%', aspectRatio: '16/9', display: 'block' });
+            set('.jshook-local-video', { width: '100%', maxHeight: '360px', display: 'block' });
+
+            // Turma
+            set('.jshook-muted-sm',        { color: 'var(--text-secondary)', fontSize: '0.82rem' });
+            set('.jshook-muted-xs',        { color: 'var(--text-secondary)', fontSize: '0.8rem' });
+            set('.jshook-muted',           { color: 'var(--text-secondary)' });
+            set('.jshook-cursor-pointer',  { cursor: 'pointer' });
+            set('.jshook-avatar-img',      { width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' });
+            set('.jshook-avatar-fallback', { width: '38px', height: '38px', borderRadius: '50%', background: 'var(--gradient-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: '700', color: '#000', flexShrink: '0' });
+            set('.jshook-turma-row',       { display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.7rem 1rem', background: 'var(--surface-color)', borderRadius: '10px' });
+            set('.jshook-flex1-minw0',     { flex: '1', minWidth: '0' });
+            set('.jshook-turma-name',      { fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' });
+            set('.jshook-tu-tag',          { fontSize: '0.7rem', opacity: '0.7' });
+            set('.jshook-last-seen',       { fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.1rem' });
+
+            // Chat
+            set('.jshook-chat-time-row', { display: 'flex', gap: '0.25rem', alignItems: 'center' });
+            set('.jshook-wa-badge',      { fontSize: '0.7em', opacity: '0.6', marginLeft: '0.25rem' });
+
+            // Convites
+            set('.jshook-flex-gap4-center', { display: 'flex', gap: '0.4rem', alignItems: 'center' });
+            set('.jshook-uses-count',       { fontSize: '0.68rem', color: 'var(--text-secondary)' });
+            set('.jshook-qr-wrap',          { display: 'none', marginTop: '0.8rem' });
+
+            // Lab / PentestLab
+            set('.jshook-xp-max-suffix',   { fontSize: '0.9rem', opacity: '0.6' });
+            set('.jshook-mt-1_5rem',       { marginTop: '1.5rem' });
+            set('.jshook-mt-1rem',         { marginTop: '1rem' });
+            set('.jshook-fw700',           { fontWeight: '700' });
+            set('.jshook-ctf-solved-sub',  { fontSize: '0.78rem', opacity: '0.8', marginTop: '0.2rem' });
+            set('.jshook-arena-intro',     { marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' });
+            set('.jshook-arena-card-desc', { fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' });
+            set('.jshook-arena-input',     { marginBottom: '0.5rem', fontSize: '0.75rem' });
+            set('.jshook-success-text',    { color: 'var(--success-color)' });
+        }
+
+        // Estilos cuja propriedade depende de um valor calculado em runtime
+        // (percentagens, cores condicionais). O valor já calculado vai num
+        // atributo data-* no HTML (nunca em style=""), e aqui é lido e
+        // aplicado via elemento.style.propriedade.
+        function applyDynamicStyles(root) {
+            if (!root) return;
+            root.querySelectorAll('[data-pct]').forEach(el => {
+                el.style.width = el.dataset.pct + '%';
+            });
+            root.querySelectorAll('[data-accent-border]').forEach(el => {
+                el.style.border = '1px solid ' + (el.dataset.accentBorder === '1' ? 'var(--accent-color)' : 'var(--border-color)');
+            });
+            root.querySelectorAll('[data-accent-text]').forEach(el => {
+                el.style.color = el.dataset.accentText === '1' ? 'var(--accent-color)' : '#fff';
+            });
+            root.querySelectorAll('[data-hide-if-filtered]').forEach(el => {
+                if (el.dataset.hideIfFiltered === '1') el.style.display = 'none';
+            });
+        }
+
+        function applyDeferredStyles(root) {
+            applyStyleHooks(root);
+            applyDynamicStyles(root);
+        }
+
 
         // ── STATE ───────────────────────────────────────────────────────
         let currentView         = 'dashboard';
@@ -334,13 +417,13 @@
             const isRemote      = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto') || REMOTE_DATE_EXCEPTIONS.has(diaData);
             const remoteClass   = isRemote ? 'remote' : '';
             const remoteBadge   = isRemote
-                ? `<div class="aula-uc badge remote" style="margin-top:0;">🌐 Remoto</div>` : '';
+                ? `<div class="aula-uc badge remote jshook-aula-badge">🌐 Remoto</div>` : '';
             const isTeste       = aula.tipo === 'teste';
             const testeClass    = isTeste ? 'teste' : '';
             const testeBadge    = isTeste
-                ? `<div class="aula-uc badge teste" style="margin-top:0;">📝 Teste</div>` : '';
+                ? `<div class="aula-uc badge teste jshook-aula-badge">📝 Teste</div>` : '';
             const formadorBadge = aula.formador
-                ? `<div class="aula-uc badge" style="margin-top:0;background:rgba(255,255,255,0.1);color:#fff;">👤 ${shortName(aula.formador)}</div>` : '';
+                ? `<div class="aula-uc badge jshook-aula-badge jshook-aula-badge-formador">👤 ${shortName(aula.formador)}</div>` : '';
             const clickAttr = UC_MAP[aula.uc]
                 ? `data-uc-sched="${aula.uc}"` : '';
             return `
@@ -348,8 +431,8 @@
                 <div class="aula-time">${aula.hora}</div>
                 <div class="aula-info">
                     <div class="aula-desc">${aula.descricao}</div>
-                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:5px;align-items:center;">
-                        <div class="aula-uc badge" style="margin-top:0;">${aula.uc}</div>
+                    <div class="jshook-aula-badges-row">
+                        <div class="aula-uc badge jshook-aula-badge">${aula.uc}</div>
                         ${remoteBadge}${testeBadge}${formadorBadge}
                     </div>
                 </div>
@@ -426,7 +509,7 @@
 
                 if (!filter || dayMatches) monthHasContent = true;
                 monthHtml += `
-                <div class="day-card${dia.isWeekend ? ' weekend-day' : ''}" data-date="${dia.data}" style="${(filter && !dayMatches) ? 'display:none;' : ''}">
+                <div class="day-card${dia.isWeekend ? ' weekend-day' : ''}" data-date="${dia.data}" data-hide-if-filtered="${(filter && !dayMatches) ? '1' : '0'}">
                     <div class="day-header">
                         <span class="day-date">${dia.data}</span>
                         <span class="day-week badge">${dia.dia_semana}</span>
@@ -436,10 +519,11 @@
             });
             flushMonth();
 
-            scheduleGrid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma aula encontrada para esse filtro.</div>`;
+            scheduleGrid.innerHTML = html || `<div class="empty-state jshook-grid-span-all">Nenhuma aula encontrada para esse filtro.</div>`;
             scheduleGrid.querySelectorAll('[data-uc-sched]').forEach(el =>
                 el.addEventListener('click', () => openUCFromSchedule(el.dataset.ucSched))
             );
+            applyDeferredStyles(scheduleGrid);
             setTimeout(scrollToToday, 60);
         }
 
@@ -516,10 +600,10 @@
                             const clickAttr  = UC_MAP[aula.uc] ? `data-uc-sched="${aula.uc}"` : '';
                             const isRemote   = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto') || REMOTE_DATE_EXCEPTIONS.has(dia.data);
                             const remoteCls  = isRemote ? 'remote' : '';
-                            const remoteBadge = isRemote ? `<span class="badge remote" style="font-size:0.62rem;padding:0.1rem 0.4rem;margin-top:3px;display:inline-block;">🌐 Remoto</span>` : '';
+                            const remoteBadge = isRemote ? `<span class="badge remote jshook-week-badge">🌐 Remoto</span>` : '';
                             const isTeste    = aula.tipo === 'teste';
                             const testeCls   = isTeste ? 'teste' : '';
-                            const testeBadge = isTeste ? `<span class="badge teste" style="font-size:0.62rem;padding:0.1rem 0.4rem;margin-top:3px;display:inline-block;">📝 Teste</span>` : '';
+                            const testeBadge = isTeste ? `<span class="badge teste jshook-week-badge">📝 Teste</span>` : '';
                             bodyHtml += `
                             <div class="week-aula-card ${state} ${clickCls} ${remoteCls} ${testeCls} ${dimCls}" ${clickAttr}>
                                 <div class="week-aula-time">${aula.hora}</div>
@@ -552,6 +636,7 @@
             scheduleGrid.querySelectorAll('[data-uc-sched]').forEach(el =>
                 el.addEventListener('click', () => openUCFromSchedule(el.dataset.ucSched))
             );
+            applyDeferredStyles(scheduleGrid);
             setTimeout(scrollToToday, 60);
         }
 
@@ -870,8 +955,8 @@
                     progressHtml = `
                     <div class="uc-progress-wrap">
                         <div class="uc-progress-bar">
-                            <div class="uc-progress-sched" style="width:${schedPct}%"></div>
-                            <div class="uc-progress-done"  style="width:${donePct}%"></div>
+                            <div class="uc-progress-sched" data-pct="${schedPct}"></div>
+                            <div class="uc-progress-done"  data-pct="${donePct}"></div>
                         </div>
                         <div class="uc-progress-label">${label}</div>
                     </div>`;
@@ -883,8 +968,8 @@
                     progressHtml = `
                     <div class="uc-progress-wrap">
                         <div class="uc-progress-bar">
-                            <div class="uc-progress-sched" style="width:100%"></div>
-                            <div class="uc-progress-done"  style="width:${donePct}%"></div>
+                            <div class="uc-progress-sched" data-pct="100"></div>
+                            <div class="uc-progress-done"  data-pct="${donePct}"></div>
                         </div>
                         <div class="uc-progress-label">${label}</div>
                     </div>`;
@@ -1037,10 +1122,11 @@
                 sectionHtml('Concluídas', '✅', concluidas),
             ].join('');
 
-            grid.innerHTML = html || `<div class="empty-state" style="grid-column:1/-1;">Nenhuma UC encontrada.</div>`;
+            grid.innerHTML = html || `<div class="empty-state jshook-grid-span-all">Nenhuma UC encontrada.</div>`;
             grid.querySelectorAll('[data-uc-open]').forEach(el =>
                 el.addEventListener('click', () => { navStack.push(currentView); openUCDetail(el.dataset.ucOpen); })
             );
+            applyDeferredStyles(grid);
         }
 
         function filterUCs(value) {
@@ -1308,8 +1394,8 @@
                         ? `<iframe src="https://www.youtube.com/embed/${escapeHtml(ytId)}"
                                    frameborder="0" allowfullscreen
                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
-                                   style="width:100%;aspect-ratio:16/9;display:block;"></iframe>`
-                        : `<video controls preload="none" style="width:100%;max-height:360px;display:block;">
+                                   class="jshook-yt-embed"></iframe>`
+                        : `<video controls preload="none" class="jshook-local-video">
                                <source src="${escapeHtml(m.url)}" type="${m.url.endsWith('.webm') ? 'video/webm' : 'video/mp4'}">
                            </video>`;
                     return `
@@ -1379,6 +1465,7 @@
             el.querySelectorAll('[data-action="open-mat"]').forEach(node =>
                 node.addEventListener('keydown', e => { if (e.key === 'Enter') openMaterial(parseInt(node.dataset.mat)); })
             );
+            applyDeferredStyles(el);
         }
 
         function toggleVideo(header) {
@@ -1397,6 +1484,19 @@
 
         let _pdfBlobUrl = null;
 
+        // frame.srcdoc cria um mini-documento (about:srcdoc) que herda a CSP
+        // do documento principal — por isso também não pode ter style="" no
+        // seu HTML. Em vez disso o corpo é marcado com um id e, assim que o
+        // iframe termina de carregar, o estilo é aplicado via
+        // contentDocument.<elemento>.style.propriedade (API DOM).
+        function styleSrcdocOnLoad(frame, styleFn) {
+            const handler = () => {
+                frame.removeEventListener('load', handler);
+                try { styleFn(frame.contentDocument); } catch (e) { /* cross-doc not ready */ }
+            };
+            frame.addEventListener('load', handler);
+        }
+
         async function openPdfModal(url, label) {
             const modal  = document.getElementById('pdf-modal');
             const frame  = document.getElementById('pdf-modal-frame');
@@ -1405,7 +1505,15 @@
             dlBtn.href = url;
             // Loading placeholder
             frame.removeAttribute('src');
-            frame.srcdoc = `<body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#525659;font-family:sans-serif;color:#ccc;font-size:0.9rem">A carregar PDF…</body>`;
+            frame.srcdoc = `<body id="pdf-loading-msg">A carregar PDF…</body>`;
+            styleSrcdocOnLoad(frame, doc => {
+                const b = doc && doc.getElementById('pdf-loading-msg');
+                if (!b) return;
+                Object.assign(b.style, {
+                    margin: '0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    height: '100vh', background: '#525659', fontFamily: 'sans-serif', color: '#ccc', fontSize: '0.9rem'
+                });
+            });
             modal.classList.add('open');
             document.body.style.overflow = 'hidden';
             try {
@@ -1416,7 +1524,18 @@
                 frame.removeAttribute('srcdoc');
                 frame.src    = _pdfBlobUrl;
             } catch (e) {
-                frame.srcdoc = `<body style="margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#1a1a2e;font-family:sans-serif;color:#ccc;gap:1rem"><p>Não foi possível carregar o PDF.</p><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="color:#58a6ff;text-decoration:none;border:1px solid #58a6ff;padding:.5rem 1rem;border-radius:6px">↗ Abrir em separador</a></body>`;
+                frame.srcdoc = `<body id="pdf-error-msg"><p>Não foi possível carregar o PDF.</p><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" id="pdf-error-link">↗ Abrir em separador</a></body>`;
+                styleSrcdocOnLoad(frame, doc => {
+                    const b = doc && doc.getElementById('pdf-error-msg');
+                    if (b) Object.assign(b.style, {
+                        margin: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        height: '100vh', background: '#1a1a2e', fontFamily: 'sans-serif', color: '#ccc', gap: '1rem'
+                    });
+                    const a = doc && doc.getElementById('pdf-error-link');
+                    if (a) Object.assign(a.style, {
+                        color: '#58a6ff', textDecoration: 'none', border: '1px solid #58a6ff', padding: '.5rem 1rem', borderRadius: '6px'
+                    });
+                });
             }
         }
 
@@ -1628,7 +1747,8 @@
             try {
                 const snap = await db.collection('users').orderBy('lastSeen', 'desc').limit(40).get();
                 if (snap.empty) {
-                    grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Nenhum colega ainda.</span>';
+                    grid.innerHTML = '<span class="jshook-muted-sm">Nenhum colega ainda.</span>';
+                    applyDeferredStyles(grid);
                     return;
                 }
                 const uid = auth.currentUser?.uid;
@@ -1643,7 +1763,8 @@
                     return ls && (now - ls.getTime()) < ONLINE_MS;
                 });
                 if (!onlineDocs.length) {
-                    grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Nenhum colega online.</span>';
+                    grid.innerHTML = '<span class="jshook-muted-sm">Nenhum colega online.</span>';
+                    applyDeferredStyles(grid);
                     return;
                 }
                 grid.innerHTML = onlineDocs.map(doc => {
@@ -1653,7 +1774,7 @@
                     const avatarHtml = m.photoURL
                         ? `<div class="turma-chip-avatar"><img src="${escapeHtml(m.photoURL)}" loading="lazy"></div>`
                         : `<div class="turma-chip-avatar">${escapeHtml(initials)}</div>`;
-                    return `<div class="turma-chip online" data-view="turma" style="cursor:pointer;">
+                    return `<div class="turma-chip online jshook-cursor-pointer" data-view="turma">
                         ${avatarHtml}
                         <span>${escapeHtml(m.displayName?.split(' ')[0] || 'Anónimo')}</span>
                     </div>`;
@@ -1661,8 +1782,10 @@
                 grid.querySelectorAll('[data-view="turma"]').forEach(el =>
                     el.addEventListener('click', () => switchView('turma'))
                 );
+                applyDeferredStyles(grid);
             } catch(e) {
-                grid.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">Não foi possível carregar.</span>';
+                grid.innerHTML = '<span class="jshook-muted-sm">Não foi possível carregar.</span>';
+                applyDeferredStyles(grid);
                 console.warn('renderTurma:', e);
             }
         }
@@ -1670,17 +1793,20 @@
         async function renderTurmaView() {
             const list = document.getElementById('turma-list');
             if (!list) return;
-            list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.82rem;">A carregar…</span>';
+            list.innerHTML = '<span class="jshook-muted-sm">A carregar…</span>';
+            applyDeferredStyles(list);
             try {
                 const snap = await db.collection('users').orderBy('lastSeen', 'desc').limit(60).get();
                 if (snap.empty) {
-                    list.innerHTML = '<p style="color:var(--text-secondary);">Nenhum participante registado ainda.</p>';
+                    list.innerHTML = '<p class="jshook-muted">Nenhum participante registado ainda.</p>';
+                    applyDeferredStyles(list);
                     return;
                 }
                 const myUid = auth.currentUser?.uid;
                 const activeDocs = snap.docs.filter(doc => (doc.data().role || 'aluno') !== 'blocked');
                 if (!activeDocs.length) {
-                    list.innerHTML = '<p style="color:var(--text-secondary);">Nenhum participante registado ainda.</p>';
+                    list.innerHTML = '<p class="jshook-muted">Nenhum participante registado ainda.</p>';
+                    applyDeferredStyles(list);
                     return;
                 }
                 list.innerHTML = activeDocs.map(doc => {
@@ -1691,20 +1817,22 @@
                         ? m.lastSeen.toDate().toLocaleDateString('pt-PT', {day:'2-digit',month:'short',year:'numeric'})
                         : '–';
                     const avatarHtml = m.photoURL
-                        ? `<img src="${escapeHtml(m.photoURL)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;" loading="lazy">`
-                        : `<div style="width:38px;height:38px;border-radius:50%;background:var(--gradient-accent);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#000;flex-shrink:0;">${escapeHtml(ini)}</div>`;
-                    return `<div style="display:flex;align-items:center;gap:0.85rem;padding:0.7rem 1rem;background:var(--surface-color);border:1px solid ${isMe ? 'var(--accent-color)' : 'var(--border-color)'};border-radius:10px;">
+                        ? `<img src="${escapeHtml(m.photoURL)}" class="jshook-avatar-img" loading="lazy">`
+                        : `<div class="jshook-avatar-fallback">${escapeHtml(ini)}</div>`;
+                    return `<div class="jshook-turma-row" data-accent-border="${isMe ? '1' : '0'}">
                         ${avatarHtml}
-                        <div style="flex:1;min-width:0;">
-                            <div style="font-weight:600;color:${isMe ? 'var(--accent-color)' : '#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                ${escapeHtml(m.displayName || 'Anónimo')}${isMe ? ' <span style="font-size:0.7rem;opacity:0.7;">(tu)</span>' : ''}
+                        <div class="jshook-flex1-minw0">
+                            <div class="jshook-turma-name" data-accent-text="${isMe ? '1' : '0'}">
+                                ${escapeHtml(m.displayName || 'Anónimo')}${isMe ? ' <span class="jshook-tu-tag">(tu)</span>' : ''}
                             </div>
-                            <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:0.1rem;">último acesso: ${lastSeen}</div>
+                            <div class="jshook-last-seen">último acesso: ${lastSeen}</div>
                         </div>
                     </div>`;
                 }).join('');
+                applyDeferredStyles(list);
             } catch(e) {
-                list.innerHTML = '<p style="color:var(--text-secondary);">Não foi possível carregar a lista.</p>';
+                list.innerHTML = '<p class="jshook-muted">Não foi possível carregar a lista.</p>';
+                applyDeferredStyles(list);
                 console.warn('renderTurmaView:', e);
             }
         }
@@ -1758,6 +1886,7 @@
                 el.innerHTML = msgs.length === 0
                     ? '<div class="chat-empty">Sem mensagens ainda. Sê o primeiro!</div>'
                     : msgs.map(m => chatBubbleHtml(m, uid, 'chat')).join('');
+                applyDeferredStyles(el);
                 el.scrollTop = el.scrollHeight;
                 if (currentView !== 'chat') chatUpdateBadge(newCount);
                 else chatMarkRead();
@@ -1773,7 +1902,7 @@
             return `<div class="chat-msg ${mine ? 'mine' : 'other'}">
                 ${!mine ? `<div class="chat-author">${escapeHtml(m.displayName || 'Anónimo')}</div>` : ''}
                 <div class="chat-bubble">${chatFormatText(m.text)}</div>
-                <div style="display:flex;gap:0.25rem;align-items:center;">
+                <div class="jshook-chat-time-row">
                     <span class="chat-msg-time">${time}</span>
                     ${mine || window._isModerador ? delBtn : ''}
                 </div>
@@ -1853,6 +1982,7 @@
                 } else {
                     el.innerHTML = msgs.map(m => chatBubbleHtml(m, uid, ucCode)).join('');
                 }
+                applyDeferredStyles(el);
                 el.scrollTop = el.scrollHeight;
             }, err => {
                 console.warn('UC chat error:', err);
@@ -1898,6 +2028,7 @@
                 el.innerHTML = msgs.length === 0
                     ? '<div class="chat-empty">Sem mensagens ainda. Escreve algo!</div>'
                     : msgs.map(m => chatWABubbleHtml(m, uid)).join('');
+                applyDeferredStyles(el);
                 el.scrollTop = el.scrollHeight;
             }, err => console.warn('WA chat error:', err));
         }
@@ -1905,7 +2036,7 @@
         function chatWABubbleHtml(m, uid) {
             const mine   = m.uid === uid;
             const badge  = m.source === 'whatsapp'
-                ? '<span style="font-size:0.7em;opacity:0.6;margin-left:0.25rem;">📱</span>'
+                ? '<span class="jshook-wa-badge">📱</span>'
                 : '';
             const time   = m.timestamp?.toMillis
                 ? new Date(m.timestamp.toMillis()).toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'})
@@ -2142,13 +2273,13 @@
                 const isRemote    = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
                 const remoteClass  = isRemote ? 'remote' : '';
                 const remoteBadge  = isRemote
-                    ? `<div class="aula-uc badge remote" style="margin-top:0;">🌐 Remoto</div>` : '';
+                    ? `<div class="aula-uc badge remote jshook-aula-badge">🌐 Remoto</div>` : '';
                 const isTeste      = aula.tipo === 'teste';
                 const testeClass   = isTeste ? 'teste' : '';
                 const testeBadge   = isTeste
-                    ? `<div class="aula-uc badge teste" style="margin-top:0;">📝 Teste</div>` : '';
+                    ? `<div class="aula-uc badge teste jshook-aula-badge">📝 Teste</div>` : '';
                 const formadorBadge = aula.formador
-                    ? `<div class="aula-uc badge" style="margin-top:0;background:rgba(255,255,255,0.1);color:#fff;">👤 ${shortName(aula.formador)}</div>` : '';
+                    ? `<div class="aula-uc badge jshook-aula-badge jshook-aula-badge-formador">👤 ${shortName(aula.formador)}</div>` : '';
                 const clickAttr = UC_MAP[aula.uc]
                     ? `data-uc-sched="${aula.uc}"` : '';
                 return `
@@ -2156,8 +2287,8 @@
                     <div class="aula-time">${aula.hora}</div>
                     <div class="aula-info">
                         <div class="aula-desc">${aula.descricao}</div>
-                        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:5px;align-items:center;">
-                            <div class="aula-uc badge" style="margin-top:0;">${aula.uc}</div>
+                        <div class="jshook-aula-badges-row">
+                            <div class="aula-uc badge jshook-aula-badge">${aula.uc}</div>
                             ${remoteBadge}${testeBadge}${formadorBadge}
                         </div>
                     </div>
@@ -2167,6 +2298,7 @@
             el.querySelectorAll('[data-uc-sched]').forEach(card =>
                 card.addEventListener('click', () => openUCFromSchedule(card.dataset.ucSched))
             );
+            applyDeferredStyles(el);
         }
 
         function buildTodayPanel() {
@@ -2229,10 +2361,11 @@
                     <span>${done.toFixed(0)}h / ${target}h (${pct}%)</span>
                 </div>
                 <div class="progress-wrap">
-                    <div class="progress-fill" style="width:${pct}%"></div>
+                    <div class="progress-fill" data-pct="${pct}"></div>
                 </div>
                 <div class="progress-sub">Base + Tecnológica · FCT (${CRONOGRAMA.carga_horaria.fct || 0}h) separado</div>
             `;
+            applyDeferredStyles(wrap);
         }
 
         // ── THEME TOGGLE ────────────────────────────────────────────────
@@ -3375,13 +3508,15 @@ SELECT * FROM utilizadores;
                 window._invitesUnsub = null;
             }
 
-            list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">A carregar…</span>';
+            list.innerHTML = '<span class="jshook-muted-xs">A carregar…</span>';
+            applyDeferredStyles(list);
 
             window._invitesUnsub = db.collection('invites')
                 .where('createdBy', '==', uid)
                 .onSnapshot(snap => {
                     if (snap.empty) {
-                        list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Nenhum convite criado ainda.</span>';
+                        list.innerHTML = '<span class="jshook-muted-xs">Nenhum convite criado ainda.</span>';
+                        applyDeferredStyles(list);
                         return;
                     }
                     list.innerHTML = '';
@@ -3396,7 +3531,8 @@ SELECT * FROM utilizadores;
                         list.appendChild(card);
                     });
                 }, () => {
-                    list.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Erro ao carregar convites.</span>';
+                    list.innerHTML = '<span class="jshook-muted-xs">Erro ao carregar convites.</span>';
+                    applyDeferredStyles(list);
                 });
         }
 
@@ -3422,11 +3558,11 @@ SELECT * FROM utilizadores;
             const safeExpiry = escapeHtml(expiry);
             div.innerHTML = `
                 <div class="invite-card-header">
-                    <div style="display:flex;gap:0.4rem;align-items:center;">
+                    <div class="jshook-flex-gap4-center">
                         <span class="invite-type-badge ${safeType}">${safeType === 'individual' ? '👤 Individual' : '👥 Turma'}</span>
                         <span class="invite-status-badge ${escapeHtml(status)}">${escapeHtml(statusLabel)}</span>
                     </div>
-                    <span style="font-size:0.68rem;color:var(--text-secondary);">${inv.uses || 0} uso${inv.uses !== 1 ? 's' : ''}</span>
+                    <span class="jshook-uses-count">${inv.uses || 0} uso${inv.uses !== 1 ? 's' : ''}</span>
                 </div>
                 <div class="invite-meta">
                     Expira: ${safeExpiry}
@@ -3438,7 +3574,7 @@ SELECT * FROM utilizadores;
                     ${inv.active ? `<button class="invite-action-btn danger" data-revoke-invite>🚫 Revogar</button>` : ''}
                     <button class="invite-action-btn danger" data-del-invite>🗑️ Apagar</button>
                 </div>
-                <div class="invite-qr-wrap" id="qr-${token}" style="display:none;margin-top:0.8rem;"></div>`;
+                <div class="invite-qr-wrap jshook-qr-wrap" id="qr-${token}"></div>`;
             div.querySelector('[data-copy-link]')?.addEventListener('click', () =>
                 navigator.clipboard.writeText(link).then(() => toast('Link copiado!'))
             );
@@ -3447,6 +3583,7 @@ SELECT * FROM utilizadores;
             });
             div.querySelector('[data-revoke-invite]')?.addEventListener('click', () => revokeInvite(token));
             div.querySelector('[data-del-invite]')?.addEventListener('click', () => deleteInvite(token));
+            applyDeferredStyles(div);
             return div;
         }
 
@@ -4081,9 +4218,9 @@ SELECT * FROM utilizadores;
   </div>
   <div class="lab-xp-bar-wrap">
     <div class="lab-xp-label">XP Total</div>
-    <div class="lab-xp-value">${totalXP} <span style="font-size:0.9rem;opacity:0.6">/ ${maxXP}</span></div>
+    <div class="lab-xp-value">${totalXP} <span class="jshook-xp-max-suffix">/ ${maxXP}</span></div>
     <div class="lab-xp-progress-track">
-      <div class="lab-xp-progress-fill" style="width:${xpPct}%"></div>
+      <div class="lab-xp-progress-fill" data-pct="${xpPct}"></div>
     </div>
   </div>
 </div>
@@ -4118,11 +4255,12 @@ SELECT * FROM utilizadores;
   ${LAB_MODULES.filter(m => m.alwaysAvailable).map((mod, idx) => labRenderModuleCard(mod, idx)).join('')}
 </div>
 
-<div class="lab-section-label" style="margin-top:1.5rem;">// Pentesting</div>
+<div class="lab-section-label jshook-mt-1_5rem">// Pentesting</div>
 <div class="lab-modules-grid">
   ${LAB_MODULES.filter(m => !m.alwaysAvailable).map((mod, idx) => labRenderModuleCard(mod, LAB_MODULES.indexOf(mod))).join('')}
 </div>
             `;
+            applyDeferredStyles(el);
 
             if (_labActiveModule) {
                 labShowDetail(_labActiveModule);
@@ -4160,7 +4298,7 @@ SELECT * FROM utilizadores;
     <span class="lab-module-progress-pct">${pct}%</span>
   </div>
   <div class="lab-module-progress-track">
-    <div class="lab-module-progress-fill" style="width:${pct}%"></div>
+    <div class="lab-module-progress-fill" data-pct="${pct}"></div>
   </div>
   <div class="lab-module-meta">
     ${!mod.isArena ? `<span class="lab-module-meta-item">Labs: <span>${stepsDone}/${mod.steps.length}</span></span>` : ''}
@@ -4230,6 +4368,7 @@ SELECT * FROM utilizadores;
   </div>` : ''}
 </div>
             `;
+            applyDeferredStyles(dc);
         }
 
         function labCloseDetail() {
@@ -4259,7 +4398,7 @@ SELECT * FROM utilizadores;
     <div class="lab-tools-grid">
       ${mod.tools.map(t => `<span class="lab-tool-pill">🔧 ${t}</span>`).join('')}
     </div>
-    <div class="lab-theory-card-title" style="margin-top:1rem;">Recursos</div>
+    <div class="lab-theory-card-title jshook-mt-1rem">Recursos</div>
     <ul class="lab-theory-list">
       ${mod.theory.resources.map(r => `<li>${r}</li>`).join('')}
     </ul>
@@ -4298,8 +4437,8 @@ SELECT * FROM utilizadores;
   <div class="lab-ctf-solved-banner">
     <span class="lab-ctf-solved-icon">🏆</span>
     <div>
-      <div style="font-weight:700;">Challenge concluído!</div>
-      <div style="font-size:0.78rem;opacity:0.8;margin-top:0.2rem;">${mod.ctfTitle} — +100 XP</div>
+      <div class="jshook-fw700">Challenge concluído!</div>
+      <div class="jshook-ctf-solved-sub">${mod.ctfTitle} — +100 XP</div>
     </div>
   </div>
 </div>
@@ -4325,7 +4464,7 @@ SELECT * FROM utilizadores;
         function labRenderArena(mod) {
             const p = labGetModuleProgress(mod.id);
             return `
-<div style="margin-bottom:1rem;font-size:0.8rem;color:var(--text-secondary);">
+<div class="jshook-arena-intro">
   Desafios independentes. Cada flag resolvida conta para o teu XP e posição no leaderboard da turma.
 </div>
 <div class="ctf-arena-grid">
@@ -4335,17 +4474,16 @@ SELECT * FROM utilizadores;
 <div class="ctf-arena-card difficulty-${c.diff}${solved ? ' solved' : ''}">
   <div class="ctf-arena-card-title">${solved ? '✓ ' : ''}${c.title}</div>
   <div class="ctf-arena-card-type">${c.type}</div>
-  <div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.75rem;">${c.desc}</div>
+  <div class="jshook-arena-card-desc">${c.desc}</div>
   ${!solved ? `
-  <input class="lab-ctf-input" id="arena-input-${c.id}" type="text" placeholder="flag{...}"
-         data-lab-arena-mod="${mod.id}" data-lab-arena-chall="${c.id}" data-lab-arena-flag="${c.flag}" data-lab-arena-xp="${c.xp}"
-         style="margin-bottom:0.5rem;font-size:0.75rem;">
+  <input class="lab-ctf-input jshook-arena-input" id="arena-input-${c.id}" type="text" placeholder="flag{...}"
+         data-lab-arena-mod="${mod.id}" data-lab-arena-chall="${c.id}" data-lab-arena-flag="${c.flag}" data-lab-arena-xp="${c.xp}">
   <div class="ctf-arena-card-meta">
     <span class="ctf-arena-diff ${c.diff}">${c.diff.toUpperCase()}</span>
     <span class="ctf-arena-xp">+${c.xp} XP</span>
   </div>
   <div class="lab-ctf-result" id="arena-result-${c.id}"></div>
-  ` : `<div class="ctf-arena-card-meta"><span class="ctf-arena-diff ${c.diff}">${c.diff.toUpperCase()}</span><span class="ctf-arena-xp" style="color:var(--success-color);">✓ +${c.xp} XP</span></div>`}
+  ` : `<div class="ctf-arena-card-meta"><span class="ctf-arena-diff ${c.diff}">${c.diff.toUpperCase()}</span><span class="ctf-arena-xp jshook-success-text">✓ +${c.xp} XP</span></div>`}
 </div>
     `;
   }).join('')}
@@ -4434,6 +4572,7 @@ SELECT * FROM utilizadores;
             const grids = document.querySelectorAll('.lab-modules-grid');
             grids.forEach(grid => {
                 grid.innerHTML = LAB_MODULES.map((mod, idx) => labRenderModuleCard(mod, idx)).join('');
+                applyDeferredStyles(grid);
             });
         }
 
@@ -4447,7 +4586,10 @@ SELECT * FROM utilizadores;
                 return acc + (p.ctfSolved ? 1 : 0);
             }, 0);
             const xpVal = document.querySelector('.lab-xp-value');
-            if (xpVal) xpVal.innerHTML = `${totalXP} <span style="font-size:0.9rem;opacity:0.6">/ ${maxXP}</span>`;
+            if (xpVal) {
+                xpVal.innerHTML = `${totalXP} <span class="jshook-xp-max-suffix">/ ${maxXP}</span>`;
+                applyDeferredStyles(xpVal);
+            }
             const xpFill = document.querySelector('.lab-xp-progress-fill');
             if (xpFill) xpFill.style.width = xpPct + '%';
             const statVals = document.querySelectorAll('.lab-stat-value');

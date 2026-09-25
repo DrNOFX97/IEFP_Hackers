@@ -51,10 +51,10 @@ function renderBitWeights(bits) {
   row.innerHTML = WEIGHTS.map((w, i) => `
     <div class="bit">
       <div class="weight">${w}</div>
-      <input type="text" maxlength="1" value="${bits[i]}" data-i="${i}"
-        style="color:${bits[i]==='1' ? 'var(--accent)' : 'var(--text-muted)'}">
+      <input type="text" maxlength="1" value="${bits[i]}" data-i="${i}">
     </div>`).join('');
   row.querySelectorAll('input[data-i]').forEach(inp => {
+    inp.style.color = inp.value === '1' ? 'var(--accent)' : 'var(--text-muted)';
     inp.addEventListener('input', () => bitChanged(inp));
   });
 }
@@ -133,13 +133,18 @@ function calcAnd() {
   const ba = toBin8(a), bb = toBin8(b), br = toBin8(res);
   document.getElementById('andResult').innerHTML =
     `<span class="highlight">${a}</span> AND <span class="highlight">${b}</span> = <span class="highlight">${res}</span>`;
-  document.getElementById('andSteps').innerHTML = `
-    <div style="font-family:var(--mono); line-height:1.8">
+  const andStepsEl = document.getElementById('andSteps');
+  andStepsEl.innerHTML = `
+    <div class="and-steps-block">
       A: ${ba}<br>
       B: ${bb}<br>
       &nbsp;&nbsp; --------<br>
-      R: <strong style="color:var(--accent)">${br}</strong> = ${res}
+      R: <strong class="and-result-strong">${br}</strong> = ${res}
     </div>`;
+  const andStepsBlock = andStepsEl.querySelector('.and-steps-block');
+  if (andStepsBlock) andStepsBlock.style.cssText = 'font-family:var(--mono); line-height:1.8';
+  const andResultStrong = andStepsEl.querySelector('.and-result-strong');
+  if (andResultStrong) andResultStrong.style.color = 'var(--accent)';
 }
 document.getElementById('andA').addEventListener('input', calcAnd);
 document.getElementById('andB').addEventListener('input', calcAnd);

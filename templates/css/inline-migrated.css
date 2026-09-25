@@ -1,0 +1,190 @@
+/* ===================================================================
+   inline-migrated.css
+   Classes geradas a partir dos atributos style="" inline que existiam
+   em templates/dashboard.html (Fase 3 do roadmap de segurança — remoção
+   de 'unsafe-inline' em style-src). Cada classe replica exatamente os
+   valores CSS do style="" original que substitui.
+   =================================================================== */
+
+/* --- Auth gate --- */
+.auth-invite-badge {
+    display: none;
+    margin: 0.75rem 0 0.25rem;
+    padding: 0.45rem 0.85rem;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: #00ff41;
+    text-align: center;
+}
+
+.auth-svg-icon {
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+.auth-err-text {
+    display: none;
+    color: #f85149;
+    font-size: 0.78rem;
+    margin-top: 0.75rem;
+    word-break: break-word;
+}
+
+/* --- Nav sidebar --- */
+.beta-tag {
+    font-size: 0.65em;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.nav-admin-link-hidden {
+    display: none;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* --- Utilities (reused em vários pontos do dashboard) --- */
+.mb-0 { margin-bottom: 0; }
+.mb-0_5rem { margin-bottom: 0.5rem; }
+.mb-1_25rem { margin-bottom: 1.25rem; }
+.mb-1_5rem { margin-bottom: 1.5rem; }
+.mt-1_5rem { margin-top: 1.5rem; }
+.mt-2rem { margin-top: 2rem; }
+.m-0 { margin: 0; }
+.d-none { display: none; }
+.fs-1_1rem { font-size: 1.1rem; }
+
+.text-muted-sm {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+}
+
+.text-muted-sm-alt {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.text-danger {
+    color: #f85149;
+}
+
+/* --- Horário / Cronograma --- */
+.resumo-row-header {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.flex-gap-center-sm {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+/* --- Sessão / Apontamentos / Materiais --- */
+.flex-align-gap-75 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.h2-notes-title {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.h2-materials-title {
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+/* --- Turma --- */
+.turma-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    margin-bottom: 1.75rem;
+}
+
+.turma-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: 600px;
+}
+
+/* --- Cheatsheets --- */
+.cheatsheets-view-hidden {
+    display: none;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+}
+
+.cheatsheets-header-flex {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.cs-tab-bar-flex {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.open-tab-link {
+    margin-left: auto;
+    padding: 0.28rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+
+.cs-host-frame {
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 80vh;
+}
+
+/* --- Materiais item / CyberMap iframes --- */
+.materiais-item-iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    min-height: 80vh;
+    background: #fff;
+}
+
+.cybermap-view-hidden {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.cybermap-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- Definições --- */
+.signout-btn-compact {
+    width: auto;
+    padding: 0.4rem 0.8rem;
+}
