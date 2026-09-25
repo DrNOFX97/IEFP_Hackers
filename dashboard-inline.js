@@ -1255,10 +1255,48 @@
             ucChatInit(ucCode);
         }
 
+        // ── LAZY-LOAD: jsPDF / jsPDF-AutoTable / QRCode (só quando usados) ─
+        const _LAZY_SRI = {
+            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js':
+                'sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk',
+            'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js':
+                'sha384-fCAW/rDWORTbQXSiB7mOg0QtQ5c+r0f544y6XoKjuVva0nMBlCpNUjiFeG5iMdS3',
+            'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js':
+                'sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU',
+        };
+        function lazyLoadScript(url) {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${url}"]`)) { resolve(); return; }
+                const s = document.createElement('script');
+                s.src = url;
+                if (_LAZY_SRI[url]) { s.integrity = _LAZY_SRI[url]; s.crossOrigin = 'anonymous'; }
+                s.onload = () => resolve();
+                s.onerror = () => reject(new Error('Falha ao carregar: ' + url));
+                document.head.appendChild(s);
+            });
+        }
+        let _pdfLibsPromise = null;
+        function ensurePdfLibs() {
+            if (window.jspdf && window.jspdf.jsPDF.API.autoTable) return Promise.resolve();
+            if (!_pdfLibsPromise) {
+                _pdfLibsPromise = lazyLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+                    .then(() => lazyLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'))
+                    .catch(e => { _pdfLibsPromise = null; throw e; });
+            }
+            return _pdfLibsPromise;
+        }
+        let _qrLibPromise = null;
+        function ensureQrLib() {
+            if (window.QRCode) return Promise.resolve();
+            if (!_qrLibPromise) {
+                _qrLibPromise = lazyLoadScript('https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js')
+                    .catch(e => { _qrLibPromise = null; throw e; });
+            }
+            return _qrLibPromise;
+        }
+
         // ── UC DETAIL PDF ────────────────────────────────────────────────
-        function downloadUCPDF(btn) {
-            if (!window.jspdf) { alert('Biblioteca PDF ainda a carregar. Tenta novamente.'); return; }
-            const { jsPDF } = window.jspdf;
+        async function downloadUCPDF(btn) {
             if (!currentUCCode) return;
             const uc = UC_MAP[currentUCCode] || {};
             const sessions = buildUCSchedule(currentUCCode);
@@ -1266,6 +1304,17 @@
 
             btn.classList.add('loading');
             btn.textContent = '⏳';
+
+            try {
+                await ensurePdfLibs();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível carregar a biblioteca de PDF. Verifica a ligação à internet.');
+                btn.classList.remove('loading');
+                btn.innerHTML = '⬇ PDF';
+                return;
+            }
+            const { jsPDF } = window.jspdf;
 
             setTimeout(() => {
                 try {
@@ -3156,14 +3205,23 @@ SELECT * FROM utilizadores;
 
 
         // ── PDF DOWNLOAD ────────────────────────────────────────────────
-        function downloadListaPDF(btn, monthIdx) {
-            if (!window.jspdf) { alert('Biblioteca PDF ainda a carregar. Tenta novamente.'); return; }
-            const { jsPDF } = window.jspdf;
+        async function downloadListaPDF(btn, monthIdx) {
             const horario = HORARIOS[monthIdx !== undefined ? monthIdx : currentMonthIndex];
             if (!horario) return;
 
             btn.classList.add('loading');
             btn.textContent = '⏳ A gerar...';
+
+            try {
+                await ensurePdfLibs();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível carregar a biblioteca de PDF. Verifica a ligação à internet.');
+                btn.classList.remove('loading');
+                btn.innerHTML = '⬇ Lista';
+                return;
+            }
+            const { jsPDF } = window.jspdf;
 
             setTimeout(() => {
                 try {
@@ -3280,14 +3338,23 @@ SELECT * FROM utilizadores;
             }, 50);
         }
 
-        function downloadSemanalPDF(btn, monthIdx) {
-            if (!window.jspdf) { alert('Biblioteca PDF ainda a carregar. Tenta novamente.'); return; }
-            const { jsPDF } = window.jspdf;
+        async function downloadSemanalPDF(btn, monthIdx) {
             const horario = HORARIOS[monthIdx !== undefined ? monthIdx : currentMonthIndex];
             if (!horario) return;
 
             btn.classList.add('loading');
             btn.textContent = '⏳ A gerar...';
+
+            try {
+                await ensurePdfLibs();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível carregar a biblioteca de PDF. Verifica a ligação à internet.');
+                btn.classList.remove('loading');
+                btn.innerHTML = '⬇ Semanal';
+                return;
+            }
+            const { jsPDF } = window.jspdf;
 
             setTimeout(() => {
                 try {
@@ -3591,7 +3658,7 @@ SELECT * FROM utilizadores;
             return div;
         }
 
-        function toggleQR(btn, token, link) {
+        async function toggleQR(btn, token, link) {
             const wrap = document.getElementById('qr-' + token);
             if (!wrap) return;
             if (wrap.style.display !== 'none') {
@@ -3600,6 +3667,13 @@ SELECT * FROM utilizadores;
             }
             wrap.style.display = 'inline-block';
             if (!wrap.dataset.rendered) {
+                try {
+                    await ensureQrLib();
+                } catch (e) {
+                    console.error(e);
+                    wrap.textContent = 'Erro ao carregar QR.';
+                    return;
+                }
                 wrap.dataset.rendered = '1';
                 new QRCode(wrap, { text: link, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.H });
             }
