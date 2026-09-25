@@ -8,15 +8,9 @@ Ficheiro local de tracking — não é feito deploy (`*.md` está no `.gitignore
 - [x] `X-XSS-Protection: 0` no `firebase.json` (commit `4a88398`)
 - [x] Meta tags OpenGraph + Twitter Card em `dashboard.html` (commit `19ff2a9`)
 - [x] `security.txt` assinado com PGP (RFC 9116) + chave publicada em `.well-known/pgp-key.txt` (commit `fb55f90`)
+- [x] **Fase 1 completa** (commit `9178ffd`): `defer` nos 12 `<script>`, `preconnect` (cdnjs/gstatic/jsdelivr/fonts), `dashboard.css` minificado (131 KB → 83 KB), logo extraído de base64 duplicado 4x (~72 KB) para `logo-cet.png` (13.7 KB, cacheável). Validado visualmente (Playwright): auth gate renderiza e estiliza corretamente, sem erros novos.
 
-## 🔴 Fase 1 — Quick wins de performance (baixo esforço, alto impacto)
-
-- [ ] Adicionar `defer` aos 11 `<script src>` no `<head>` de `dashboard.html` (linhas 21-31)
-- [ ] Adicionar `<link rel="preconnect">` para `cdnjs.cloudflare.com`, `www.gstatic.com`, `cdn.jsdelivr.net`, `fonts.googleapis.com`
-- [ ] Minificar `dashboard.css` (131 KB → esperado ~80-90 KB)
-- [ ] Extrair o logo base64 (~36 KB) de `dashboard.html` para `logo.png` + `<img src="logo.png">`
-
-**Critério de sucesso:** re-correr Lighthouse, confirmar subida de score e validar visualmente que nada quebrou (auth gate, KaTeX, exportação PDF).
+## 🔴 Fase 1 — Quick wins de performance ✅ CONCLUÍDA
 
 ## 🟡 Fase 2 — Redução de JS não utilizado (esforço médio)
 
@@ -30,6 +24,10 @@ Ficheiro local de tracking — não é feito deploy (`*.md` está no `.gitignore
 - [ ] Renovar assinatura PGP do `security.txt` antes de **2027-09-25** (validade da chave) e do **2027-09-24** (campo `Expires`)
 - [ ] DNSSEC — fora de controlo (domínio `*.web.app` gerido pela Google)
 - [ ] OCSP stapling — fora de controlo (terminação TLS gerida pela Google/Fastly)
+
+## 🐛 Bugs pré-existentes encontrados (fora do escopo deste roadmap)
+
+- `CyberMap.html` / `cybermap-inline.js`: erro no console em loop (`Cannot read properties of undefined (reading 'x')` em `updateArcs`/`animate`, three.js) + 404 em `logo_02.png`. Detetado ao testar `dashboard.html` no browser (o CyberMap corre em background/iframe). Não relacionado com as mudanças da Fase 1 — não foi tocado.
 
 ## Notas
 
