@@ -515,8 +515,6 @@ def main():
     import time as _time
     build_ts = str(int(_time.time()))
 
-    html = html.replace('__INJECT_CSS__', css)
-
     # Inject data into JS constants (markers live in js/data.js and js/playground.js —
     # js now ships as an external file, so these replacements run on `js`, not `html`)
     js = js.replace('__INJECT_BUILD_TS__', build_ts)
@@ -572,13 +570,16 @@ def main():
             print("Aviso: logo_02.png não encontrado. O logo ficará vazio.")
     html = html.replace('__INJECT_LOGO_B64__', logo_b64)
 
-    # 7. Write output — JS bundle now ships as an external file (dashboard-inline.js)
-    #    instead of being inlined, so script-src no longer needs 'unsafe-inline' or a
-    #    per-build hash for the dashboard. firebase.json's CSP is static going forward.
+    # 7. Write output — JS and CSS bundles now ship as external files
+    #    (dashboard-inline.js, dashboard.css) instead of being inlined, so
+    #    neither script-src nor style-src need 'unsafe-inline' or a per-build
+    #    hash for the dashboard. firebase.json's CSP is static going forward.
     with open('dashboard.html', 'w', encoding='utf-8') as f:
         f.write(html)
     with open('dashboard-inline.js', 'w', encoding='utf-8') as f:
         f.write(js)
+    with open('dashboard.css', 'w', encoding='utf-8') as f:
+        f.write(css)
 
     # 8. Inject logo into admin.html (in-place)
     admin_path = os.path.join(os.path.dirname(__file__), 'admin.html')
