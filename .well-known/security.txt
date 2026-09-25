@@ -1,4 +1,15 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
 Contact: mailto:f.nuno.ss@gmail.com
 Expires: 2027-09-24T00:00:00.000Z
+Encryption: https://iefp-hackers.web.app/.well-known/pgp-key.txt
 Preferred-Languages: pt-PT, en
 Canonical: https://iefp-hackers.web.app/.well-known/security.txt
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQQmEdqGiIPCe4lOK/LRLBzdCO1qiQUCaraIJgAKCRDRLBzdCO1q
+iddnAPwKAykOS7TV7xz2YWx+MloE8rXEeOWM9ifEzKN77SDurwEA3NFN3KrWAIKu
++4lYMd9uXSTrqyz89C99VgHDVdZAFQ4=
+=Q5QM
+-----END PGP SIGNATURE-----
