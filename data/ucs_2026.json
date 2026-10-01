@@ -150,14 +150,14 @@
     {
       "codigo": "UC01485",
       "descricao": "Instalar e Configurar Ferramentas de Análise e Recolha de Logs e Evidências",
-      "formador": "",
+      "formador": "Miguel Frias",
       "carga_horaria": 50,
-      "modalidade": ""
+      "modalidade": "remoto"
     },
     {
       "codigo": "UC01486",
       "descricao": "Gerir Sistemas de Deteção de Intrusos (IDS)",
-      "formador": "",
+      "formador": "João Ginga",
       "carga_horaria": 50,
       "modalidade": ""
     },
