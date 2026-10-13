@@ -57,7 +57,8 @@
             el.innerHTML = merged.map(aula => {
                 const state       = getAulaState(dateStr, aula.hora);
                 const isClickable = UC_MAP[aula.uc] ? 'clickable' : '';
-                const isRemote    = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
+                const hasSessionModalidade = aula.modalidade && aula.modalidade !== '';
+                const isRemote    = hasSessionModalidade ? aula.modalidade === 'remoto' : (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto');
                 const remoteClass  = isRemote ? 'remote' : '';
                 const remoteBadge  = isRemote
                     ? `<div class="aula-uc badge remote jshook-aula-badge">🌐 Remoto</div>` : '';

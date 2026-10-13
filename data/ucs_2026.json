@@ -143,23 +143,23 @@
     {
       "codigo": "UC01484",
       "descricao": "Detetar e Analisar Vulnerabilidades em Sistemas de Rede",
-      "formador": "",
+      "formador": "Manuel Domingos Vasconcelos Moreira",
       "carga_horaria": 50,
-      "modalidade": ""
+      "modalidade": "remoto"
     },
     {
       "codigo": "UC01485",
       "descricao": "Instalar e Configurar Ferramentas de Análise e Recolha de Logs e Evidências",
-      "formador": "Miguel Frias",
+      "formador": "Miguel Tavares Frias",
       "carga_horaria": 50,
       "modalidade": "remoto"
     },
     {
       "codigo": "UC01486",
       "descricao": "Gerir Sistemas de Deteção de Intrusos (IDS)",
-      "formador": "João Ginga",
+      "formador": "João Manuel Mulano Ginga",
       "carga_horaria": 50,
-      "modalidade": ""
+      "modalidade": "remoto"
     },
     {
       "codigo": "UC01487",

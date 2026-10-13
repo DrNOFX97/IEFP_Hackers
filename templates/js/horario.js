@@ -198,7 +198,8 @@
         function buildAulaCardHtml(aula, state, matched, diaData) {
             const isClickable   = UC_MAP[aula.uc] ? 'clickable' : '';
             const dimClass      = (scheduleFilter && !matched) ? 'filtered-out' : '';
-            const isRemote      = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto') || REMOTE_DATE_EXCEPTIONS.has(diaData);
+            const hasSessionModalidade = aula.modalidade && aula.modalidade !== '';
+            const isRemote      = (hasSessionModalidade ? aula.modalidade === 'remoto' : (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto')) || REMOTE_DATE_EXCEPTIONS.has(diaData);
             const remoteClass   = isRemote ? 'remote' : '';
             const remoteBadge   = isRemote
                 ? `<div class="aula-uc badge remote jshook-aula-badge">🌐 Remoto</div>` : '';
@@ -382,7 +383,8 @@
                             const dimCls     = (filter && !matched) ? 'filtered-out' : '';
                             const clickCls   = UC_MAP[aula.uc] ? 'clickable' : '';
                             const clickAttr  = UC_MAP[aula.uc] ? `data-uc-sched="${aula.uc}"` : '';
-                            const isRemote   = aula.modalidade === 'remoto' || (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto') || REMOTE_DATE_EXCEPTIONS.has(dia.data);
+                            const hasSessionModalidade = aula.modalidade && aula.modalidade !== '';
+                            const isRemote   = (hasSessionModalidade ? aula.modalidade === 'remoto' : (aula.uc === 'UC00602') || (UC_MAP[aula.uc] && UC_MAP[aula.uc].modalidade === 'remoto')) || REMOTE_DATE_EXCEPTIONS.has(dia.data);
                             const remoteCls  = isRemote ? 'remote' : '';
                             const remoteBadge = isRemote ? `<span class="badge remote jshook-week-badge">🌐 Remoto</span>` : '';
                             const isTeste    = aula.tipo === 'teste';
