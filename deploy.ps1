@@ -63,15 +63,17 @@ if (Test-Path "data") {
     Write-Host "[AVISO] Pasta data/ nao encontrada. Confirma com o utilizador se achavas que existia." -ForegroundColor Yellow
 }
 
-# -- 2. Gerar dashboard.html / admin.html --------------------------
+# -- 2. Gerar dashboard-inline.js / admin-inline.js ---------------
 Write-Host ""
 Write-Host "A gerar dashboard..." -ForegroundColor Cyan
 py gerador_dashboard.py
 if ($LASTEXITCODE -ne 0) { Fail "gerador_dashboard.py falhou - nada foi comitado." }
 
 # -- 3. Staging: SO ficheiros gerados conhecidos, nunca -A / . ----
-$knownFiles = @("dashboard.html", "admin.html", "firebase.json") | Where-Object { Test-Path $_ }
-if (-not $knownFiles) { Fail "Nenhum dos ficheiros esperados (dashboard.html/admin.html/firebase.json) existe." }
+# NOTA: o gerador escreve o JS/CSS embutidos em dashboard-inline.js /
+# admin-inline.js (ver gerador_dashboard.py) — nao em dashboard.html.
+$knownFiles = @("dashboard-inline.js", "admin-inline.js", "dashboard.html", "admin.html", "firebase.json") | Where-Object { Test-Path $_ }
+if (-not $knownFiles) { Fail "Nenhum dos ficheiros esperados (dashboard-inline.js/admin-inline.js/dashboard.html/admin.html/firebase.json) existe." }
 
 git add $knownFiles
 
@@ -86,7 +88,7 @@ if ($dataStaged) {
 # -- 5. Nada para comitar? -----------------------------------------
 if (-not $staged) {
     Write-Host ""
-    Write-Host "Nada mudou em dashboard.html/admin.html/firebase.json - nao ha nada para comitar." -ForegroundColor Yellow
+    Write-Host "Nada mudou em $($knownFiles -join '/') - nao ha nada para comitar." -ForegroundColor Yellow
     exit 0
 }
 
