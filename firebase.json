@@ -41,6 +41,8 @@
       "test_*.html",
       "scanner.py",
       "security_audit.py",
+      "web-check-results.json",
+      "web-check*.json",
       "report_*.txt"
     ],
     "rewrites": [
