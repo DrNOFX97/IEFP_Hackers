@@ -1,0 +1,12 @@
+{
+  "hosting": {
+    "site": "ligafaro-8000",
+    "public": "redirect-stub",
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
