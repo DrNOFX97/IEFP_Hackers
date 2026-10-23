@@ -4,47 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diagnóstico — handshake popup (COOP)</title>
-    <style>
-        body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 1.5rem; }
-        pre { background: #1e293b; padding: 1rem; border-radius: 8px; white-space: pre-wrap; }
-        button { padding: .6rem 1.2rem; background: #2563eb; color: #fff; border: 0; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-bottom: 1rem; }
-    </style>
 </head>
 <body>
     <h3>Diagnóstico popup (não é a app — página técnica)</h3>
     <button id="go">Executar teste</button>
     <pre id="out">Aguarda o clique no botão.</pre>
-    <script>
-    (function () {
-        var btn = document.getElementById('go');
-        var out = document.getElementById('out');
-        var lines = [];
-        var pass = false;
-        function log(s) { lines.push(new Date().toISOString().slice(11, 23) + '  ' + s); out.textContent = lines.join('\n'); }
-        btn.addEventListener('click', function () {
-            log('opener: ' + location.href);
-            log('a abrir popup para ligafaro-8000 (sem COOP)...');
-            var popup;
-            try { popup = window.open('https://ligafaro-8000.firebaseapp.com/?popuptest=1', 'pd', 'width=480,height=420'); } catch (e) { log('exception: ' + e); }
-            if (!popup) { log('FAIL: popup bloqueado pelo browser'); return; }
-            log('popup criado; à escuta de postMessage...');
-            window.addEventListener('message', function (ev) {
-                if (ev.data && ev.data.popuptest === 'ok') {
-                    pass = true;
-                    log('PASS: mensagem recebida de ' + ev.data.from + ' — opener↔popup OK (handshake de OAuth possível)');
-                    log('VEREDITO: PASS');
-                } else {
-                    log('mensagem estranha: ' + JSON.stringify(ev.data) + ' origem ' + ev.origin);
-                }
-            });
-            setTimeout(function () {
-                if (!pass) {
-                    log('FAIL: sem mensagem em 7s — popup está cortada do opener (sintoma de COOP em conflito)');
-                    log('VEREDITO: FAIL');
-                }
-            }, 7000);
-        });
-    })();
-    </script>
+    <script src="diag-popup.js"></script>
 </body>
 </html>
