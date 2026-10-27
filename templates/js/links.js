@@ -19,8 +19,9 @@
 
         // ── AULAS REMOTAS ────────────────────────────────────────────────
         const REMOTE_CLASS_LINKS = [
-            { label: 'Classroom Ivan', icon: '🎓', url: 'https://classroom.google.com/u/0/c/ODY2NDE0NTcxNTgy', desc: 'Google Classroom — Ivan Gonçalves' },
-            { label: 'Google Drive Manuel', icon: '📂', url: 'https://drive.google.com/drive/folders/1yk20TBCoPnuHoU3CL_bc9y6BK8bjHXM8', desc: 'Google Drive — Materiais e recursos do Manuel' },
+            { label: 'Ivan Gonçalves', icon: '🎓', url: 'https://classroom.google.com/u/0/c/ODY2NDE0NTcxNTgy', desc: 'Google Classroom — Ivan Gonçalves' },
+            { label: 'Manuel Moreira', icon: '📂', url: 'https://drive.google.com/drive/folders/1yk20TBCoPnuHoU3CL_bc9y6BK8bjHXM8', desc: 'Google Drive — Materiais e recursos do Manuel Moreira' },
+            { label: 'Miguel Frias', icon: '📂', url: 'https://drive.google.com/drive/folders/1BOeR1CdhJ4odr7pW4EjAXED0jR-89Jlo', desc: 'Google Drive — Materiais e recursos do Miguel Frias' },
         ];
 
         function dashLinksRender() {
