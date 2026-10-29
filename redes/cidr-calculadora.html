@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora CIDR</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cidr-calculadora.css">
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">Introdução às Redes de Computadores · Endereçamento IPv4</div>
+    <h1>Calculadora<br><span>CIDR</span></h1>
+    <p class="subtitle">CIDR (Classless Inter-Domain Routing) descreve uma rede com um endereço e um prefixo: <code>192.168.1.0/24</code> significa que os primeiros 24 bits identificam a rede e os restantes 8 identificam os hosts.</p>
+  </header>
+
+  <!-- CALCULADORA -->
+  <div class="calc-box">
+    <div class="section-label">Introduz um endereço em notação CIDR</div>
+    <div class="calc-input-row">
+      <input class="calc-input" id="cidr-input" type="text" placeholder="ex: 192.168.1.10/24  ou  10.0.0.0/22" maxlength="18" autocomplete="off" spellcheck="false">
+      <button class="calc-btn" id="calc-btn">Calcular →</button>
+    </div>
+    <div class="presets" id="presets"></div>
+    <div id="calc-error"></div>
+
+    <div class="calc-result" id="calc-result">
+      <div class="cr-grid" id="cr-grid"></div>
+
+      <div class="bits-block">
+        <div class="section-label">Representação binária</div>
+        <div class="bits-legend">
+          <span class="lg-net">bits de rede</span>
+          <span class="lg-host">bits de host</span>
+        </div>
+        <div class="bits-table" id="bits-table"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABELA DE PREFIXOS -->
+  <div class="prefix-section">
+    <div class="section-label">Tabela de prefixos comuns</div>
+    <table class="prefix-table">
+      <thead>
+        <tr><th>CIDR</th><th>Máscara</th><th>Endereços</th><th>Hosts utilizáveis</th></tr>
+      </thead>
+      <tbody id="prefix-body"></tbody>
+    </table>
+  </div>
+
+  <footer>CIDR · RFC 4632 · RFC 3021 (/31) · Material didáctico — Introdução às Redes de Computadores</footer>
+</div>
+
+<script src="cidr-calculadora.js"></script>
+</body>
+</html>

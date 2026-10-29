@@ -11,6 +11,7 @@
                 { key: 'osi-model', icon: '🧅', label: 'Modelo OSI', file: 'redes/osi-model.html', status: 'ready' },
                 { key: 'udp-model', icon: '📨', label: 'UDP', file: 'redes/udp-model.html', status: 'ready' },
                 { key: 'ip-classes', icon: '🔢', label: 'Classes de Endereços IP', file: 'redes/ip-classes.html', status: 'ready' },
+                { key: 'cidr-calculadora', icon: '🧾', label: 'Calculadora CIDR', file: 'redes/cidr-calculadora.html', status: 'ready' },
                 { key: 'sistemas-numericos', icon: '🧮', label: 'Sistemas Numéricos (Quiz + Conversor)', file: 'redes/sistemas-numericos.html', status: 'ready' },
                 { key: 'topologias-rede', icon: '🕸️', label: 'Topologias de Rede', file: 'redes/topologias-rede.html', status: 'ready' },
                 { key: 'switch-vlan-router', icon: '🔀', label: 'Switch · VLAN · Router', file: 'redes/switch-vlan-router.html', status: 'ready' },
